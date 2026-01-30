@@ -396,7 +396,7 @@ function addPostToDOM(post) {
     // Prepend timestamp manually
     postDiv.prepend(timeSpan);
 
-    // 6. TRUNCATION LOGIC (Read More)
+// 6. TRUNCATION LOGIC (Read More)
     feed.appendChild(postDiv); // Append first to calculate height
     const textContainer = postDiv.querySelector('.post-text-container');
     
@@ -406,7 +406,9 @@ function addPostToDOM(post) {
         
         const expandBtn = document.createElement('div');
         expandBtn.classList.add('expand-btn');
-        expandBtn.innerText = "[ EXPAND ENTRY ]";
+        
+        // CHANGED: Simple text, no "ENTRY"
+        expandBtn.innerText = "[ EXPAND ]";
         
         expandBtn.onclick = () => {
             textContainer.classList.remove('truncated');

@@ -599,15 +599,22 @@ iframe[src*="spotify"] {
     background: black;
     color: white;
 }
+
 .formatting-bar button:hover {
     background: white;
     color: black;
 }
 
+/* FIX: Remove brackets specifically for these tiny buttons */
+.formatting-bar button:hover::before,
+.formatting-bar button:hover::after {
+    content: none; 
+}
+
 /* B. Redacted Text (Spoiler) */
 .spoiler {
     background: white;
-    color: white; /* Hidden text */
+    color: white; 
     cursor: help;
     padding: 0 4px;
     transition: all 0.2s;
@@ -615,19 +622,19 @@ iframe[src*="spotify"] {
 
 .spoiler:hover, .spoiler.revealed {
     background: #333;
-    color: white; /* Revealed text */
+    color: white; 
     text-decoration: none;
 }
 
 /* C. Read More / Truncation */
 .post-text-container {
     position: relative;
-    /* No max-height by default, JS adds 'truncated' class if needed */
 }
 
 .post-text-container.truncated {
-    max-height: 150px; /* Limit height */
+    max-height: 150px; 
     overflow: hidden;
+    /* Fades out the text at the bottom */
     mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
     -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
 }
@@ -636,42 +643,52 @@ iframe[src*="spotify"] {
     display: block;
     width: 100%;
     text-align: center;
-    background: black;
-    border: 1px dashed white;
-    color: #aaa;
-    margin-top: 10px;
-    padding: 5px;
-    font-size: 0.8em;
+    background: transparent; /* Transparent, no box */
+    color: #888; /* Dimmed text */
+    margin-top: 5px;
+    padding: 10px;
+    font-size: 0.9em;
     cursor: pointer;
+    font-weight: bold;
+    border: none;
 }
 .expand-btn:hover {
-    background: #222;
-    color: white;
+    color: white; /* Lights up on hover */
+    background: transparent;
 }
 
 /* D. Pinned Post Icon */
 .pin-icon {
     position: absolute;
-    top: 20px;
-    right: 20px;
+    /* MOVED: Sits nicely in the padding corner now */
+    top: 10px;
+    right: 10px;
+    
     width: 16px;
     height: 16px;
     image-rendering: pixelated;
     cursor: pointer;
-    opacity: 0.3; /* Dim when not pinned or hovered */
+    opacity: 0.2; /* Very faint when inactive */
     z-index: 10;
+    transition: opacity 0.2s;
 }
 
 .pin-icon.active {
-    opacity: 1; /* Bright when pinned */
-    filter: drop-shadow(0 0 2px white);
+    opacity: 1; /* Bright white when pinned */
+    filter: drop-shadow(0 0 4px white); /* Slight glow */
 }
 
 .pin-icon:hover {
     opacity: 1;
 }
 
-/* Admin Only: Hide pins for guests (handled in JS, but backup here) */
+/* GUEST LOGIC: */
+/* 1. If not admin, hide the inactive pin buttons completely */
 body:not(.admin-mode) .pin-icon:not(.active) {
-    display: none;
+    display: none !important;
+}
+/* 2. If not admin, show the active pin, but make it unclickable */
+body:not(.admin-mode) .pin-icon.active {
+    cursor: default;
+    pointer-events: none;
 }
