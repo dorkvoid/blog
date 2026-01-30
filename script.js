@@ -27,6 +27,7 @@ const passwordInput = document.getElementById('adminPassword');
 const counterElement = document.getElementById('view-count');
 const searchInput = document.getElementById('searchBar');
 const toastContainer = document.getElementById('toast-container');
+const adminLoginBar = document.getElementById('admin-login-bar'); 
 
 // Toolbar Elements
 const fmtBold = document.getElementById('fmtBold');
@@ -67,16 +68,19 @@ onAuthStateChanged(auth, (user) => {
     if (user) {
         isAdmin = true;
         document.body.classList.add('admin-mode');
+        // Show the bar because we are logged in
+        adminLoginBar.classList.remove('hidden'); 
         if (loginContainer) loginContainer.classList.add('hidden');
         if (adminMenu) adminMenu.classList.remove('hidden');
         restoreDraft();
     } else {
         isAdmin = false;
         document.body.classList.remove('admin-mode');
+        // Hide the bar by default when logged out
+        adminLoginBar.classList.add('hidden'); 
         if (loginContainer) loginContainer.classList.remove('hidden');
         if (adminMenu) adminMenu.classList.add('hidden');
     }
-    // Re-render feed to show/hide admin controls (pins)
     reloadFeed(); 
 });
 
@@ -104,14 +108,38 @@ if (logoutBtn) {
     });
 }
 
-// --- 6. LOAD POSTS (Modified for Pinned Sorting) ---
-let allPosts = []; // Local store
+// --- 6. COMMAND & SEARCH LOGIC ---
+searchInput.addEventListener('input', (e) => {
+    const val = e.target.value;
+    
+    // Command Mode
+    if (val.startsWith('/')) {
+        if (val === '/login') {
+            // Reveal Admin Bar
+            adminLoginBar.classList.remove('hidden');
+            passwordInput.focus();
+            showToast("LOGIN TERMINAL OPEN");
+            searchInput.value = ''; 
+        } else if (val === '/help') {
+            showToast("CMDS: /login, /clear");
+            searchInput.value = '';
+        } else if (val === '/clear') {
+            feed.innerHTML = ''; 
+            searchInput.value = '';
+        }
+        return; 
+    }
+    
+    // Search Mode (Normal)
+    reloadFeed(); 
+});
 
-// Standard query by time
+
+// --- 7. LOAD POSTS ---
+let allPosts = []; 
 const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
 
 onSnapshot(q, (snapshot) => {
-    // 1. Map snapshot to array
     allPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     reloadFeed();
 });
@@ -119,29 +147,24 @@ onSnapshot(q, (snapshot) => {
 function reloadFeed() {
     feed.innerHTML = "";
     
-    // 2. Sort: Pinned first, then Newest
     allPosts.sort((a, b) => {
         if (a.pinned === b.pinned) {
-            // If both pinned or both not pinned, sort by date
             return (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0);
         }
-        // Pinned (true) comes before Unpinned (false/undefined)
         return a.pinned ? -1 : 1;
     });
 
-    // 3. Filter if searching
     const term = searchInput.value.toLowerCase();
-    const visiblePosts = term ? allPosts.filter(p => p.text.toLowerCase().includes(term)) : allPosts;
+    const visiblePosts = (term && !term.startsWith('/')) ? allPosts.filter(p => p.text.toLowerCase().includes(term)) : allPosts;
 
     visiblePosts.forEach(post => {
         addPostToDOM(post);
     });
 }
 
-// --- 7. POST LOGIC ---
+// --- 8. POST LOGIC ---
 let editingPostId = null; 
 
-// A. Formatting Tools
 function insertTag(tagStart, tagEnd) {
     const start = textInput.selectionStart;
     const end = textInput.selectionEnd;
@@ -154,8 +177,6 @@ function insertTag(tagStart, tagEnd) {
     textInput.focus();
     textInput.selectionStart = start + tagStart.length;
     textInput.selectionEnd = end + tagStart.length;
-    
-    // Trigger input event for ghost save
     textInput.dispatchEvent(new Event('input')); 
 }
 
@@ -163,7 +184,6 @@ fmtBold.onclick = () => insertTag("**", "**");
 fmtItalic.onclick = () => insertTag("*", "*");
 fmtSpoiler.onclick = () => insertTag("||", "||");
 
-// B. Ghost Save & Auto Expand
 textInput.addEventListener('input', function() {
     this.style.height = 'auto'; 
     this.style.height = (this.scrollHeight) + 'px';
@@ -181,7 +201,6 @@ function restoreDraft() {
     }
 }
 
-// C. Power Send
 textInput.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault(); 
@@ -215,7 +234,7 @@ postBtn.addEventListener('click', async function() {
                 image: img,
                 timestamp: serverTimestamp(),
                 readableDate: new Date().toLocaleString(),
-                pinned: false // Default new posts to not pinned
+                pinned: false 
             });
             showToast("POST SUCCESSFUL");
             localStorage.removeItem('postDraft');
@@ -244,7 +263,7 @@ function resetForm() {
     localStorage.removeItem('postDraft');
 }
 
-// --- 8. DELETE MODAL LOGIC ---
+// --- 9. HELPERS ---
 let idToDelete = null;
 
 function triggerDelete(id) {
@@ -265,8 +284,6 @@ confirmNo.addEventListener('click', () => {
     idToDelete = null;
     confirmModal.classList.add('hidden');
 });
-
-// --- 9. HELPERS ---
 
 function showToast(message) {
     const toast = document.createElement('div');
@@ -297,27 +314,19 @@ function timeAgo(date) {
     return "Just now";
 }
 
-// Search Filter
-searchInput.addEventListener('input', () => {
-    reloadFeed(); // Uses the filter logic inside reloadFeed
-});
-
-// --- 10. DISPLAY FUNCTION (Heavy Logic) ---
+// --- 10. DISPLAY FUNCTION ---
 
 function addPostToDOM(post) {
     const id = post.id;
     const postDiv = document.createElement('div');
     postDiv.classList.add('post');
 
-    // 1. Pin Logic
     let pinHTML = "";
-    // Only show pin if (Admin is logged in) OR (Post is pinned)
     if (isAdmin || post.pinned) {
         const pinClass = post.pinned ? "pin-icon active" : "pin-icon";
         pinHTML = `<img src="pin.png" class="${pinClass}" data-id="${id}" title="Pin/Unpin">`;
     }
 
-    // 2. Media Logic
     let mediaHTML = "";
     if (post.image) {
         const url = post.image;
@@ -337,7 +346,6 @@ function addPostToDOM(post) {
         }
     }
 
-    // 3. Time Logic
     const postDate = post.timestamp ? post.timestamp.toDate() : new Date();
     let editedDateObj = null;
     if (post.editedTimestamp) editedDateObj = post.editedTimestamp.toDate();
@@ -365,22 +373,20 @@ function addPostToDOM(post) {
         updateTimeDisplay();
     });
 
-    // 4. Text Processing (Spoilers & Markdown)
     let tempDiv = document.createElement("div");
     tempDiv.textContent = post.text;
     let safeText = tempDiv.innerHTML;
 
     safeText = safeText
-        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') // Bold
-        .replace(/\*(.*?)\*/g, '<i>$1</i>')   // Italic
-        .replace(/\|\|(.*?)\|\|/g, '<span class="spoiler" onclick="this.classList.toggle(\'revealed\')">$1</span>'); // Spoiler
+        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') 
+        .replace(/\*(.*?)\*/g, '<i>$1</i>')   
+        .replace(/\|\|(.*?)\|\|/g, '<span class="spoiler" onclick="this.classList.toggle(\'revealed\')">$1</span>'); 
 
     let processedText = safeText.replace(
         /(https?:\/\/[^\s]+)/g, 
         '<a href="$1" target="_blank">$1</a>'
     );
 
-    // 5. Structure
     postDiv.innerHTML = `
         ${pinHTML}
         <div class="post-content">
@@ -393,21 +399,16 @@ function addPostToDOM(post) {
         <div class="admin-buttons"></div>
     `;
 
-    // Prepend timestamp manually
     postDiv.prepend(timeSpan);
 
-// 6. TRUNCATION LOGIC (Read More)
-    feed.appendChild(postDiv); // Append first to calculate height
+    feed.appendChild(postDiv); 
     const textContainer = postDiv.querySelector('.post-text-container');
     
-    // Check if height exceeds 150px
     if (textContainer.scrollHeight > 150) {
         textContainer.classList.add('truncated');
         
         const expandBtn = document.createElement('div');
         expandBtn.classList.add('expand-btn');
-        
-        // CHANGED: Simple text, no "ENTRY"
         expandBtn.innerText = "[ EXPAND ]";
         
         expandBtn.onclick = () => {
@@ -415,11 +416,9 @@ function addPostToDOM(post) {
             expandBtn.remove();
         };
         
-        // Insert after the text container
         textContainer.parentNode.insertBefore(expandBtn, textContainer.nextSibling);
     }
 
-    // 7. Pin Click Handler
     const pinBtn = postDiv.querySelector('.pin-icon');
     if (pinBtn && isAdmin) {
         pinBtn.addEventListener('click', async () => {
@@ -429,7 +428,6 @@ function addPostToDOM(post) {
         });
     }
 
-    // 8. Admin Buttons
     const btnContainer = postDiv.querySelector('.admin-buttons');
     const editBtn = document.createElement('button');
     editBtn.innerText = "EDIT";
@@ -443,7 +441,6 @@ function addPostToDOM(post) {
     deleteBtn.onclick = () => triggerDelete(id); 
     btnContainer.appendChild(deleteBtn);
     
-    // Lightbox
     const imgElement = postDiv.querySelector('.click-to-zoom');
     if(imgElement) {
         imgElement.addEventListener('click', () => {
@@ -465,7 +462,6 @@ function startEdit(id, text, image) {
     textInput.style.height = (textInput.scrollHeight) + 'px';
 }
 
-// --- 11. LIGHTBOX & BACK TO TOP LOGIC ---
 lightboxClose.addEventListener('click', () => {
     lightboxModal.classList.add('hidden');
 });

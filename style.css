@@ -32,6 +32,11 @@
     text-shadow: none;
 }
 
+/* 1. This ensures the "body" covers the whole screen so you can click the void */
+html, body {
+    height: 100%;
+}
+
 body {
     background-color: black;
     color: white;
@@ -41,9 +46,12 @@ body {
     -webkit-font-smoothing: none;
     padding-bottom: 100px;
     cursor: url('cursor.png'), auto;
-    
-    /* NOISE REMOVED: Back to pure black */
     background-image: none;
+}
+
+/* 2. This tells the browser: "When clicking ANYWHERE, swap the cursor" */
+body:active {
+    cursor: url('cursor-click.png'), auto;
 }
 
 /* SCANLINES: Static (No Animation) */
@@ -55,7 +63,6 @@ body::before {
     left: 0;
     bottom: 0;
     right: 0;
-    /* The Gradients */
     background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
     z-index: 9999;
     background-size: 100% 3px, 3px 100%;
@@ -66,10 +73,7 @@ body::before {
 .container {
     width: 100%;
     max-width: 600px;
-    
-    /* NEW: This forces the blog to the center of the screen */
     margin: 0 auto; 
-    
     padding-left: 20px;
     padding-right: 20px;
     box-sizing: border-box; 
@@ -82,7 +86,7 @@ body::before {
     padding: 15px;
     margin-bottom: 40px;
     background: black;
-    display: none !important;
+    display: none !important; /* Hidden for guests */
 }
 
 textarea, input {
@@ -96,11 +100,24 @@ textarea, input {
     font-family: inherit;
 }
 
+/* Auto-Expanding Input */
+textarea {
+    resize: none; 
+    overflow-y: hidden;
+    min-height: 50px; 
+    transition: height 0.1s ease;
+}
+
 textarea:focus, input:focus {
     outline: none;
     border-color: #fff;
     box-shadow: 0 0 5px white; 
     background-color: #111; 
+}
+
+/* Keeps the text cursor normal when highlighting text */
+textarea:active, input:active {
+    cursor: text; 
 }
 
 /* --- 4. BUTTONS --- */
@@ -120,14 +137,8 @@ button:hover {
 }
 
 /* TERMINAL BRACKETS */
-button:hover::before {
-    content: "[ ";
-    color: black; 
-}
-button:hover::after {
-    content: " ]";
-    color: black;
-}
+button:hover::before { content: "[ "; color: black; }
+button:hover::after { content: " ]"; color: black; }
 
 button:active {
     transform: translateY(2px);
@@ -162,18 +173,21 @@ a:active {
     padding: 20px;
     margin-bottom: 20px;
     background: black;
-    
-    /* CRITICAL FIX: This anchors the pin inside the box */
-    position: relative; 
+    position: relative; /* Anchors the pin */
 }
 
-/* ... keep timestamp/content styles the same ... */
 .timestamp {
     font-size: 0.8em;
     border-bottom: 1px solid white;
     padding-bottom: 5px;
     margin-bottom: 10px;
     display: block;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.2s;
+}
+.timestamp:hover {
+    color: #ccc;
 }
 .edited-timestamp {
     color: #888;
@@ -181,6 +195,7 @@ a:active {
     font-style: italic;
     font-size: 0.9em;
 }
+
 .post-content {
     display: flex;
     align-items: flex-start;
@@ -194,17 +209,37 @@ a:active {
     border: 1px solid white;
     flex-shrink: 0;
 }
+
 .post-content p {
-margin: 0;
+    margin: 0;
     line-height: 1.4;
-    
-    /* Keeps your paragraph breaks */
     white-space: pre-wrap; 
-    
-    /* THE FIX: Forces long strings (like URLs or gibberish) to break */
-    word-break: break-word;
+    word-break: break-word; /* Fixes long unbroken strings */
     overflow-wrap: break-word;
 }
+
+/* Text Formatting */
+.post-text b, .post-text strong {
+    color: #fff;
+    font-weight: bold;
+    text-shadow: 0 0 2px white;
+}
+.post-text i, .post-text em {
+    font-style: italic;
+    color: #ccc;
+}
+.post-text a {
+    color: #fff;
+    text-decoration: underline;
+    font-weight: bold;
+}
+.post-text a:hover {
+    background: white;
+    color: black;
+    text-decoration: none;
+}
+
+/* Media */
 .post-media, .post-image {
     display: block;
     max-width: 100%;
@@ -217,9 +252,22 @@ audio.post-media {
     border-radius: 0;
     filter: invert(1);
 }
+.media-embed {
+    width: 100%;
+    border: 2px solid white;
+    margin-top: 10px;
+    display: block;
+}
+iframe.media-embed {
+    aspect-ratio: 16 / 9;
+    height: auto;
+}
+iframe[src*="spotify"] {
+    aspect-ratio: auto;
+    height: 152px;
+}
 
 /* --- 6. ADMIN UI & ANIMATIONS --- */
-
 @keyframes blink {
     0%, 100% { opacity: 1; }
     50% { opacity: 0; }
@@ -237,8 +285,6 @@ audio.post-media {
     padding: 10px;
     z-index: 100;
 }
-
-/* BLINKING CURSOR */
 #view-count::after {
     content: " █";
     animation: blink 1s step-end infinite;
@@ -271,6 +317,7 @@ audio.post-media {
     padding: 2px 5px;
 }
 
+/* Admin Button Visibility Logic */
 .admin-buttons {
     display: none !important; 
     margin-top: 10px;
@@ -278,6 +325,8 @@ audio.post-media {
     padding-top: 10px;
     text-align: right;
 }
+body.admin-mode .input-area { display: block !important; }
+body.admin-mode .admin-buttons { display: block !important; }
 
 .admin-buttons button {
     width: auto !important;
@@ -288,14 +337,10 @@ audio.post-media {
     font-size: 0.8em;
     margin-left: 10px;
 }
-
 .admin-buttons button:hover {
     background: white !important;
     color: black !important;
 }
-
-body.admin-mode .input-area { display: block !important; }
-body.admin-mode .admin-buttons { display: block !important; }
 
 #login-error {
     display: none;
@@ -314,13 +359,11 @@ body.admin-mode .admin-buttons { display: block !important; }
     align-items: center;
     gap: 5px;
 }
-
 .login-status {
     color: rgb(251, 255, 0); 
     font-size: 0.8em; 
     margin-bottom: 5px;
 }
-
 #logoutBtn {
     width: auto !important;
     background: white;
@@ -332,42 +375,33 @@ body.admin-mode .admin-buttons { display: block !important; }
     cursor: pointer;
     font-weight: bold;
 }
-
 #logoutBtn:hover {
     background: red;
     color: white;
 }
 #logoutBtn:hover::before, #logoutBtn:hover::after {
-    content: ""; /* No brackets for logout */
+    content: "";
 }
 
-/* --- 7. NEW UI FEATURES --- */
+/* --- 7. UI FEATURES (Search, Back to Top, Modals) --- */
 
-/* A. Back to Top Arrow - FIXED POSITION */
+/* Back to Top Arrow */
 #back-to-top {
     position: fixed;
     bottom: 20px;
-    
-    /* CALCULATION: Center (50%) + Half Column (300px) + Gap (10px) */
-    /* This puts it exactly 10px to the right of your post border */
     left: calc(50% + 310px); 
     right: auto; 
-    
     width: 50px; 
     height: 50px;
     cursor: pointer;
     z-index: 10001; 
-    
     opacity: 1; 
     image-rendering: pixelated;
     transition: transform 0.2s ease;
 }
-
 #back-to-top:hover {
     transform: translateY(-5px); 
 }
-
-/* Mobile Fallback: Puts it in the corner on small screens */
 @media (max-width: 750px) {
     #back-to-top {
         left: auto;
@@ -376,19 +410,25 @@ body.admin-mode .admin-buttons { display: block !important; }
     }
 }
 
-/* B. Links in Posts */
-.post-text a {
-    color: #fff;
-    text-decoration: underline;
-    font-weight: bold;
+/* Search Bar */
+#searchBar {
+    width: 100%;
+    background: black;
+    color: white;
+    border: none;
+    border-bottom: 2px dashed #444; 
+    padding: 10px;
+    margin-bottom: 30px; 
+    font-family: 'Determination', sans-serif;
+    font-size: 1.1em;
+    outline: none;
+    transition: border-color 0.2s;
 }
-.post-text a:hover {
-    background: white;
-    color: black;
-    text-decoration: none;
+#searchBar:focus {
+    border-bottom: 2px solid white; 
 }
 
-/* C. Universal Modal Overlay */
+/* Modals */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -402,8 +442,6 @@ body.admin-mode .admin-buttons { display: block !important; }
     align-items: center;
     backdrop-filter: blur(2px);
 }
-
-/* D. The "Are You Sure" Box */
 .modal-box {
     background: black;
     border: 2px solid white; 
@@ -412,25 +450,20 @@ body.admin-mode .admin-buttons { display: block !important; }
     min-width: 300px;
     box-shadow: none; 
 }
-
 .modal-box p {
     font-size: 1.2em;
-    font-weight: normal; /* Crisp text (Un-bolded) */
-    
+    font-weight: normal; 
     margin-top: 0;
-    margin-bottom: 20px; /* Spaced out */
-    
+    margin-bottom: 20px; 
     text-transform: uppercase;
     letter-spacing: 2px;
 }
-
 .modal-buttons {
     display: flex;
     gap: 20px;
     justify-content: center; 
     margin-top: 10px; 
 }
-
 .modal-buttons button {
     border: 2px solid white;
     background: black;
@@ -438,20 +471,18 @@ body.admin-mode .admin-buttons { display: block !important; }
     font-family: inherit;
     text-transform: uppercase;
 }
-
 .modal-buttons button:hover {
     background: white;
     color: black;
 }
 
-/* E. Lightbox */
+/* Lightbox */
 #lightbox-img {
     max-width: 90%;
     max-height: 90%;
     border: 2px solid white;
     box-shadow: none; 
 }
-
 #lightbox-close {
     position: absolute;
     top: 20px;
@@ -465,97 +496,16 @@ body.admin-mode .admin-buttons { display: block !important; }
     color: red;
 }
 
-/* --- 8. GLOBAL CLICK FIX --- */
-
-/* 1. This ensures the "body" covers the whole screen so you can click the void */
-html, body {
-    height: 100%;
-}
-
-/* 2. This tells the browser: "When clicking ANYWHERE, swap the cursor" */
-body:active {
-    cursor: url('cursor-click.png'), auto;
-}
-
-/* 3. (Optional) Keeps the text cursor normal when highlighting text */
-textarea:active, input:active {
-    cursor: text; 
-}
-
-/* --- 9. QoL UPGRADES --- */
-
-/* A. Clickable Timestamps */
-.timestamp {
-    cursor: pointer; /* Shows the hand icon so they know it clicks */
-    user-select: none; /* Stops you from accidentally highlighting it */
-    transition: color 0.2s;
-}
-.timestamp:hover {
-    color: #ccc; /* Subtle feedback */
-}
-
-/* B. Auto-Expanding Input */
-textarea {
-    resize: none; /* Disables the manual drag handle */
-    overflow-y: hidden; /* Hides the ugly scrollbar */
-    min-height: 50px; /* Starting size */
-    transition: height 0.1s ease;
-}
-
-/* --- 10. SEARCH & MEDIA EMBEDS --- */
-
-/* A. Search Bar */
-#searchBar {
-    width: 100%;
-    background: black;
-    color: white;
-    border: none;
-    border-bottom: 2px dashed #444; /* Dashed line distinguishes it */
-    padding: 10px;
-    margin-bottom: 30px; /* Space between search and posts */
-    font-family: 'Determination', sans-serif;
-    font-size: 1.1em;
-    outline: none;
-    transition: border-color 0.2s;
-}
-
-#searchBar:focus {
-    border-bottom: 2px solid white; /* Solid white when active */
-}
-
-/* B. Media Embeds (YouTube / Spotify) */
-.media-embed {
-    width: 100%;
-    border: 2px solid white;
-    margin-top: 10px;
-    display: block;
-}
-
-/* YouTube Aspect Ratio Fix */
-iframe.media-embed {
-    aspect-ratio: 16 / 9;
-    height: auto; /* Lets the aspect-ratio handle it */
-}
-
-/* Spotify Height Fix */
-iframe[src*="spotify"] {
-    aspect-ratio: auto; /* Spotify needs specific height */
-    height: 152px; /* Standard compact player height */
-}
-
-/* --- 11. TOAST NOTIFICATIONS & FORMATTING --- */
-
-/* A. Toast Container & Animation */
+/* --- 8. TOAST NOTIFICATIONS --- */
 #toast-container {
     position: fixed;
     top: 20px;
     right: 20px;
-    z-index: 10003; /* Above everything */
+    z-index: 10003; 
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
-
 .toast {
     background: black;
     border: 2px solid white;
@@ -564,31 +514,16 @@ iframe[src*="spotify"] {
     font-family: 'Determination', sans-serif;
     min-width: 200px;
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-    
-    /* Animation: Slide In from Right */
     animation: slideIn 0.3s ease-out forwards;
 }
-
 @keyframes slideIn {
     from { transform: translateX(100%); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
 }
 
-/* B. Text Formatting */
-.post-text b, .post-text strong {
-    color: #fff;
-    font-weight: bold;
-    text-shadow: 0 0 2px white; /* Extra pop for bold */
-}
+/* --- 9. NEW CONTENT FEATURES --- */
 
-.post-text i, .post-text em {
-    font-style: italic;
-    color: #ccc;
-}
-
-/* --- 12. NEW CONTENT FEATURES --- */
-
-/* A. Formatting Toolbar */
+/* Formatting Toolbar */
 .formatting-bar {
     display: flex;
     gap: 5px;
@@ -607,12 +542,13 @@ iframe[src*="spotify"] {
     background: white;
     color: black;
 }
+/* No Brackets for small toolbar buttons */
 .formatting-bar button:hover::before,
 .formatting-bar button:hover::after {
     content: none; 
 }
 
-/* B. Redacted Text (Spoiler) */
+/* Spoiler Text */
 .spoiler {
     background: white;
     color: white; 
@@ -626,7 +562,7 @@ iframe[src*="spotify"] {
     text-decoration: none;
 }
 
-/* C. Read More / Truncation */
+/* Read More / Truncation */
 .post-text-container {
     position: relative;
 }
@@ -648,8 +584,6 @@ iframe[src*="spotify"] {
     cursor: pointer;
     font-weight: bold;
     border: none;
-    
-    /* THE FIX: Forces [ EXPAND ] to stay on one line */
     white-space: nowrap;
 }
 .expand-btn:hover {
@@ -657,34 +591,27 @@ iframe[src*="spotify"] {
     background: transparent;
 }
 
-/* D. Pinned Post Icon - FIXED */
+/* Pinned Post Icon */
 .pin-icon {
     position: absolute;
-    /* This puts it 10px from the top/right of THE POST, not the screen */
     top: 10px;
     right: 10px;
-    
     width: 16px;
     height: 16px;
     image-rendering: pixelated;
     cursor: pointer;
-    
-    /* Default state: Dim */
     opacity: 0.3; 
     z-index: 10;
 }
-
 .pin-icon.active {
-    opacity: 1; /* Bright white when pinned */
-    /* REMOVED: filter: drop-shadow(0 0 4px white); */
+    opacity: 1; 
     filter: none;
 }
-
 .pin-icon:hover {
     opacity: 1;
 }
 
-/* GUEST LOGIC */
+/* Guest Logic for Pins */
 body:not(.admin-mode) .pin-icon:not(.active) {
     display: none !important;
 }
