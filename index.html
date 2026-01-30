@@ -12,13 +12,15 @@
     <div class="container">
         <div class="input-area">
             <textarea id="postText" placeholder="Write something..."></textarea>
-            <input type="text" id="imageUrl" placeholder="Media URL (optional)...">
+            <input type="text" id="imageUrl" placeholder="Media URL (YouTube, Spotify, Image)...">
             
             <div class="button-row">
                 <button id="postBtn">POST</button>
                 <button id="cancelBtn" class="hidden">CANCEL</button>
             </div>
         </div>
+
+        <input type="text" id="searchBar" placeholder="> Search entries..." autocomplete="off">
 
         <div id="feed"></div>
     </div>
@@ -41,15 +43,15 @@
         </div>
     </div>
 
-<div id="confirm-modal" class="modal-overlay hidden">
-    <div class="modal-box">
-        <p>YOU SURE?</p>
-        <div class="modal-buttons">
-            <button id="confirmYes">YUP</button>
-            <button id="confirmNo">NAH</button>
+    <div id="confirm-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <p>YOU SURE?</p>
+            <div class="modal-buttons">
+                <button id="confirmYes">YUP</button>
+                <button id="confirmNo">NAH</button>
+            </div>
         </div>
     </div>
-</div>
 
     <div id="lightbox-modal" class="modal-overlay hidden">
         <span id="lightbox-close">[ X ]</span>

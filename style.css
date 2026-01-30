@@ -496,3 +496,44 @@ textarea {
     min-height: 50px; /* Starting size */
     transition: height 0.1s ease;
 }
+
+/* --- 10. SEARCH & MEDIA EMBEDS --- */
+
+/* A. Search Bar */
+#searchBar {
+    width: 100%;
+    background: black;
+    color: white;
+    border: none;
+    border-bottom: 2px dashed #444; /* Dashed line distinguishes it */
+    padding: 10px;
+    margin-bottom: 30px; /* Space between search and posts */
+    font-family: 'Determination', sans-serif;
+    font-size: 1.1em;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+#searchBar:focus {
+    border-bottom: 2px solid white; /* Solid white when active */
+}
+
+/* B. Media Embeds (YouTube / Spotify) */
+.media-embed {
+    width: 100%;
+    border: 2px solid white;
+    margin-top: 10px;
+    display: block;
+}
+
+/* YouTube Aspect Ratio Fix */
+iframe.media-embed {
+    aspect-ratio: 16 / 9;
+    height: auto; /* Lets the aspect-ratio handle it */
+}
+
+/* Spotify Height Fix */
+iframe[src*="spotify"] {
+    aspect-ratio: auto; /* Spotify needs specific height */
+    height: 152px; /* Standard compact player height */
+}

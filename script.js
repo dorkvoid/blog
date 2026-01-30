@@ -25,8 +25,9 @@ const textInput = document.getElementById('postText');
 const imageInput = document.getElementById('imageUrl');
 const passwordInput = document.getElementById('adminPassword');
 const counterElement = document.getElementById('view-count');
+const searchInput = document.getElementById('searchBar');
 
-// UI Elements (Modal, Lightbox, Arrow)
+// UI Elements
 const confirmModal = document.getElementById('confirm-modal');
 const confirmYes = document.getElementById('confirmYes');
 const confirmNo = document.getElementById('confirmNo');
@@ -95,22 +96,23 @@ onSnapshot(q, (snapshot) => {
     snapshot.forEach((doc) => {
         addPostToDOM(doc.data(), doc.id);
     });
+    // Re-run search filter if text exists in bar (handles live updates)
+    if(searchInput.value) filterPosts(searchInput.value);
 });
 
 // --- 7. POST LOGIC ---
 let editingPostId = null; 
 
-// A. NEW: Auto-Expand Input Box
 textInput.addEventListener('input', function() {
-    this.style.height = 'auto'; // Reset height to recalculate
-    this.style.height = (this.scrollHeight) + 'px'; // Set to new content height
+    this.style.height = 'auto'; 
+    this.style.height = (this.scrollHeight) + 'px';
 });
 
-// B. NEW: Power Send (Ctrl + Enter)
+// Power Send (Ctrl + Enter)
 textInput.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-        e.preventDefault(); // Stop a new line from being added
-        postBtn.click(); // Trigger the send
+        e.preventDefault(); 
+        postBtn.click();
     }
 });
 
@@ -129,8 +131,8 @@ postBtn.addEventListener('click', async function() {
             await updateDoc(doc(db, "posts", editingPostId), { 
                 text: text, 
                 image: img,
-                editedTimestamp: serverTimestamp(), // Saving real object for math
-                editedDate: new Date().toLocaleString() // Saving string for legacy display
+                editedTimestamp: serverTimestamp(),
+                editedDate: new Date().toLocaleString()
             });
             resetForm();
         } else {
@@ -158,7 +160,7 @@ if (cancelBtn) {
 function resetForm() {
     textInput.value = ''; 
     imageInput.value = '';
-    textInput.style.height = 'auto'; // Reset height
+    textInput.style.height = 'auto'; 
     editingPostId = null;
     postBtn.innerText = "POST";
     if(cancelBtn) cancelBtn.classList.add('hidden');
@@ -185,9 +187,8 @@ confirmNo.addEventListener('click', () => {
     confirmModal.classList.add('hidden');
 });
 
-// --- 9. DISPLAY FUNCTION (Relative Time + Toggle) ---
+// --- 9. DISPLAY FUNCTION (Media Embeds + Search) ---
 
-// Helper: Calculate "Ago"
 function timeAgo(date) {
     if (!date) return "";
     const seconds = Math.floor((new Date() - date) / 1000);
@@ -205,52 +206,77 @@ function timeAgo(date) {
     return "Just now";
 }
 
+// A. NEW: Search Filter Logic
+searchInput.addEventListener('input', (e) => {
+    filterPosts(e.target.value);
+});
+
+function filterPosts(searchTerm) {
+    const term = searchTerm.toLowerCase();
+    const posts = document.querySelectorAll('.post');
+    
+    posts.forEach(post => {
+        const text = post.innerText.toLowerCase();
+        if (text.includes(term)) {
+            post.style.display = "block";
+        } else {
+            post.style.display = "none";
+        }
+    });
+}
+
 function addPostToDOM(post, id) {
     const postDiv = document.createElement('div');
     postDiv.classList.add('post');
 
-    // 1. Media Logic
+    // B. NEW: Media Embed Logic
     let mediaHTML = "";
     if (post.image) {
-        const isVideo = post.image.match(/\.(mp4|webm|ogg|mov)/i);
-        const isAudio = post.image.match(/\.(mp3|wav)/i);
-        if (isVideo) mediaHTML = `<video src="${post.image}" controls loop playsinline class="post-media"></video>`;
-        else if (isAudio) mediaHTML = `<audio src="${post.image}" controls class="post-media"></audio>`;
-        else mediaHTML = `<img src="${post.image}" class="post-image click-to-zoom">`;
+        const url = post.image;
+        
+        // 1. YouTube Detection
+        // Matches standard links and short links (youtu.be)
+        const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+        
+        // 2. Spotify Detection
+        const spMatch = url.match(/open\.spotify\.com\/(track|album|playlist)\/([a-zA-Z0-9]+)/);
+        
+        if (ytMatch) {
+            // YouTube Embed
+            mediaHTML = `<iframe class="media-embed" src="https://www.youtube.com/embed/${ytMatch[1]}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+        } else if (spMatch) {
+            // Spotify Embed
+            mediaHTML = `<iframe class="media-embed" src="https://open.spotify.com/embed/${spMatch[1]}/${spMatch[2]}" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>`;
+        } else {
+            // Standard File Detection
+            const isVideo = url.match(/\.(mp4|webm|ogg|mov)/i);
+            const isAudio = url.match(/\.(mp3|wav)/i);
+            
+            if (isVideo) mediaHTML = `<video src="${url}" controls loop playsinline class="post-media"></video>`;
+            else if (isAudio) mediaHTML = `<audio src="${url}" controls class="post-media"></audio>`;
+            else mediaHTML = `<img src="${url}" class="post-image click-to-zoom">`;
+        }
     }
 
-    // 2. Relative Time Logic
-    // Convert Firestore Timestamp to JS Date
+    // Relative Time Logic
     const postDate = post.timestamp ? post.timestamp.toDate() : new Date();
-    
-    // Check if edited
     let editedDateObj = null;
-    if (post.editedTimestamp) {
-        editedDateObj = post.editedTimestamp.toDate();
-    } else if (post.editedDate) {
-        // Fallback for old edits that only have a string
-        editedDateObj = new Date(post.editedDate);
-    }
+    if (post.editedTimestamp) editedDateObj = post.editedTimestamp.toDate();
+    else if (post.editedDate) editedDateObj = new Date(post.editedDate);
 
-    // Create the Timestamp Span
     const timeSpan = document.createElement('span');
     timeSpan.classList.add('timestamp');
-    timeSpan.title = "Click to toggle exact time"; // Hover tooltip
+    timeSpan.title = "Click to toggle exact time"; 
     
-    // State to track toggle (Default: Relative)
     let showExact = false;
-
-    // Function to update the text based on state
     function updateTimeDisplay() {
         if (showExact) {
-            // SHOW EXACT: "1/29/2026... (edited 1/29/2026...)"
             let display = postDate.toLocaleString();
             if (editedDateObj && !isNaN(editedDateObj)) {
                 display += ` <span class="edited-timestamp">(edited ${editedDateObj.toLocaleString()})</span>`;
             }
             timeSpan.innerHTML = display;
         } else {
-            // SHOW RELATIVE: "5 mins ago (edited just now)"
             let display = timeAgo(postDate);
             if (editedDateObj && !isNaN(editedDateObj)) {
                 display += ` <span class="edited-timestamp">(edited ${timeAgo(editedDateObj)})</span>`;
@@ -258,24 +284,17 @@ function addPostToDOM(post, id) {
             timeSpan.innerHTML = display;
         }
     }
-
-    // Initial Render
     updateTimeDisplay();
-
-    // Click Listener to Toggle
     timeSpan.addEventListener('click', () => {
         showExact = !showExact;
         updateTimeDisplay();
     });
 
-    // 3. Auto-Linker
     let processedText = post.text.replace(
         /(https?:\/\/[^\s]+)/g, 
         '<a href="$1" target="_blank">$1</a>'
     );
 
-    // 4. Assemble HTML
-    // We append timeSpan manually so the event listener persists
     const contentWrapper = document.createElement('div');
     contentWrapper.innerHTML = `
         <div class="post-content">
@@ -286,11 +305,9 @@ function addPostToDOM(post, id) {
         <div class="admin-buttons"></div>
     `;
 
-    // Prepend the timestamp
     postDiv.appendChild(timeSpan);
     postDiv.appendChild(contentWrapper);
 
-    // 5. Admin Buttons
     const btnContainer = postDiv.querySelector('.admin-buttons');
     const editBtn = document.createElement('button');
     editBtn.innerText = "EDIT";
@@ -306,7 +323,6 @@ function addPostToDOM(post, id) {
 
     feed.appendChild(postDiv);
     
-    // 6. Lightbox Listener
     const imgElement = postDiv.querySelector('.click-to-zoom');
     if(imgElement) {
         imgElement.addEventListener('click', () => {
@@ -324,8 +340,6 @@ function startEdit(id, text, image) {
     if(cancelBtn) cancelBtn.classList.remove('hidden');
     window.scrollTo(0, 0);
     textInput.focus();
-    
-    // Trigger auto-expand immediately so it fits the text being edited
     textInput.style.height = 'auto';
     textInput.style.height = (textInput.scrollHeight) + 'px';
 }
