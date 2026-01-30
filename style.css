@@ -1,7 +1,33 @@
-/* Reset basic settings */
+/* --- 1. GLOBAL & SCROLLBAR --- */
 @font-face {
     font-family: 'Determination';
     src: url('DeterminationMonoWebRegular-Z5oq.ttf');
+}
+
+/* Custom "Void" Scrollbar */
+::-webkit-scrollbar {
+    width: 12px;
+}
+::-webkit-scrollbar-track {
+    background: black; 
+    border-left: 1px solid #333;
+}
+::-webkit-scrollbar-thumb {
+    background: white; 
+    border: 2px solid black;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #ccc; 
+}
+
+/* "Terminal" Text Selection */
+::selection {
+    background: white;
+    color: black;
+}
+::-moz-selection {
+    background: white;
+    color: black;
 }
 
 body {
@@ -15,20 +41,17 @@ body {
     cursor: url('cursor.png'), auto;
 }
 
-body:active {
-    cursor: url('cursor-click.png'), auto;
-}
-
-button:active, a:active {
-    cursor: url('cursor-click.png'), auto;
-}
-
+/* --- 2. LAYOUT & CONTAINER --- */
 .container {
     width: 100%;
     max-width: 600px;
+    /* Mobile Fix: Adds breathing room on phones */
+    padding-left: 20px;
+    padding-right: 20px;
+    box-sizing: border-box; 
 }
 
-/* Input Section Styling */
+/* --- 3. INPUTS & TEXT --- */
 .input-area {
     border: 2px solid white;
     padding: 15px;
@@ -48,7 +71,15 @@ textarea, input {
     font-family: inherit;
 }
 
-/* Global Button Style */
+/* The "Focus Glow" - Lets you know you are typing */
+textarea:focus, input:focus {
+    outline: none;
+    border-color: #fff;
+    box-shadow: 0 0 5px white; 
+    background-color: #111; 
+}
+
+/* --- 4. BUTTONS --- */
 button {
     background: white;
     color: black;
@@ -56,20 +87,31 @@ button {
     padding: 10px 20px;
     font-weight: bold;
     cursor: pointer;
-    width: 100%; /* This is what was making your Logout button huge! */
+    width: 100%;
+    transition: transform 0.05s ease; /* smooth movement */
 }
 
 button:hover {
     background: #ccc;
 }
 
-/* NEW: Button Row for Post/Cancel */
+/* The "Mechanical" Click Effect */
+button:active {
+    transform: translateY(2px);
+    box-shadow: inset 0px 3px 5px rgba(0,0,0,0.2);
+    cursor: url('cursor-click.png'), auto; /* Keeps your custom cursor */
+}
+
+/* Cursor override for links */
+a:active {
+    cursor: url('cursor-click.png'), auto;
+}
+
 .button-row {
     display: flex;
     gap: 10px;
 }
 
-/* NEW: Cancel Button Style */
 #cancelBtn {
     background: #333;
     color: white;
@@ -79,7 +121,7 @@ button:hover {
     background: #555;
 }
 
-/* The Post Styling */
+/* --- 5. POSTS --- */
 .post {
     border: 2px solid white;
     padding: 20px;
@@ -95,7 +137,6 @@ button:hover {
     display: block;
 }
 
-/* NEW: The Grey "Edited" Text */
 .edited-timestamp {
     color: #888;
     margin-left: 8px;
@@ -103,27 +144,6 @@ button:hover {
     font-size: 0.9em;
 }
 
-.post-image, video {
-    max-width: 100%;
-    border: 1px solid white;
-    margin-top: 10px;
-    display: block;
-}
-
-#view-count {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    color: white;
-    font-family: inherit;
-    font-size: 0.8em;
-    background: black;
-    border: 1px solid white;
-    padding: 10px;
-    z-index: 100;
-}
-
-/* --- AVATAR / ICON STYLES --- */
 .post-content {
     display: flex;
     align-items: flex-start;
@@ -142,17 +162,16 @@ button:hover {
 .post-content p {
     margin: 0;
     line-height: 1.4;
-    white-space: pre-wrap;
+    white-space: pre-wrap; /* Keeps your paragraph breaks! */
 }
 
-/* --- UNIVERSAL MEDIA STYLES --- */
+/* Media */
 .post-media, .post-image {
     display: block;
     max-width: 100%;
     margin-top: 10px;
     border: 1px solid white;
 }
-
 audio.post-media {
     width: 100%;
     height: 40px;
@@ -160,7 +179,19 @@ audio.post-media {
     filter: invert(1);
 }
 
-/* --- ADMIN STYLES --- */
+/* --- 6. ADMIN UI --- */
+#view-count {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    color: white;
+    font-family: inherit;
+    font-size: 0.8em;
+    background: black;
+    border: 1px solid white;
+    padding: 10px;
+    z-index: 100;
+}
 
 .hidden {
     display: none !important;
@@ -188,7 +219,6 @@ audio.post-media {
     padding: 2px 5px;
 }
 
-/* Buttons */
 .admin-buttons {
     display: none !important; 
     margin-top: 10px;
@@ -203,8 +233,6 @@ audio.post-media {
     color: white !important;
     border: 1px solid white !important;
     padding: 5px 10px !important;
-    cursor: pointer;
-    font-family: inherit; 
     font-size: 0.8em;
     margin-left: 10px;
 }
@@ -214,16 +242,11 @@ audio.post-media {
     color: black !important;
 }
 
-/* --- THE MAGIC SWITCH --- */
-body.admin-mode .input-area {
-    display: block !important;
-}
-body.admin-mode .admin-buttons {
-    display: block !important;
-}
+/* Magic Switches */
+body.admin-mode .input-area { display: block !important; }
+body.admin-mode .admin-buttons { display: block !important; }
 
-/* --- NEW LOGIN UI --- */
-
+/* Login Errors & Logout */
 #login-error {
     display: none;
     color: red;
@@ -235,7 +258,6 @@ body.admin-mode .admin-buttons {
     text-align: right;
 }
 
-/* FIXED LOGOUT MENU STYLING */
 #admin-menu {
     display: flex;
     flex-direction: column;
@@ -250,7 +272,7 @@ body.admin-mode .admin-buttons {
 }
 
 #logoutBtn {
-    width: auto !important; /* Forces it to shrink to fit text */
+    width: auto !important;
     background: white;
     color: black;
     border: none;
