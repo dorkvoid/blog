@@ -47,7 +47,7 @@ const lightboxImg = document.getElementById('lightbox-img');
 const lightboxClose = document.getElementById('lightbox-close');
 const backToTopBtn = document.getElementById('back-to-top');
 
-// --- 3.5 AUDIO SYSTEM (REFINED) ---
+// --- 3.5 AUDIO SYSTEM (POLISHED) ---
 const sounds = {
     click: new Audio('sounds/buttonclick.mp3'),
     hum: new Audio('sounds/backgroundhum.mp3'),
@@ -68,7 +68,8 @@ const sounds = {
 // Config
 sounds.hum.loop = true;
 sounds.hum.volume = 0.1; 
-sounds.confirm.volume = 0.2; // FIX: Lowered volume
+sounds.confirm.volume = 0.2; 
+sounds.hover.volume = 0.2; // FIX: Lowered hover volume
 
 // 1. Strict localStorage check
 let isMuted = localStorage.getItem('siteMuted') !== 'false'; 
@@ -79,29 +80,34 @@ function updateSoundUI() {
         sounds.hum.pause();
     } else {
         soundIcon.src = 'sound-on.png';
-        // Try to play immediately
         sounds.hum.play().catch(() => {}); 
     }
 }
 updateSoundUI();
 
-// 2. AGGRESSIVE UNLOCKER (Fix for refresh silence)
-// We listen for ANY interaction (Mouse move, scroll, key) to force audio to start
+// 2. ROBUST UNLOCKER (Fix for Persistence)
+// We try to play the hum on every user interaction until it succeeds.
 const unlockAudio = () => {
     if (!isMuted && sounds.hum.paused) {
         sounds.hum.play().then(() => {
-            // Cleanup listeners once audio is running
-            ['mousemove', 'touchstart', 'keydown', 'wheel', 'click'].forEach(evt => 
-                window.removeEventListener(evt, unlockAudio)
-            );
-        }).catch(e => {});
+            // Only remove listeners if playback actually STARTED
+            document.removeEventListener('click', unlockAudio);
+            document.removeEventListener('keydown', unlockAudio);
+            document.removeEventListener('mousemove', unlockAudio);
+            document.removeEventListener('touchstart', unlockAudio);
+            document.removeEventListener('wheel', unlockAudio);
+        }).catch(e => {
+            // If it failed (still blocked), we keep the listeners active to try again
+        });
     }
 };
 
-// Attach aggressive listeners
-['mousemove', 'touchstart', 'keydown', 'wheel', 'click'].forEach(evt => 
-    window.addEventListener(evt, unlockAudio)
-);
+// Attach to document to catch EVERYTHING
+document.addEventListener('click', unlockAudio);
+document.addEventListener('keydown', unlockAudio);
+document.addEventListener('mousemove', unlockAudio);
+document.addEventListener('touchstart', unlockAudio);
+document.addEventListener('wheel', unlockAudio);
 
 // 3. Toggle Logic
 soundToggle.addEventListener('click', (e) => {
@@ -128,7 +134,8 @@ function playSound(name) {
     } else if (sounds[name]) {
         const audio = sounds[name].cloneNode();
         if (name === 'hum') audio.volume = 0.1;
-        else if (name === 'confirm') audio.volume = 0.2; // Ensure volume stays low on clone
+        else if (name === 'confirm') audio.volume = 0.2;
+        else if (name === 'hover') audio.volume = 0.2; // Ensure clone uses low volume
         else audio.volume = 1.0;
 
         audio.play().catch(() => {});
@@ -137,9 +144,15 @@ function playSound(name) {
 
 // Attach Hover Sounds
 document.querySelectorAll('button').forEach(btn => {
-    btn.addEventListener('mouseenter', () => playSound('hover'));
+    // FIX: Ignore formatting buttons for HOVER sound
+    btn.addEventListener('mouseenter', () => {
+        if (btn.id !== 'fmtBold' && btn.id !== 'fmtItalic' && btn.id !== 'fmtSpoiler') {
+            playSound('hover');
+        }
+    });
+
     btn.addEventListener('click', () => {
-        // Formatting buttons are silent on click now
+        // Formatting buttons are silent on CLICK too (as requested previously)
         if (btn.id !== 'fmtBold' && btn.id !== 'fmtItalic' && btn.id !== 'fmtSpoiler') {
             playSound('click');
         }
@@ -190,7 +203,7 @@ if (passwordInput) {
             try {
                 await signInWithEmailAndPassword(auth, "kickside02@gmail.com", e.target.value);
                 showToast("ACCESS GRANTED");
-                // FIX: No success sound here
+                // Silent success on login
             } catch (error) {
                 playSound('error');
                 if(errorMsg) {
@@ -214,16 +227,14 @@ if (logoutBtn) {
 // --- 6. COMMAND & SEARCH LOGIC ---
 let isFeedHidden = false; 
 
-// Shared Typing Logic (Fix for Spam)
 function handleTypingSound(e) {
-    if (e.repeat) return; // FIX: Prevents machine-gun sound when holding key
-    // Optional: Only play for actual characters if desired, but any keydown is fine for effect
+    if (e.repeat) return; 
     playSound('type');
 }
 
 searchInput.addEventListener('keydown', handleTypingSound);
 textInput.addEventListener('keydown', handleTypingSound);
-imageInput.addEventListener('keydown', handleTypingSound); // FIX: Media bar now has sound
+imageInput.addEventListener('keydown', handleTypingSound); 
 
 searchInput.addEventListener('input', (e) => {
     const val = e.target.value;
@@ -297,7 +308,6 @@ function reloadFeed() {
 let editingPostId = null; 
 
 function insertTag(tagStart, tagEnd) {
-    // FIX: Removed playSound('click') here
     const start = textInput.selectionStart;
     const end = textInput.selectionEnd;
     const text = textInput.value;
@@ -317,7 +327,6 @@ fmtItalic.onclick = () => insertTag("*", "*");
 fmtSpoiler.onclick = () => insertTag("||", "||");
 
 textInput.addEventListener('input', function() {
-    // Note: Typing sound moved to 'keydown' handler above
     this.style.height = 'auto'; 
     this.style.height = (this.scrollHeight) + 'px';
     if (!editingPostId) { 
@@ -335,7 +344,6 @@ function restoreDraft() {
 }
 
 textInput.addEventListener('keydown', (e) => {
-    // Handle Ctrl+Enter
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault(); 
         postBtn.click();
@@ -548,7 +556,6 @@ function addPostToDOM(post) {
     feed.appendChild(postDiv); 
     const textContainer = postDiv.querySelector('.post-text-container');
     
-    // TRUNCATION / COLLAPSE LOGIC
     if (textContainer.scrollHeight > 150) {
         textContainer.classList.add('truncated');
         
@@ -558,7 +565,6 @@ function addPostToDOM(post) {
         
         expandBtn.onclick = () => {
             playSound('click');
-            // FIX: Toggle between Expand and Collapse
             const isNowTruncated = textContainer.classList.toggle('truncated');
             expandBtn.innerText = isNowTruncated ? "[ EXPAND ]" : "[ COLLAPSE ]";
         };
@@ -632,14 +638,13 @@ lightboxClose.addEventListener('click', () => {
     lightboxModal.classList.add('hidden');
 });
 lightboxModal.addEventListener('click', (e) => {
+    // FIX: Only close if clicking the background overlay, NOT the image itself
     if (e.target === lightboxModal) {
         playSound('click');
         lightboxModal.classList.add('hidden');
     }
 });
-lightboxImg.addEventListener('click', () => {
-    lightboxModal.classList.add('hidden');
-});
+// (Removed the listener on lightboxImg so clicking the image does nothing)
 
 window.addEventListener('scroll', () => {
     if (window.scrollY > 300) {
