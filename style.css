@@ -21,7 +21,6 @@
 }
 
 /* FIX: "Terminal" Text Selection */
-/* This needs to be defined separately for some browsers */
 ::selection {
     background: white;
     color: black;
@@ -43,12 +42,12 @@ body {
     padding-bottom: 100px;
     cursor: url('cursor.png'), auto;
 
-    /* STATIC NOISE: Adjusted to be more pixelated (baseFrequency) and less visible (opacity) */
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+    /* STATIC NOISE: Increased frequency (0.65 -> 1.5) to make grains tiny/fine */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
     background-attachment: fixed;
 }
 
-/* SCANLINES: Made more visible */
+/* SCANLINES: Moved to top layer (z-index 9999) and softened */
 body::before {
     content: " ";
     display: block;
@@ -57,11 +56,11 @@ body::before {
     left: 0;
     bottom: 0;
     right: 0;
-    /* Darker lines for visibility */
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.4) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-    z-index: 999;
-    background-size: 100% 3px, 3px 100%; /* Slightly thicker lines */
-    pointer-events: none; 
+    /* Much softer gradients */
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+    z-index: 9999; /* Sits on top of EVERYTHING now */
+    background-size: 100% 3px, 3px 100%;
+    pointer-events: none; /* Crucial: lets you click through the overlay */
 }
 
 /* --- 2. LAYOUT & CONTAINER --- */
@@ -72,7 +71,7 @@ body::before {
     padding-right: 20px;
     box-sizing: border-box; 
     position: relative;
-    z-index: 1000; /* Ensures content sits ABOVE the scanlines */
+    /* Removed z-index so it sits under the scanlines */
 }
 
 /* --- 3. INPUTS & TEXT --- */
