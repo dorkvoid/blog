@@ -476,3 +476,23 @@ body:active {
 textarea:active, input:active {
     cursor: text; 
 }
+
+/* --- 9. QoL UPGRADES --- */
+
+/* A. Clickable Timestamps */
+.timestamp {
+    cursor: pointer; /* Shows the hand icon so they know it clicks */
+    user-select: none; /* Stops you from accidentally highlighting it */
+    transition: color 0.2s;
+}
+.timestamp:hover {
+    color: #ccc; /* Subtle feedback */
+}
+
+/* B. Auto-Expanding Input */
+textarea {
+    resize: none; /* Disables the manual drag handle */
+    overflow-y: hidden; /* Hides the ugly scrollbar */
+    min-height: 50px; /* Starting size */
+    transition: height 0.1s ease;
+}
