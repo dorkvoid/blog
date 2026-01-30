@@ -108,23 +108,37 @@ if (logoutBtn) {
     });
 }
 
-// --- 6. COMMAND & SEARCH LOGIC ---
+// --- 6. COMMAND & SEARCH LOGIC (UPDATED) ---
 searchInput.addEventListener('input', (e) => {
     const val = e.target.value;
     
     // Command Mode
     if (val.startsWith('/')) {
         if (val === '/login') {
-            // Reveal Admin Bar
-            adminLoginBar.classList.remove('hidden');
-            passwordInput.focus();
-            showToast("LOGIN TERMINAL OPEN");
+            // TOGGLE: If hidden, show. If shown, hide.
+            if (adminLoginBar.classList.contains('hidden')) {
+                adminLoginBar.classList.remove('hidden');
+                passwordInput.focus();
+                showToast("LOGIN TERMINAL OPEN");
+            } else {
+                adminLoginBar.classList.add('hidden');
+                showToast("LOGIN TERMINAL CLOSED");
+            }
             searchInput.value = ''; 
+            
         } else if (val === '/help') {
             showToast("CMDS: /login, /clear");
             searchInput.value = '';
+            
         } else if (val === '/clear') {
-            feed.innerHTML = ''; 
+            // TOGGLE: If empty, reload. If full, clear.
+            if (feed.innerHTML === "") {
+                reloadFeed(); // The 'undo'
+                showToast("FEED RESTORED");
+            } else {
+                feed.innerHTML = ''; // The 'do'
+                showToast("FEED CLEARED");
+            }
             searchInput.value = '';
         }
         return; 
