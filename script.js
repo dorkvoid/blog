@@ -71,63 +71,39 @@ sounds.hum.loop = true;
 sounds.hum.volume = 0.1; 
 sounds.confirm.volume = 0.4;
 
-// THE FIX: Strict localStorage check
-// If 'siteMuted' is exactly the string 'false', we unmute. Otherwise (first visit/true), stay muted.
+// 1. Strict localStorage check
 let isMuted = localStorage.getItem('siteMuted') !== 'false'; 
 
-// Update UI and start/stop hum based on initial state
+// 2. Immediate UI Update
 function updateSoundUI() {
     if (isMuted) {
         soundIcon.src = 'sound-off.png';
         sounds.hum.pause();
     } else {
         soundIcon.src = 'sound-on.png';
-        // Attempt to play, but browser may block until first click
-        sounds.hum.play().catch(() => console.log("Waiting for user interaction to start hum..."));
+        // We try to play, but browser will likely block until click
+        sounds.hum.play().catch(() => {}); 
     }
 }
 updateSoundUI();
 
-// Global interaction listener to "unlock" audio after a refresh
+// 3. THE FIX: Global "Unlocker"
+// This waits for your first click anywhere on the page after a refresh
 document.addEventListener('click', () => {
     if (!isMuted && sounds.hum.paused) {
-        sounds.hum.play().catch(e => {});
+        sounds.hum.play().catch(e => console.log("Audio unlock failed:", e));
     }
-}, { once: true }); // Only needs to run once per session to unlock audio
+}, { once: true }); // Only runs once per refresh to jumpstart the hum
 
-// Toggle Logic
+// 4. Toggle Logic
 soundToggle.addEventListener('click', (e) => {
-    e.stopPropagation(); 
+    e.stopPropagation(); // Prevents the unlocker from firing simultaneously
     isMuted = !isMuted;
-    
-    // Save as a string
     localStorage.setItem('siteMuted', isMuted.toString());
-    
     updateSoundUI();
     
-    if(!isMuted) {
-        playSound('click');
-    }
+    if(!isMuted) playSound('click');
 });
-
-// Global Sound Player
-function playSound(name) {
-    if (isMuted) return;
-
-    if (name === 'type') {
-        const rand = Math.floor(Math.random() * 4) + 1;
-        const audio = new Audio(sounds[`type${rand}`]);
-        audio.volume = 0.5;
-        audio.play().catch(() => {});
-    } else if (sounds[name]) {
-        const audio = sounds[name].cloneNode();
-        if (name === 'hum') audio.volume = 0.1;
-        else if (name === 'confirm') audio.volume = 0.4; 
-        else audio.volume = 1.0;
-
-        audio.play().catch(() => {});
-    }
-}
 
 // --- 4. VISITOR COUNTER ---
 const statsRef = doc(db, "site_stats", "global");
