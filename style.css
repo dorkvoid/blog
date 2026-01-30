@@ -1,33 +1,7 @@
-/* --- 1. GLOBAL & SCROLLBAR --- */
+/* Reset basic settings */
 @font-face {
     font-family: 'Determination';
     src: url('DeterminationMonoWebRegular-Z5oq.ttf');
-}
-
-/* Custom "Void" Scrollbar */
-::-webkit-scrollbar {
-    width: 12px;
-}
-::-webkit-scrollbar-track {
-    background: black; 
-    border-left: 1px solid #333;
-}
-::-webkit-scrollbar-thumb {
-    background: white; 
-    border: 2px solid black;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: #ccc; 
-}
-
-/* "Terminal" Text Selection */
-::selection {
-    background: white;
-    color: black;
-}
-::-moz-selection {
-    background: white;
-    color: black;
 }
 
 body {
@@ -39,50 +13,30 @@ body {
     -webkit-font-smoothing: none;
     padding-bottom: 100px;
     cursor: url('cursor.png'), auto;
-    
-    /* NEW: Effect 4 - CRT Text Glow */
-    text-shadow: 0 0 2px rgba(255, 255, 255, 0.4);
-
-    /* NEW: Effect 5 - Static Noise Background */
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
-    background-attachment: fixed;
+    background-attachment: fixed
 }
 
-/* NEW: Slight Scanlines Overlay */
-body::before {
-    content: " ";
-    display: block;
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-    z-index: 999;
-    background-size: 100% 2px, 3px 100%;
-    pointer-events: none; /* Lets you click through it */
-    opacity: 0.6; /* Keeps it subtle */
+body:active {
+    cursor: url('cursor-click.png'), auto;
 }
 
-/* --- 2. LAYOUT & CONTAINER --- */
+button:active, a:active {
+    cursor: url('cursor-click.png'), auto;
+}
+
 .container {
     width: 100%;
     max-width: 600px;
-    /* Mobile Fix: Adds breathing room on phones */
-    padding-left: 20px;
-    padding-right: 20px;
-    box-sizing: border-box; 
 }
 
-/* --- 3. INPUTS & TEXT --- */
+/* Input Section Styling */
 .input-area {
     border: 2px solid white;
     padding: 15px;
     margin-bottom: 40px;
     background: black;
     display: none !important;
-    position: relative;
-    z-index: 1000; /* Ensures input sits above scanlines */
 }
 
 textarea, input {
@@ -96,15 +50,7 @@ textarea, input {
     font-family: inherit;
 }
 
-/* The "Focus Glow" - Lets you know you are typing */
-textarea:focus, input:focus {
-    outline: none;
-    border-color: #fff;
-    box-shadow: 0 0 5px white; 
-    background-color: #111; 
-}
-
-/* --- 4. BUTTONS --- */
+/* Global Button Style */
 button {
     background: white;
     color: black;
@@ -112,44 +58,20 @@ button {
     padding: 10px 20px;
     font-weight: bold;
     cursor: pointer;
-    width: 100%;
-    transition: transform 0.05s ease; /* smooth movement */
+    width: 100%; /* This is what was making your Logout button huge! */
 }
 
 button:hover {
     background: #ccc;
 }
 
-/* NEW: Effect 2 - Terminal Brackets on Hover */
-button {
-    transition: all 0.2s ease;
-}
-button:hover::before {
-    content: "[ ";
-    color: black; /* Matches button text color */
-}
-button:hover::after {
-    content: " ]";
-    color: black;
-}
-
-/* The "Mechanical" Click Effect */
-button:active {
-    transform: translateY(2px);
-    box-shadow: inset 0px 3px 5px rgba(0,0,0,0.2);
-    cursor: url('cursor-click.png'), auto; /* Keeps your custom cursor */
-}
-
-/* Cursor override for links */
-a:active {
-    cursor: url('cursor-click.png'), auto;
-}
-
+/* NEW: Button Row for Post/Cancel */
 .button-row {
     display: flex;
     gap: 10px;
 }
 
+/* NEW: Cancel Button Style */
 #cancelBtn {
     background: #333;
     color: white;
@@ -158,20 +80,13 @@ a:active {
 #cancelBtn:hover {
     background: #555;
 }
-/* Bracket override for Cancel button since it is dark */
-#cancelBtn:hover::before, #cancelBtn:hover::after {
-    color: white;
-}
 
-
-/* --- 5. POSTS --- */
+/* The Post Styling */
 .post {
     border: 2px solid white;
     padding: 20px;
     margin-bottom: 20px;
     background: black;
-    position: relative;
-    z-index: 1000; /* Sits above scanlines */
 }
 
 .timestamp {
@@ -180,10 +95,9 @@ a:active {
     padding-bottom: 5px;
     margin-bottom: 10px;
     display: block;
-    /* Extra glow for time */
-    text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
 }
 
+/* NEW: The Grey "Edited" Text */
 .edited-timestamp {
     color: #888;
     margin-left: 8px;
@@ -191,6 +105,27 @@ a:active {
     font-size: 0.9em;
 }
 
+.post-image, video {
+    max-width: 100%;
+    border: 1px solid white;
+    margin-top: 10px;
+    display: block;
+}
+
+#view-count {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    color: white;
+    font-family: inherit;
+    font-size: 0.8em;
+    background: black;
+    border: 1px solid white;
+    padding: 10px;
+    z-index: 100;
+}
+
+/* --- AVATAR / ICON STYLES --- */
 .post-content {
     display: flex;
     align-items: flex-start;
@@ -209,16 +144,17 @@ a:active {
 .post-content p {
     margin: 0;
     line-height: 1.4;
-    white-space: pre-wrap; /* Keeps your paragraph breaks! */
+    white-space: pre-wrap;
 }
 
-/* Media */
+/* --- UNIVERSAL MEDIA STYLES --- */
 .post-media, .post-image {
     display: block;
     max-width: 100%;
     margin-top: 10px;
     border: 1px solid white;
 }
+
 audio.post-media {
     width: 100%;
     height: 40px;
@@ -226,33 +162,7 @@ audio.post-media {
     filter: invert(1);
 }
 
-/* --- 6. ADMIN UI & ANIMATIONS --- */
-
-/* NEW: Effect 3 - Blinking Cursor Animation */
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
-}
-
-#view-count {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    color: white;
-    font-family: inherit;
-    font-size: 0.8em;
-    background: black;
-    border: 1px solid white;
-    padding: 10px;
-    z-index: 100;
-}
-
-/* Adds the blinking block to view count */
-#view-count::after {
-    content: " █";
-    animation: blink 1s step-end infinite;
-    color: white;
-}
+/* --- ADMIN STYLES --- */
 
 .hidden {
     display: none !important;
@@ -280,6 +190,7 @@ audio.post-media {
     padding: 2px 5px;
 }
 
+/* Buttons */
 .admin-buttons {
     display: none !important; 
     margin-top: 10px;
@@ -294,6 +205,8 @@ audio.post-media {
     color: white !important;
     border: 1px solid white !important;
     padding: 5px 10px !important;
+    cursor: pointer;
+    font-family: inherit; 
     font-size: 0.8em;
     margin-left: 10px;
 }
@@ -303,11 +216,16 @@ audio.post-media {
     color: black !important;
 }
 
-/* Magic Switches */
-body.admin-mode .input-area { display: block !important; }
-body.admin-mode .admin-buttons { display: block !important; }
+/* --- THE MAGIC SWITCH --- */
+body.admin-mode .input-area {
+    display: block !important;
+}
+body.admin-mode .admin-buttons {
+    display: block !important;
+}
 
-/* Login Errors & Logout */
+/* --- NEW LOGIN UI --- */
+
 #login-error {
     display: none;
     color: red;
@@ -319,6 +237,7 @@ body.admin-mode .admin-buttons { display: block !important; }
     text-align: right;
 }
 
+/* FIXED LOGOUT MENU STYLING */
 #admin-menu {
     display: flex;
     flex-direction: column;
@@ -330,11 +249,10 @@ body.admin-mode .admin-buttons { display: block !important; }
     color: rgb(251, 255, 0); 
     font-size: 0.8em; 
     margin-bottom: 5px;
-    text-shadow: 0 0 5px rgba(251, 255, 0, 0.7); /* Yellow glow */
 }
 
 #logoutBtn {
-    width: auto !important;
+    width: auto !important; /* Forces it to shrink to fit text */
     background: white;
     color: black;
     border: none;
@@ -349,6 +267,17 @@ body.admin-mode .admin-buttons { display: block !important; }
     background: red;
     color: white;
 }
-#logoutBtn:hover::before, #logoutBtn:hover::after {
-    content: ""; /* No brackets on the tiny logout button */
+
+/* Add this to style.css */
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
 }
+
+
+#view-count::after {
+    content: " █"; /* The block character */
+    animation: blink 1s step-end infinite;
+    color: white;
+}
+
