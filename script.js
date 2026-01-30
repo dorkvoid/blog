@@ -76,8 +76,10 @@ onAuthStateChanged(auth, (user) => {
     } else {
         isAdmin = false;
         document.body.classList.remove('admin-mode');
-        // Hide the bar by default when logged out
-        adminLoginBar.classList.add('hidden'); 
+        
+        // FIX: Removed the line that hid the bar here.
+        // It now stays visible if it was already open.
+        
         if (loginContainer) loginContainer.classList.remove('hidden');
         if (adminMenu) adminMenu.classList.add('hidden');
     }
@@ -108,7 +110,7 @@ if (logoutBtn) {
     });
 }
 
-// --- 6. COMMAND & SEARCH LOGIC (UPDATED) ---
+// --- 6. COMMAND & SEARCH LOGIC ---
 searchInput.addEventListener('input', (e) => {
     const val = e.target.value;
     
