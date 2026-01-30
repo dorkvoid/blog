@@ -77,8 +77,7 @@ onAuthStateChanged(auth, (user) => {
         isAdmin = false;
         document.body.classList.remove('admin-mode');
         
-        // FIX: Removed the line that hid the bar here.
-        // It now stays visible if it was already open.
+        // FIX: Bar stays visible if open, just changes content
         
         if (loginContainer) loginContainer.classList.remove('hidden');
         if (adminMenu) adminMenu.classList.add('hidden');
@@ -111,13 +110,16 @@ if (logoutBtn) {
 }
 
 // --- 6. COMMAND & SEARCH LOGIC ---
+
+// NEW: State memory for the clear command
+let isFeedHidden = false; 
+
 searchInput.addEventListener('input', (e) => {
     const val = e.target.value;
     
     // Command Mode
     if (val.startsWith('/')) {
         if (val === '/login') {
-            // TOGGLE: If hidden, show. If shown, hide.
             if (adminLoginBar.classList.contains('hidden')) {
                 adminLoginBar.classList.remove('hidden');
                 passwordInput.focus();
@@ -133,12 +135,16 @@ searchInput.addEventListener('input', (e) => {
             searchInput.value = '';
             
         } else if (val === '/clear') {
-            // TOGGLE: If empty, reload. If full, clear.
-            if (feed.innerHTML === "") {
-                reloadFeed(); // The 'undo'
+            // TOGGLE LOGIC
+            if (isFeedHidden) {
+                // Was hidden, now show
+                isFeedHidden = false;
+                reloadFeed(); 
                 showToast("FEED RESTORED");
             } else {
-                feed.innerHTML = ''; // The 'do'
+                // Was showing, now hide
+                isFeedHidden = true;
+                feed.innerHTML = ''; 
                 showToast("FEED CLEARED");
             }
             searchInput.value = '';
@@ -146,7 +152,7 @@ searchInput.addEventListener('input', (e) => {
         return; 
     }
     
-    // Search Mode (Normal)
+    // Search Mode
     reloadFeed(); 
 });
 
@@ -161,6 +167,12 @@ onSnapshot(q, (snapshot) => {
 });
 
 function reloadFeed() {
+    // NEW: The Guard Dog. If feed is hidden, STOP immediately.
+    if (isFeedHidden) {
+        feed.innerHTML = ""; // Ensure it stays empty
+        return; 
+    }
+
     feed.innerHTML = "";
     
     allPosts.sort((a, b) => {
