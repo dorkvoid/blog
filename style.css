@@ -87,10 +87,10 @@ body::before {
     padding-right: 20px;
     box-sizing: border-box; 
     position: relative;
-    transition: max-width 0.3s ease; /* Smooth transition when switching views */
+    transition: max-width 0.3s ease; 
 }
 
-/* --- 3. CONTROL BAR (NEW) --- */
+/* --- 3. CONTROL BAR --- */
 .control-bar {
     display: flex;
     gap: 15px;
@@ -100,7 +100,6 @@ body::before {
     padding-bottom: 10px;
 }
 
-/* Search bar takes available space */
 #searchBar {
     flex-grow: 1;
     background: black;
@@ -110,7 +109,7 @@ body::before {
     font-family: 'Determination', sans-serif;
     font-size: 1.1em;
     outline: none;
-    margin-bottom: 0; /* Reset */
+    margin-bottom: 0; 
 }
 #searchBar:focus {
     background: #111;
@@ -200,32 +199,26 @@ button:active { transform: translateY(2px); }
 #cancelBtn:hover::before, #cancelBtn:hover::after { color: white; }
 
 /* --- 6. POSTS & MASONRY GRID --- */
-
-/* DEFAULT LIST VIEW */
 .post {
     border: 2px solid white;
     padding: 20px;
     margin-bottom: 20px;
     background: black;
     position: relative;
-    /* Clean break for printing/columns */
     break-inside: avoid; 
 }
 
-/* TILE VIEW (Grid) - Applied to #feed */
 #feed.grid-view {
-    column-count: 2; /* 2 Columns like Masonry */
+    column-count: 2; 
     column-gap: 20px;
 }
 
-/* On small screens, force 1 column even in grid mode */
 @media (max-width: 600px) {
     #feed.grid-view {
         column-count: 1;
     }
 }
 
-/* DRAG AND DROP STYLES */
 .post.dragging {
     opacity: 0.5;
     border: 2px dashed #888;
@@ -261,8 +254,6 @@ button:active { transform: translateY(2px); }
     flex-shrink: 0;
 }
 
-/* In Grid Mode, maybe make avatar smaller or hide? Keeping it for now. */
-
 .post-content p {
     margin: 0;
     line-height: 1.4;
@@ -287,7 +278,7 @@ audio.post-media { width: 100%; height: 40px; border-radius: 0; filter: invert(1
 iframe.media-embed { aspect-ratio: 16 / 9; height: auto; }
 iframe[src*="spotify"] { aspect-ratio: auto; height: 152px; }
 
-/* --- 7. ADMIN UI --- */
+/* --- 7. ADMIN UI (UPDATED: Tight & Neat) --- */
 @keyframes blink {
     0%, 100% { opacity: 1; }
     50% { opacity: 0; }
@@ -309,15 +300,16 @@ iframe[src*="spotify"] { aspect-ratio: auto; height: 152px; }
 
 .hidden { display: none !important; }
 
+/* Compact Admin Bar */
 #admin-login-bar {
     position: fixed;
     bottom: 20px;
     right: 20px;
     background: black;
     border: 1px solid white;
-    padding: 10px;
+    padding: 8px; /* Reduced padding */
     z-index: 1000;
-    min-width: 150px;
+    min-width: auto; /* Remove fixed width */
     text-align: center;
 }
 
@@ -363,15 +355,20 @@ body.admin-mode .admin-buttons { display: block !important; }
     text-align: right;
 }
 
+/* Compact Admin Menu */
 #admin-menu {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 5px; /* Tighter gap */
 }
-.login-status { color: rgb(251, 255, 0); font-size: 0.8em; }
+.login-status { 
+    color: rgb(251, 255, 0); 
+    font-size: 0.7em; /* Slightly smaller */
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+}
 
-/* NEW LOGOUT BUTTON */
 #logoutBtn {
     width: 32px;
     height: 32px;
@@ -451,9 +448,17 @@ body.admin-mode .admin-buttons { display: block !important; }
     -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
 }
 .expand-btn {
-    display: block; width: 100%; text-align: center; background: transparent; 
-    color: #888; margin-top: 5px; padding: 10px;
-    font-size: 0.9em; font-weight: bold; border: none;
+    display: block; 
+    width: 100%; 
+    text-align: center; 
+    background: transparent; 
+    color: #888; 
+    margin-top: 5px; 
+    padding: 10px;
+    font-size: 0.9em; 
+    font-weight: bold; 
+    border: none;
+    cursor: pointer;
 }
 .expand-btn:hover { color: white; }
 

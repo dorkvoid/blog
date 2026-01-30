@@ -68,7 +68,8 @@ const sounds = {
     pin: new Audio('sounds/pinbutton.wav'),
     hover: new Audio('sounds/hoverbutton.wav'),
     error: new Audio('sounds/loginerror.wav'),
-    logout: new Audio('sounds/turn-off.mp3') // NEW LOGOUT SOUND
+    logout: new Audio('sounds/turn-off.mp3'),
+    swap: new Audio('sounds/post-swapped.wav') // NEW SWAP SOUND
 };
 
 // Config
@@ -200,17 +201,16 @@ if (passwordInput) {
 
 // Updated Logout Logic
 if (logoutBtn) {
-    // Hover Effects
     logoutBtn.addEventListener('mouseenter', () => {
         logoutBtn.src = 'images/logout-hover.png';
-        playSound('hover');
+        // HOVER SOUND REMOVED
     });
     logoutBtn.addEventListener('mouseleave', () => {
         logoutBtn.src = 'images/logout.png';
     });
 
     logoutBtn.addEventListener('click', async () => {
-        playSound('logout'); // Plays turn-off.mp3
+        playSound('logout'); 
         await signOut(auth);
         showToast("LOGGED OUT");
     });
@@ -225,18 +225,17 @@ function setView(mode) {
     
     if (mode === 'tile') {
         feed.classList.add('grid-view');
-        container.style.maxWidth = '900px'; // Wider container for grid
+        container.style.maxWidth = '900px'; 
         viewTileBtn.classList.add('active-view');
         viewListBtn.classList.remove('active-view');
     } else {
         feed.classList.remove('grid-view');
-        container.style.maxWidth = '600px'; // Standard width
+        container.style.maxWidth = '600px'; 
         viewListBtn.classList.add('active-view');
         viewTileBtn.classList.remove('active-view');
     }
 }
 
-// Initialize View
 setView(currentView);
 
 viewListBtn.addEventListener('click', () => {
@@ -277,7 +276,6 @@ function reloadFeed() {
 }
 
 // --- 8. POST & COMMAND LOGIC ---
-// (Command & Search logic combined in reloadFeed and event listener below)
 
 let isFeedHidden = false; 
 
@@ -508,30 +506,26 @@ function handleDragLeave(e) {
 async function handleDrop(e) {
     if (e.stopPropagation) e.stopPropagation();
     
-    // Cleanup styles
     this.classList.remove('drag-over');
     draggedItem.classList.remove('dragging');
 
     if (draggedItem !== this) {
-        const id1 = draggedItem.dataset.id; // Dragged Post
-        const id2 = this.dataset.id;        // Target Post
+        const id1 = draggedItem.dataset.id; 
+        const id2 = this.dataset.id;        
         
-        // Find the actual data objects
         const post1 = allPosts.find(p => p.id === id1);
         const post2 = allPosts.find(p => p.id === id2);
 
         if (post1 && post2) {
             showToast("SWAPPING ORDER...");
             
-            // SWAP TIMESTAMP STRATEGY
-            // This reorders them in the feed by tricking the "orderBy timestamp" query
             const ts1 = post1.timestamp;
             const ts2 = post2.timestamp;
 
             try {
                 await updateDoc(doc(db, "posts", id1), { timestamp: ts2 });
                 await updateDoc(doc(db, "posts", id2), { timestamp: ts1 });
-                playSound('success');
+                playSound('swap'); // NEW SWAP SOUND
             } catch (err) {
                 console.error(err);
                 playSound('error');
@@ -550,7 +544,6 @@ function addPostToDOM(post) {
     postDiv.classList.add('post');
     postDiv.dataset.id = id;
 
-    // ENABLE DRAG FOR ADMINS
     if (isAdmin) {
         postDiv.setAttribute('draggable', 'true');
         postDiv.addEventListener('dragstart', handleDragStart);
@@ -654,7 +647,8 @@ function addPostToDOM(post) {
             expandBtn.innerText = isNowTruncated ? "[ EXPAND ]" : "[ COLLAPSE ]";
         };
         
-        textContainer.parentNode.insertBefore(expandBtn, textContainer.nextSibling);
+        // FIX: Insert OUTSIDE of .post-content so it spans full width
+        postDiv.querySelector('.post-content').after(expandBtn);
     }
 
     const pinBtn = postDiv.querySelector('.pin-icon');
