@@ -66,6 +66,10 @@ body::before {
 .container {
     width: 100%;
     max-width: 600px;
+    
+    /* NEW: This forces the blog to the center of the screen */
+    margin: 0 auto; 
+    
     padding-left: 20px;
     padding-right: 20px;
     box-sizing: border-box; 
@@ -334,13 +338,14 @@ body.admin-mode .admin-buttons { display: block !important; }
 
 /* --- 7. NEW UI FEATURES --- */
 
-/* A. Back to Top Arrow - MOVED LEFT */
+/* A. Back to Top Arrow - FIXED POSITION */
 #back-to-top {
     position: fixed;
     bottom: 20px;
     
-    /* MOVED LEFT: Reduced offset from 320px to 305px to hug the posts tighter */
-    left: calc(50% + 305px); 
+    /* CALCULATION: Center (50%) + Half Column (300px) + Gap (10px) */
+    /* This puts it exactly 10px to the right of your post border */
+    left: calc(50% + 310px); 
     right: auto; 
     
     width: 50px; 
@@ -357,15 +362,16 @@ body.admin-mode .admin-buttons { display: block !important; }
     transform: translateY(-5px); 
 }
 
-/* Mobile Fallback */
-@media (max-width: 1000px) {
+/* Mobile Fallback: Puts it in the corner on small screens */
+@media (max-width: 750px) {
     #back-to-top {
         left: auto;
-        right: 20px;
+        right: 10px;
+        bottom: 10px;
     }
 }
 
-/* B. Links in Posts (Auto-Linker) */
+/* B. Links in Posts */
 .post-text a {
     color: #fff;
     text-decoration: underline;
@@ -392,7 +398,7 @@ body.admin-mode .admin-buttons { display: block !important; }
     backdrop-filter: blur(2px);
 }
 
-/* D. The "Are You Sure" Box - REFINED */
+/* D. The "Are You Sure" Box */
 .modal-box {
     background: black;
     border: 2px solid white; 
@@ -404,12 +410,10 @@ body.admin-mode .admin-buttons { display: block !important; }
 
 .modal-box p {
     font-size: 1.2em;
-    /* UN-BOLDED: Makes the pixel font crisp */
-    font-weight: normal; 
+    font-weight: normal; /* Crisp text (Un-bolded) */
     
-    /* RE-CENTERED: Balanced top/bottom spacing */
     margin-top: 0;
-    margin-bottom: 15px; 
+    margin-bottom: 20px; /* Spaced out */
     
     text-transform: uppercase;
     letter-spacing: 2px;
@@ -419,8 +423,7 @@ body.admin-mode .admin-buttons { display: block !important; }
     display: flex;
     gap: 20px;
     justify-content: center; 
-    /* RE-CENTERED: Reduced top margin to pull buttons up slightly */
-    margin-top: 15px; 
+    margin-top: 10px; 
 }
 
 .modal-buttons button {
@@ -436,7 +439,7 @@ body.admin-mode .admin-buttons { display: block !important; }
     color: black;
 }
 
-/* E. Image Lightbox */
+/* E. Lightbox */
 #lightbox-img {
     max-width: 90%;
     max-height: 90%;
@@ -455,21 +458,4 @@ body.admin-mode .admin-buttons { display: block !important; }
 }
 #lightbox-close:hover {
     color: red;
-}
-
-/* --- 8. GLOBAL CLICK FIX --- */
-
-/* 1. Ensure the body fills the screen so you can click the void */
-html, body {
-    height: 100%;
-}
-
-/* 2. Global "Active" State (Clicking anywhere) */
-body:active {
-    cursor: url('cursor-click.png'), auto;
-}
-
-/* 3. Keep text inputs normal (Optional: Remove if you want the custom cursor while typing too) */
-textarea:active, input:active {
-    cursor: text; 
 }
