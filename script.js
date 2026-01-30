@@ -56,8 +56,8 @@ const sounds = {
     type3: 'sounds/type3.mp3',
     type4: 'sounds/type4.mp3',
     delete: new Audio('sounds/deletedpost.wav'),
-    success: new Audio('sounds/successfulpost.mp3'), // Only for posting now
-    login: new Audio('sounds/successfulpost.mp3'),   // Placeholder if you want a login sound, or leave empty
+    success: new Audio('sounds/successfulpost.mp3'),
+    login: new Audio('sounds/successfulpost.mp3'),
     edit: new Audio('sounds/editedpost.wav'),
     toast: new Audio('sounds/toast.wav'),
     confirm: new Audio('sounds/yousure.wav'),
@@ -69,11 +69,46 @@ const sounds = {
 // Config
 sounds.hum.loop = true;
 sounds.hum.volume = 0.1; 
+sounds.confirm.volume = 0.4;
 
-// THE FIX: Turning down the volume on the "yousure" sound
-sounds.confirm.volume = 0.4; // Set to 40% volume
+// THE FIX: Strict localStorage check
+// If 'siteMuted' is exactly the string 'false', we unmute. Otherwise (first visit/true), stay muted.
+let isMuted = localStorage.getItem('siteMuted') !== 'false'; 
 
-// ... [Keep updateSoundUI and Interaction Listener the same] ...
+// Update UI and start/stop hum based on initial state
+function updateSoundUI() {
+    if (isMuted) {
+        soundIcon.src = 'sound-off.png';
+        sounds.hum.pause();
+    } else {
+        soundIcon.src = 'sound-on.png';
+        // Attempt to play, but browser may block until first click
+        sounds.hum.play().catch(() => console.log("Waiting for user interaction to start hum..."));
+    }
+}
+updateSoundUI();
+
+// Global interaction listener to "unlock" audio after a refresh
+document.addEventListener('click', () => {
+    if (!isMuted && sounds.hum.paused) {
+        sounds.hum.play().catch(e => {});
+    }
+}, { once: true }); // Only needs to run once per session to unlock audio
+
+// Toggle Logic
+soundToggle.addEventListener('click', (e) => {
+    e.stopPropagation(); 
+    isMuted = !isMuted;
+    
+    // Save as a string
+    localStorage.setItem('siteMuted', isMuted.toString());
+    
+    updateSoundUI();
+    
+    if(!isMuted) {
+        playSound('click');
+    }
+});
 
 // Global Sound Player
 function playSound(name) {
@@ -86,35 +121,12 @@ function playSound(name) {
         audio.play().catch(() => {});
     } else if (sounds[name]) {
         const audio = sounds[name].cloneNode();
-        
-        // Ensure volume settings carry over to the clones
         if (name === 'hum') audio.volume = 0.1;
         else if (name === 'confirm') audio.volume = 0.4; 
         else audio.volume = 1.0;
 
         audio.play().catch(() => {});
     }
-}
-
-// ... [Keep Auth Logic] ...
-
-if (passwordInput) {
-    passwordInput.addEventListener('keyup', async (e) => {
-        if (e.key === 'Enter') {
-            try {
-                await signInWithEmailAndPassword(auth, "kickside02@gmail.com", e.target.value);
-                showToast("ACCESS GRANTED");
-                // FIX: Removed playSound('success') from here so it's silent on login
-            } catch (error) {
-                playSound('error');
-                if(errorMsg) {
-                    errorMsg.style.display = 'block';
-                    setTimeout(() => errorMsg.style.display = 'none', 2000);
-                }
-                e.target.value = "";
-            }
-        }
-    });
 }
 
 // --- 4. VISITOR COUNTER ---
