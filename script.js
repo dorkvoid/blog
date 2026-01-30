@@ -29,6 +29,10 @@ const searchInput = document.getElementById('searchBar');
 const toastContainer = document.getElementById('toast-container');
 const adminLoginBar = document.getElementById('admin-login-bar'); 
 
+// Sound UI
+const soundToggle = document.getElementById('sound-toggle');
+const soundIcon = document.getElementById('sound-icon');
+
 // Toolbar Elements
 const fmtBold = document.getElementById('fmtBold');
 const fmtItalic = document.getElementById('fmtItalic');
@@ -42,6 +46,76 @@ const lightboxModal = document.getElementById('lightbox-modal');
 const lightboxImg = document.getElementById('lightbox-img');
 const lightboxClose = document.getElementById('lightbox-close');
 const backToTopBtn = document.getElementById('back-to-top');
+
+// --- 3.5 AUDIO SYSTEM (THE TACTILE UPDATE) ---
+const sounds = {
+    click: new Audio('sounds/buttonclick.mp3'),
+    hum: new Audio('sounds/backgroundhum.mp3'),
+    type1: 'sounds/type1.mp3',
+    type2: 'sounds/type2.mp3',
+    type3: 'sounds/type3.mp3',
+    type4: 'sounds/type4.mp3',
+    delete: new Audio('sounds/deletedpost.wav'),
+    success: new Audio('sounds/successfulpost.mp3'),
+    edit: new Audio('sounds/editedpost.wav'),
+    toast: new Audio('sounds/toast.wav'),
+    confirm: new Audio('sounds/yousure.wav'),
+    pin: new Audio('sounds/pinbutton.wav'),
+    hover: new Audio('sounds/hoverbutton.wav'),
+    error: new Audio('sounds/loginerror.wav')
+};
+
+// Config
+sounds.hum.loop = true;
+sounds.hum.volume = 0.1; // 10% volume so it's not annoying
+
+let isMuted = localStorage.getItem('siteMuted') !== 'false'; // Default to muted (true) if null
+updateSoundUI();
+
+// Toggle Logic
+soundToggle.addEventListener('click', () => {
+    isMuted = !isMuted;
+    localStorage.setItem('siteMuted', isMuted);
+    updateSoundUI();
+    
+    // Play Click
+    if(!isMuted) playSound('click');
+});
+
+function updateSoundUI() {
+    if (isMuted) {
+        soundIcon.src = 'sound-off.png';
+        sounds.hum.pause();
+    } else {
+        soundIcon.src = 'sound-on.png';
+        // Browsers block autoplay until interaction, so we try:
+        sounds.hum.play().catch(e => console.log("Waiting for interaction...")); 
+    }
+}
+
+// Global Sound Player
+function playSound(name) {
+    if (isMuted) return;
+
+    if (name === 'type') {
+        // Random Typing Sound
+        const rand = Math.floor(Math.random() * 4) + 1;
+        const audio = new Audio(sounds[`type${rand}`]);
+        audio.volume = 0.5;
+        audio.play().catch(() => {});
+    } else if (sounds[name]) {
+        // Clone allows overlapping sounds (rapid clicks)
+        const audio = sounds[name].cloneNode();
+        audio.volume = (name === 'hum') ? 0.1 : 1.0; 
+        audio.play().catch(() => {});
+    }
+}
+
+// Attach Hover Sounds to Buttons
+document.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('mouseenter', () => playSound('hover'));
+    btn.addEventListener('click', () => playSound('click'));
+});
 
 // --- 4. VISITOR COUNTER ---
 const statsRef = doc(db, "site_stats", "global");
@@ -68,7 +142,6 @@ onAuthStateChanged(auth, (user) => {
     if (user) {
         isAdmin = true;
         document.body.classList.add('admin-mode');
-        // Show the bar because we are logged in
         adminLoginBar.classList.remove('hidden'); 
         if (loginContainer) loginContainer.classList.add('hidden');
         if (adminMenu) adminMenu.classList.remove('hidden');
@@ -76,9 +149,6 @@ onAuthStateChanged(auth, (user) => {
     } else {
         isAdmin = false;
         document.body.classList.remove('admin-mode');
-        
-        // FIX: Bar stays visible if open, just changes content
-        
         if (loginContainer) loginContainer.classList.remove('hidden');
         if (adminMenu) adminMenu.classList.add('hidden');
     }
@@ -91,7 +161,9 @@ if (passwordInput) {
             try {
                 await signInWithEmailAndPassword(auth, "kickside02@gmail.com", e.target.value);
                 showToast("ACCESS GRANTED");
+                playSound('success'); 
             } catch (error) {
+                playSound('error'); // ERROR SOUND
                 if(errorMsg) {
                     errorMsg.style.display = 'block';
                     setTimeout(() => errorMsg.style.display = 'none', 2000);
@@ -104,20 +176,19 @@ if (passwordInput) {
 
 if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
+        playSound('click');
         await signOut(auth);
         showToast("LOGGED OUT");
     });
 }
 
 // --- 6. COMMAND & SEARCH LOGIC ---
-
-// NEW: State memory for the clear command
 let isFeedHidden = false; 
 
 searchInput.addEventListener('input', (e) => {
+    playSound('type'); // TYPE SOUND
     const val = e.target.value;
     
-    // Command Mode
     if (val.startsWith('/')) {
         if (val === '/login') {
             if (adminLoginBar.classList.contains('hidden')) {
@@ -135,14 +206,11 @@ searchInput.addEventListener('input', (e) => {
             searchInput.value = '';
             
         } else if (val === '/clear') {
-            // TOGGLE LOGIC
             if (isFeedHidden) {
-                // Was hidden, now show
                 isFeedHidden = false;
                 reloadFeed(); 
                 showToast("FEED RESTORED");
             } else {
-                // Was showing, now hide
                 isFeedHidden = true;
                 feed.innerHTML = ''; 
                 showToast("FEED CLEARED");
@@ -151,11 +219,8 @@ searchInput.addEventListener('input', (e) => {
         }
         return; 
     }
-    
-    // Search Mode
     reloadFeed(); 
 });
-
 
 // --- 7. LOAD POSTS ---
 let allPosts = []; 
@@ -167,9 +232,8 @@ onSnapshot(q, (snapshot) => {
 });
 
 function reloadFeed() {
-    // NEW: The Guard Dog. If feed is hidden, STOP immediately.
     if (isFeedHidden) {
-        feed.innerHTML = ""; // Ensure it stays empty
+        feed.innerHTML = ""; 
         return; 
     }
 
@@ -194,6 +258,7 @@ function reloadFeed() {
 let editingPostId = null; 
 
 function insertTag(tagStart, tagEnd) {
+    playSound('click'); 
     const start = textInput.selectionStart;
     const end = textInput.selectionEnd;
     const text = textInput.value;
@@ -213,6 +278,7 @@ fmtItalic.onclick = () => insertTag("*", "*");
 fmtSpoiler.onclick = () => insertTag("||", "||");
 
 textInput.addEventListener('input', function() {
+    playSound('type'); // TYPE SOUND
     this.style.height = 'auto'; 
     this.style.height = (this.scrollHeight) + 'px';
     if (!editingPostId) { 
@@ -237,6 +303,7 @@ textInput.addEventListener('keydown', (e) => {
 });
 
 postBtn.addEventListener('click', async function() {
+    playSound('click');
     if (!auth.currentUser) return showToast("LOGIN REQUIRED");
 
     const text = textInput.value;
@@ -255,6 +322,7 @@ postBtn.addEventListener('click', async function() {
                 editedDate: new Date().toLocaleString()
             });
             showToast("POST UPDATED");
+            playSound('edit'); // EDIT SOUND
             resetForm();
         } else {
             await addDoc(collection(db, "posts"), {
@@ -265,12 +333,14 @@ postBtn.addEventListener('click', async function() {
                 pinned: false 
             });
             showToast("POST SUCCESSFUL");
+            playSound('success'); // SUCCESS SOUND
             localStorage.removeItem('postDraft');
             resetForm();
         }
     } catch (e) {
         console.error("Error: ", e);
         showToast("ERROR: COULD NOT POST");
+        playSound('error');
     } finally {
         postBtn.disabled = false;
         postBtn.innerText = "POST";
@@ -278,7 +348,10 @@ postBtn.addEventListener('click', async function() {
 });
 
 if (cancelBtn) {
-    cancelBtn.addEventListener('click', resetForm);
+    cancelBtn.addEventListener('click', () => {
+        playSound('click');
+        resetForm();
+    });
 }
 
 function resetForm() {
@@ -295,12 +368,14 @@ function resetForm() {
 let idToDelete = null;
 
 function triggerDelete(id) {
+    playSound('confirm'); // YOUSURE SOUND
     idToDelete = id;
     confirmModal.classList.remove('hidden');
 }
 
 confirmYes.addEventListener('click', async () => {
     if (idToDelete) {
+        playSound('delete'); // DELETE SOUND
         await deleteDoc(doc(db, "posts", idToDelete));
         idToDelete = null;
         confirmModal.classList.add('hidden');
@@ -309,11 +384,13 @@ confirmYes.addEventListener('click', async () => {
 });
 
 confirmNo.addEventListener('click', () => {
+    playSound('click');
     idToDelete = null;
     confirmModal.classList.add('hidden');
 });
 
 function showToast(message) {
+    playSound('toast'); // TOAST SOUND
     const toast = document.createElement('div');
     toast.className = 'toast';
     toast.innerText = `[ SYSTEM: ${message} ]`;
@@ -326,6 +403,7 @@ function showToast(message) {
     }, 3000);
 }
 
+// ... [TimeAgo Function remains the same] ...
 function timeAgo(date) {
     if (!date) return "";
     const seconds = Math.floor((new Date() - date) / 1000);
@@ -355,12 +433,12 @@ function addPostToDOM(post) {
         pinHTML = `<img src="pin.png" class="${pinClass}" data-id="${id}" title="Pin/Unpin">`;
     }
 
+    // ... [Media Logic remains same] ...
     let mediaHTML = "";
     if (post.image) {
         const url = post.image;
         const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
         const spMatch = url.match(/open\.spotify\.com\/(track|album|playlist)\/([a-zA-Z0-9]+)/);
-        
         if (ytMatch) {
             mediaHTML = `<iframe class="media-embed" src="https://www.youtube.com/embed/${ytMatch[1]}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
         } else if (spMatch) {
@@ -374,6 +452,7 @@ function addPostToDOM(post) {
         }
     }
 
+    // ... [Time/Text Logic remains same] ...
     const postDate = post.timestamp ? post.timestamp.toDate() : new Date();
     let editedDateObj = null;
     if (post.editedTimestamp) editedDateObj = post.editedTimestamp.toDate();
@@ -440,6 +519,7 @@ function addPostToDOM(post) {
         expandBtn.innerText = "[ EXPAND ]";
         
         expandBtn.onclick = () => {
+            playSound('click');
             textContainer.classList.remove('truncated');
             expandBtn.remove();
         };
@@ -450,28 +530,37 @@ function addPostToDOM(post) {
     const pinBtn = postDiv.querySelector('.pin-icon');
     if (pinBtn && isAdmin) {
         pinBtn.addEventListener('click', async () => {
+            playSound('pin'); // PIN SOUND
             const newStatus = !post.pinned;
             await updateDoc(doc(db, "posts", id), { pinned: newStatus });
             showToast(newStatus ? "POST PINNED" : "POST UNPINNED");
         });
+        // Hover effect for pin
+        pinBtn.addEventListener('mouseenter', () => playSound('hover'));
     }
 
     const btnContainer = postDiv.querySelector('.admin-buttons');
     const editBtn = document.createElement('button');
     editBtn.innerText = "EDIT";
     editBtn.classList.add('btn-edit');
-    editBtn.onclick = () => startEdit(id, post.text, post.image);
+    editBtn.onclick = () => {
+        playSound('click');
+        startEdit(id, post.text, post.image);
+    };
+    editBtn.addEventListener('mouseenter', () => playSound('hover'));
     btnContainer.appendChild(editBtn);
 
     const deleteBtn = document.createElement('button');
     deleteBtn.innerText = "DELETE";
     deleteBtn.classList.add('btn-delete');
-    deleteBtn.onclick = () => triggerDelete(id); 
+    deleteBtn.onclick = () => triggerDelete(id);
+    deleteBtn.addEventListener('mouseenter', () => playSound('hover'));
     btnContainer.appendChild(deleteBtn);
     
     const imgElement = postDiv.querySelector('.click-to-zoom');
     if(imgElement) {
         imgElement.addEventListener('click', () => {
+            playSound('click');
             lightboxImg.src = post.image;
             lightboxModal.classList.remove('hidden');
         });
@@ -491,20 +580,17 @@ function startEdit(id, text, image) {
 }
 
 lightboxClose.addEventListener('click', () => {
+    playSound('click');
     lightboxModal.classList.add('hidden');
 });
 lightboxModal.addEventListener('click', (e) => {
-    if (e.target === lightboxModal) lightboxModal.classList.add('hidden');
-});
-lightboxImg.addEventListener('click', () => {
-    lightboxModal.classList.add('hidden');
-});
-document.addEventListener('keydown', (e) => {
-    if (e.key === "Escape" && !lightboxModal.classList.contains('hidden')) {
+    if (e.target === lightboxModal) {
+        playSound('click');
         lightboxModal.classList.add('hidden');
     }
 });
 
+// ... [Back to top / Scroll listeners remain same] ...
 window.addEventListener('scroll', () => {
     if (window.scrollY > 300) {
         backToTopBtn.classList.remove('hidden');
@@ -514,5 +600,6 @@ window.addEventListener('scroll', () => {
 });
 
 backToTopBtn.addEventListener('click', () => {
+    playSound('click');
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });

@@ -496,6 +496,35 @@ body.admin-mode .admin-buttons { display: block !important; }
     color: red;
 }
 
+/* Sound Toggle */
+#sound-toggle {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 10001;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: all 0.2s ease;
+}
+
+#sound-toggle img {
+    width: 32px; 
+    height: 32px;
+    image-rendering: pixelated;
+}
+
+#sound-toggle:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Ensure it doesn't overlap with the admin bar on small screens */
+@media (max-width: 600px) {
+    #sound-toggle {
+        bottom: 70px; /* Moves up if admin bar is present */
+    }
+}
+
 /* --- 8. TOAST NOTIFICATIONS --- */
 #toast-container {
     position: fixed;
