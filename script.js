@@ -105,6 +105,30 @@ function updateSoundUI() {
     }
 }
 
+// Global Sound Player
+function playSound(name) {
+    if (isMuted) return;
+
+    if (name === 'type') {
+        // Random Typing Sound
+        const rand = Math.floor(Math.random() * 4) + 1;
+        const audio = new Audio(sounds[`type${rand}`]);
+        audio.volume = 0.5;
+        audio.play().catch(() => {});
+    } else if (sounds[name]) {
+        // Clone allows overlapping sounds (rapid clicks)
+        const audio = sounds[name].cloneNode();
+        audio.volume = (name === 'hum') ? 0.1 : 1.0; 
+        audio.play().catch(() => {});
+    }
+}
+
+// Attach Hover Sounds to Buttons
+document.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('mouseenter', () => playSound('hover'));
+    btn.addEventListener('click', () => playSound('click'));
+});
+
 // --- 4. VISITOR COUNTER ---
 const statsRef = doc(db, "site_stats", "global");
 onSnapshot(statsRef, (docSnapshot) => {
