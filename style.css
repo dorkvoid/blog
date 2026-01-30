@@ -32,19 +32,6 @@
     text-shadow: none;
 }
 
-/* NEW: The Animation Keyframes */
-/* This moves the background down by 100% of the screen height */
-@keyframes scanline-scroll {
-    0% {
-        background-position: 0 0, 0 0;
-    }
-    100% {
-        /* Moves ONLY the first layer (horizontal lines) down by 100vh */
-        /* The second layer (vertical lines) stays at 0 0 */
-        background-position: 0 100vh, 0 0; 
-    }
-}
-
 body {
     background-color: black;
     color: white;
@@ -54,13 +41,12 @@ body {
     -webkit-font-smoothing: none;
     padding-bottom: 100px;
     cursor: url('cursor.png'), auto;
-
-    /* STATIC NOISE: Kept your specific settings */
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
-    background-attachment: fixed;
+    
+    /* NOISE REMOVED: Back to pure black */
+    background-image: none;
 }
 
-/* SCANLINES: Animated Downward */
+/* SCANLINES: Static (No Animation) */
 body::before {
     content: " ";
     display: block;
@@ -74,10 +60,6 @@ body::before {
     z-index: 9999;
     background-size: 100% 3px, 3px 100%;
     pointer-events: none; 
-    
-    /* NEW: Apply the animation */
-    /* 10s = Slow roll. Change to 5s for faster, 20s for barely moving */
-    animation: scanline-scroll 10s linear infinite;
 }
 
 /* --- 2. LAYOUT & CONTAINER --- */
