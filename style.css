@@ -195,9 +195,15 @@ a:active {
     flex-shrink: 0;
 }
 .post-content p {
-    margin: 0;
+margin: 0;
     line-height: 1.4;
+    
+    /* Keeps your paragraph breaks */
     white-space: pre-wrap; 
+    
+    /* THE FIX: Forces long strings (like URLs or gibberish) to break */
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 .post-media, .post-image {
     display: block;
