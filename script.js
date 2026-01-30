@@ -67,55 +67,43 @@ const sounds = {
 
 // Config
 sounds.hum.loop = true;
-sounds.hum.volume = 0.1; // 10% volume so it's not annoying
+sounds.hum.volume = 0.1; 
 
-let isMuted = localStorage.getItem('siteMuted') !== 'false'; // Default to muted (true) if null
+// THE FIX: Check localStorage and update UI immediately
+let isMuted = localStorage.getItem('siteMuted') !== 'false'; 
 updateSoundUI();
 
+// NEW: Global interaction listener to bypass browser autoplay blocks
+document.addEventListener('click', () => {
+    if (!isMuted && sounds.hum.paused) {
+        sounds.hum.play().catch(e => console.log("Autoplay still blocked"));
+    }
+}, { once: false }); // Keep active so it catches the first click after refresh
+
 // Toggle Logic
-soundToggle.addEventListener('click', () => {
+soundToggle.addEventListener('click', (e) => {
+    e.stopPropagation(); // Prevents the global click listener from double-firing
     isMuted = !isMuted;
     localStorage.setItem('siteMuted', isMuted);
     updateSoundUI();
     
-    // Play Click
-    if(!isMuted) playSound('click');
+    if(!isMuted) {
+        playSound('click');
+        sounds.hum.play();
+    } else {
+        sounds.hum.pause();
+    }
 });
 
 function updateSoundUI() {
     if (isMuted) {
         soundIcon.src = 'sound-off.png';
-        sounds.hum.pause();
     } else {
         soundIcon.src = 'sound-on.png';
-        // Browsers block autoplay until interaction, so we try:
-        sounds.hum.play().catch(e => console.log("Waiting for interaction...")); 
+        // Try to play immediately, though browser might still block until first click
+        sounds.hum.play().catch(() => {}); 
     }
 }
-
-// Global Sound Player
-function playSound(name) {
-    if (isMuted) return;
-
-    if (name === 'type') {
-        // Random Typing Sound
-        const rand = Math.floor(Math.random() * 4) + 1;
-        const audio = new Audio(sounds[`type${rand}`]);
-        audio.volume = 0.5;
-        audio.play().catch(() => {});
-    } else if (sounds[name]) {
-        // Clone allows overlapping sounds (rapid clicks)
-        const audio = sounds[name].cloneNode();
-        audio.volume = (name === 'hum') ? 0.1 : 1.0; 
-        audio.play().catch(() => {});
-    }
-}
-
-// Attach Hover Sounds to Buttons
-document.querySelectorAll('button').forEach(btn => {
-    btn.addEventListener('mouseenter', () => playSound('hover'));
-    btn.addEventListener('click', () => playSound('click'));
-});
 
 // --- 4. VISITOR COUNTER ---
 const statsRef = doc(db, "site_stats", "global");
