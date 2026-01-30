@@ -580,3 +580,98 @@ iframe[src*="spotify"] {
     font-style: italic;
     color: #ccc;
 }
+
+/* --- 12. NEW CONTENT FEATURES --- */
+
+/* A. Formatting Toolbar */
+.formatting-bar {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 5px;
+}
+
+.formatting-bar button {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    font-size: 0.9em;
+    border: 1px solid white;
+    background: black;
+    color: white;
+}
+.formatting-bar button:hover {
+    background: white;
+    color: black;
+}
+
+/* B. Redacted Text (Spoiler) */
+.spoiler {
+    background: white;
+    color: white; /* Hidden text */
+    cursor: help;
+    padding: 0 4px;
+    transition: all 0.2s;
+}
+
+.spoiler:hover, .spoiler.revealed {
+    background: #333;
+    color: white; /* Revealed text */
+    text-decoration: none;
+}
+
+/* C. Read More / Truncation */
+.post-text-container {
+    position: relative;
+    /* No max-height by default, JS adds 'truncated' class if needed */
+}
+
+.post-text-container.truncated {
+    max-height: 150px; /* Limit height */
+    overflow: hidden;
+    mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+}
+
+.expand-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background: black;
+    border: 1px dashed white;
+    color: #aaa;
+    margin-top: 10px;
+    padding: 5px;
+    font-size: 0.8em;
+    cursor: pointer;
+}
+.expand-btn:hover {
+    background: #222;
+    color: white;
+}
+
+/* D. Pinned Post Icon */
+.pin-icon {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 16px;
+    height: 16px;
+    image-rendering: pixelated;
+    cursor: pointer;
+    opacity: 0.3; /* Dim when not pinned or hovered */
+    z-index: 10;
+}
+
+.pin-icon.active {
+    opacity: 1; /* Bright when pinned */
+    filter: drop-shadow(0 0 2px white);
+}
+
+.pin-icon:hover {
+    opacity: 1;
+}
+
+/* Admin Only: Hide pins for guests (handled in JS, but backup here) */
+body:not(.admin-mode) .pin-icon:not(.active) {
+    display: none;
+}

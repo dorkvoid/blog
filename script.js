@@ -28,6 +28,11 @@ const counterElement = document.getElementById('view-count');
 const searchInput = document.getElementById('searchBar');
 const toastContainer = document.getElementById('toast-container');
 
+// Toolbar Elements
+const fmtBold = document.getElementById('fmtBold');
+const fmtItalic = document.getElementById('fmtItalic');
+const fmtSpoiler = document.getElementById('fmtSpoiler');
+
 // UI Elements
 const confirmModal = document.getElementById('confirm-modal');
 const confirmYes = document.getElementById('confirmYes');
@@ -56,18 +61,23 @@ const adminMenu = document.getElementById('admin-menu');
 const logoutBtn = document.getElementById('logoutBtn');
 const errorMsg = document.getElementById('login-error');
 
+let isAdmin = false;
+
 onAuthStateChanged(auth, (user) => {
     if (user) {
+        isAdmin = true;
         document.body.classList.add('admin-mode');
         if (loginContainer) loginContainer.classList.add('hidden');
         if (adminMenu) adminMenu.classList.remove('hidden');
-        // Check for Ghost Save
         restoreDraft();
     } else {
+        isAdmin = false;
         document.body.classList.remove('admin-mode');
         if (loginContainer) loginContainer.classList.remove('hidden');
         if (adminMenu) adminMenu.classList.add('hidden');
     }
+    // Re-render feed to show/hide admin controls (pins)
+    reloadFeed(); 
 });
 
 if (passwordInput) {
@@ -94,24 +104,70 @@ if (logoutBtn) {
     });
 }
 
-// --- 6. LOAD POSTS ---
+// --- 6. LOAD POSTS (Modified for Pinned Sorting) ---
+let allPosts = []; // Local store
+
+// Standard query by time
 const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
+
 onSnapshot(q, (snapshot) => {
-    feed.innerHTML = "";
-    snapshot.forEach((doc) => {
-        addPostToDOM(doc.data(), doc.id);
-    });
-    if(searchInput.value) filterPosts(searchInput.value);
+    // 1. Map snapshot to array
+    allPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    reloadFeed();
 });
+
+function reloadFeed() {
+    feed.innerHTML = "";
+    
+    // 2. Sort: Pinned first, then Newest
+    allPosts.sort((a, b) => {
+        if (a.pinned === b.pinned) {
+            // If both pinned or both not pinned, sort by date
+            return (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0);
+        }
+        // Pinned (true) comes before Unpinned (false/undefined)
+        return a.pinned ? -1 : 1;
+    });
+
+    // 3. Filter if searching
+    const term = searchInput.value.toLowerCase();
+    const visiblePosts = term ? allPosts.filter(p => p.text.toLowerCase().includes(term)) : allPosts;
+
+    visiblePosts.forEach(post => {
+        addPostToDOM(post);
+    });
+}
 
 // --- 7. POST LOGIC ---
 let editingPostId = null; 
 
-// A. GHOST SAVE: Save to local storage on typing
+// A. Formatting Tools
+function insertTag(tagStart, tagEnd) {
+    const start = textInput.selectionStart;
+    const end = textInput.selectionEnd;
+    const text = textInput.value;
+    const before = text.substring(0, start);
+    const selected = text.substring(start, end);
+    const after = text.substring(end);
+    
+    textInput.value = before + tagStart + selected + tagEnd + after;
+    textInput.focus();
+    textInput.selectionStart = start + tagStart.length;
+    textInput.selectionEnd = end + tagStart.length;
+    
+    // Trigger input event for ghost save
+    textInput.dispatchEvent(new Event('input')); 
+}
+
+fmtBold.onclick = () => insertTag("**", "**");
+fmtItalic.onclick = () => insertTag("*", "*");
+fmtSpoiler.onclick = () => insertTag("||", "||");
+
+// B. Ghost Save & Auto Expand
 textInput.addEventListener('input', function() {
     this.style.height = 'auto'; 
     this.style.height = (this.scrollHeight) + 'px';
-    if (!editingPostId) { // Only save draft for new posts
+    if (!editingPostId) { 
         localStorage.setItem('postDraft', this.value);
     }
 });
@@ -125,7 +181,7 @@ function restoreDraft() {
     }
 }
 
-// B. Power Send (Ctrl + Enter)
+// C. Power Send
 textInput.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault(); 
@@ -158,10 +214,10 @@ postBtn.addEventListener('click', async function() {
                 text: text,
                 image: img,
                 timestamp: serverTimestamp(),
-                readableDate: new Date().toLocaleString()
+                readableDate: new Date().toLocaleString(),
+                pinned: false // Default new posts to not pinned
             });
             showToast("POST SUCCESSFUL");
-            // Clear Ghost Save
             localStorage.removeItem('postDraft');
             resetForm();
         }
@@ -185,7 +241,6 @@ function resetForm() {
     editingPostId = null;
     postBtn.innerText = "POST";
     if(cancelBtn) cancelBtn.classList.add('hidden');
-    // Clear draft if we cancel a new post
     localStorage.removeItem('postDraft');
 }
 
@@ -211,17 +266,13 @@ confirmNo.addEventListener('click', () => {
     confirmModal.classList.add('hidden');
 });
 
-// --- 9. HELPERS (Toasts, Formatting, etc) ---
+// --- 9. HELPERS ---
 
-// NEW: Toast Notification System
 function showToast(message) {
     const toast = document.createElement('div');
     toast.className = 'toast';
     toast.innerText = `[ SYSTEM: ${message} ]`;
-    
     toastContainer.appendChild(toast);
-    
-    // Remove after 3 seconds
     setTimeout(() => {
         toast.style.opacity = '0';
         toast.style.transform = 'translateX(100%)';
@@ -233,7 +284,6 @@ function showToast(message) {
 function timeAgo(date) {
     if (!date) return "";
     const seconds = Math.floor((new Date() - date) / 1000);
-    
     let interval = seconds / 31536000;
     if (interval > 1) return Math.floor(interval) + " years ago";
     interval = seconds / 2592000;
@@ -248,29 +298,26 @@ function timeAgo(date) {
 }
 
 // Search Filter
-searchInput.addEventListener('input', (e) => {
-    filterPosts(e.target.value);
+searchInput.addEventListener('input', () => {
+    reloadFeed(); // Uses the filter logic inside reloadFeed
 });
 
-function filterPosts(searchTerm) {
-    const term = searchTerm.toLowerCase();
-    const posts = document.querySelectorAll('.post');
-    posts.forEach(post => {
-        const text = post.innerText.toLowerCase();
-        if (text.includes(term)) {
-            post.style.display = "block";
-        } else {
-            post.style.display = "none";
-        }
-    });
-}
+// --- 10. DISPLAY FUNCTION (Heavy Logic) ---
 
-// --- 10. DISPLAY FUNCTION ---
-
-function addPostToDOM(post, id) {
+function addPostToDOM(post) {
+    const id = post.id;
     const postDiv = document.createElement('div');
     postDiv.classList.add('post');
 
+    // 1. Pin Logic
+    let pinHTML = "";
+    // Only show pin if (Admin is logged in) OR (Post is pinned)
+    if (isAdmin || post.pinned) {
+        const pinClass = post.pinned ? "pin-icon active" : "pin-icon";
+        pinHTML = `<img src="pin.png" class="${pinClass}" data-id="${id}" title="Pin/Unpin">`;
+    }
+
+    // 2. Media Logic
     let mediaHTML = "";
     if (post.image) {
         const url = post.image;
@@ -290,7 +337,7 @@ function addPostToDOM(post, id) {
         }
     }
 
-    // Time Logic
+    // 3. Time Logic
     const postDate = post.timestamp ? post.timestamp.toDate() : new Date();
     let editedDateObj = null;
     if (post.editedTimestamp) editedDateObj = post.editedTimestamp.toDate();
@@ -318,37 +365,69 @@ function addPostToDOM(post, id) {
         updateTimeDisplay();
     });
 
-    // NEW: FORMATTING (Markdown) + AUTO-LINKER
-    // 1. Sanitize HTML (prevent script injection)
+    // 4. Text Processing (Spoilers & Markdown)
     let tempDiv = document.createElement("div");
     tempDiv.textContent = post.text;
     let safeText = tempDiv.innerHTML;
 
-    // 2. Parse Markdown (**bold**, *italic*)
-    // Replaces **text** with <b>text</b> and *text* with <i>text</i>
     safeText = safeText
-        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-        .replace(/\*(.*?)\*/g, '<i>$1</i>');
+        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') // Bold
+        .replace(/\*(.*?)\*/g, '<i>$1</i>')   // Italic
+        .replace(/\|\|(.*?)\|\|/g, '<span class="spoiler" onclick="this.classList.toggle(\'revealed\')">$1</span>'); // Spoiler
 
-    // 3. Auto-Link
     let processedText = safeText.replace(
         /(https?:\/\/[^\s]+)/g, 
         '<a href="$1" target="_blank">$1</a>'
     );
 
-    const contentWrapper = document.createElement('div');
-    contentWrapper.innerHTML = `
+    // 5. Structure
+    postDiv.innerHTML = `
+        ${pinHTML}
         <div class="post-content">
             <img src="plxeyes.png" class="avatar-icon">
-            <p class="post-text">${processedText}</p>
+            <div class="post-text-container">
+                <p class="post-text">${processedText}</p>
+            </div>
         </div>
         ${mediaHTML}
         <div class="admin-buttons"></div>
     `;
 
-    postDiv.appendChild(timeSpan);
-    postDiv.appendChild(contentWrapper);
+    // Prepend timestamp manually
+    postDiv.prepend(timeSpan);
 
+    // 6. TRUNCATION LOGIC (Read More)
+    feed.appendChild(postDiv); // Append first to calculate height
+    const textContainer = postDiv.querySelector('.post-text-container');
+    
+    // Check if height exceeds 150px
+    if (textContainer.scrollHeight > 150) {
+        textContainer.classList.add('truncated');
+        
+        const expandBtn = document.createElement('div');
+        expandBtn.classList.add('expand-btn');
+        expandBtn.innerText = "[ EXPAND ENTRY ]";
+        
+        expandBtn.onclick = () => {
+            textContainer.classList.remove('truncated');
+            expandBtn.remove();
+        };
+        
+        // Insert after the text container
+        textContainer.parentNode.insertBefore(expandBtn, textContainer.nextSibling);
+    }
+
+    // 7. Pin Click Handler
+    const pinBtn = postDiv.querySelector('.pin-icon');
+    if (pinBtn && isAdmin) {
+        pinBtn.addEventListener('click', async () => {
+            const newStatus = !post.pinned;
+            await updateDoc(doc(db, "posts", id), { pinned: newStatus });
+            showToast(newStatus ? "POST PINNED" : "POST UNPINNED");
+        });
+    }
+
+    // 8. Admin Buttons
     const btnContainer = postDiv.querySelector('.admin-buttons');
     const editBtn = document.createElement('button');
     editBtn.innerText = "EDIT";
@@ -361,9 +440,8 @@ function addPostToDOM(post, id) {
     deleteBtn.classList.add('btn-delete');
     deleteBtn.onclick = () => triggerDelete(id); 
     btnContainer.appendChild(deleteBtn);
-
-    feed.appendChild(postDiv);
     
+    // Lightbox
     const imgElement = postDiv.querySelector('.click-to-zoom');
     if(imgElement) {
         imgElement.addEventListener('click', () => {
