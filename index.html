@@ -23,6 +23,8 @@
         <div id="feed"></div>
     </div>
     
+    <img id="back-to-top" src="uparrow.png" class="hidden" title="Return to Surface">
+    
     <div id="view-count">VISITS: .....</div>
     
     <div id="admin-login-bar">
@@ -37,6 +39,21 @@
             <div class="login-status">[ LOGGED IN ]</div>
             <button id="logoutBtn">LOG OUT</button>
         </div>
+    </div>
+
+    <div id="confirm-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <p>YOU SURE?</p>
+            <div class="modal-buttons">
+                <button id="confirmYes">YUP</button>
+                <button id="confirmNo">NAH</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="lightbox-modal" class="modal-overlay hidden">
+        <span id="lightbox-close">[ X ]</span>
+        <img id="lightbox-img" src="">
     </div>
 
     <script type="module" src="script.js"></script>
