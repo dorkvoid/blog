@@ -334,21 +334,35 @@ body.admin-mode .admin-buttons { display: block !important; }
 
 /* --- 7. NEW UI FEATURES --- */
 
-/* A. Back to Top Arrow */
+/* A. Back to Top Arrow - RELOCATED */
 #back-to-top {
     position: fixed;
     bottom: 20px;
-    right: 20px;
-    width: 32px;
-    height: 32px;
+    
+    /* Logic: Center of screen (50%) + Half of container (300px) + Padding (20px) */
+    left: calc(50% + 320px); 
+    right: auto; /* Unset the old position */
+    
+    width: 50px;  /* Bigger */
+    height: 50px; /* Bigger */
     cursor: pointer;
-    z-index: 10001; /* Above scanlines */
-    opacity: 0.7;
-    transition: opacity 0.2s;
+    z-index: 10001; 
+    
+    opacity: 1; /* Fully visible, no ghosting */
     image-rendering: pixelated;
+    transition: transform 0.2s ease;
 }
+
 #back-to-top:hover {
-    opacity: 1;
+    transform: translateY(-5px); /* distinct hop animation */
+}
+
+/* Mobile Fallback: If screen is too small to fit the arrow on the side, put it back in the corner */
+@media (max-width: 1000px) {
+    #back-to-top {
+        left: auto;
+        right: 20px;
+    }
 }
 
 /* B. Links in Posts (Auto-Linker) */
@@ -363,35 +377,60 @@ body.admin-mode .admin-buttons { display: block !important; }
     text-decoration: none;
 }
 
-/* C. Universal Modal Overlay (Background Dimmer) */
+/* C. Universal Modal Overlay */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.85); /* Dark dim */
-    z-index: 10002; /* Topmost layer */
+    background: rgba(0, 0, 0, 0.9); /* Darker background for focus */
+    z-index: 10002; 
     display: flex;
     justify-content: center;
     align-items: center;
-    backdrop-filter: blur(2px); /* Blur the background slightly */
+    backdrop-filter: blur(2px);
 }
 
-/* D. The "Are You Sure" Box */
+/* D. The "Are You Sure" Box - FLATTENED */
 .modal-box {
     background: black;
-    border: 2px solid white;
-    padding: 20px;
+    border: 2px solid white; /* Sharp, thick border */
+    padding: 30px; /* More breathing room */
     text-align: center;
-    min-width: 250px;
-    box-shadow: 0 0 15px white; /* Glow */
+    min-width: 300px;
+    
+    /* REMOVED: box-shadow: 0 0 15px white; */
+    box-shadow: none; 
+}
+
+.modal-box p {
+    font-size: 1.2em; /* Larger text */
+    margin-bottom: 20px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }
 
 .modal-buttons {
     display: flex;
-    gap: 10px;
+    gap: 20px;
+    justify-content: center; /* Center the buttons */
     margin-top: 20px;
+}
+
+/* Make modal buttons look identical to main buttons */
+.modal-buttons button {
+    border: 2px solid white;
+    background: black;
+    color: white;
+    font-family: inherit;
+    text-transform: uppercase;
+}
+
+.modal-buttons button:hover {
+    background: white;
+    color: black;
 }
 
 /* E. Image Lightbox */
@@ -399,7 +438,8 @@ body.admin-mode .admin-buttons { display: block !important; }
     max-width: 90%;
     max-height: 90%;
     border: 2px solid white;
-    box-shadow: 0 0 20px white;
+    /* Removed the glow here too to match */
+    box-shadow: none; 
 }
 
 #lightbox-close {
