@@ -45,13 +45,29 @@ body {
     image-rendering: pixelated; 
     -webkit-font-smoothing: none;
     padding-bottom: 100px;
-    cursor: url('cursor.png'), auto;
+    
+    /* UPDATED PATH */
+    cursor: url('images/cursor.png'), auto;
+    
     background-image: none;
 }
 
-/* 2. This tells the browser: "When clicking ANYWHERE, swap the cursor" */
 body:active {
-    cursor: url('cursor-click.png'), auto;
+    /* UPDATED PATH */
+    cursor: url('images/cursor-click.png'), auto;
+}
+
+/* --- INTERACTIVE CURSOR LOGIC --- */
+a, button, .timestamp, .spoiler, .expand-btn, .pin-icon,
+#back-to-top, #sound-toggle, #lightbox-close, .click-to-zoom {
+    /* UPDATED PATH */
+    cursor: url('images/link-select.png'), pointer;
+}
+
+a:active, button:active, .timestamp:active, .spoiler:active, .expand-btn:active, .pin-icon:active,
+#back-to-top:active, #sound-toggle:active, #lightbox-close:active, .click-to-zoom:active {
+    /* UPDATED PATH */
+    cursor: url('images/link-select-click.png'), pointer;
 }
 
 /* SCANLINES: Static (No Animation) */
@@ -98,6 +114,8 @@ textarea, input {
     margin-bottom: 10px;
     box-sizing: border-box;
     font-family: inherit;
+    /* Inputs keep the text cursor */
+    cursor: text;
 }
 
 /* Auto-Expanding Input */
@@ -115,11 +133,6 @@ textarea:focus, input:focus {
     background-color: #111; 
 }
 
-/* Keeps the text cursor normal when highlighting text */
-textarea:active, input:active {
-    cursor: text; 
-}
-
 /* --- 4. BUTTONS --- */
 button {
     background: white;
@@ -127,9 +140,9 @@ button {
     border: none;
     padding: 10px 20px;
     font-weight: bold;
-    cursor: pointer;
     width: 100%;
     transition: all 0.2s ease;
+    /* Cursor handled by Interactive Logic above */
 }
 
 button:hover {
@@ -143,11 +156,6 @@ button:hover::after { content: " ]"; color: black; }
 button:active {
     transform: translateY(2px);
     box-shadow: inset 0px 3px 5px rgba(0,0,0,0.2);
-    cursor: url('cursor-click.png'), auto; 
-}
-
-a:active {
-    cursor: url('cursor-click.png'), auto;
 }
 
 .button-row {
@@ -182,7 +190,6 @@ a:active {
     padding-bottom: 5px;
     margin-bottom: 10px;
     display: block;
-    cursor: pointer;
     user-select: none;
     transition: color 0.2s;
 }
@@ -372,7 +379,6 @@ body.admin-mode .admin-buttons { display: block !important; }
     font-family: inherit;
     font-size: 0.7em;
     padding: 5px 15px;
-    cursor: pointer;
     font-weight: bold;
 }
 #logoutBtn:hover {
@@ -393,7 +399,6 @@ body.admin-mode .admin-buttons { display: block !important; }
     right: auto; 
     width: 50px; 
     height: 50px;
-    cursor: pointer;
     z-index: 10001; 
     opacity: 1; 
     image-rendering: pixelated;
@@ -489,7 +494,6 @@ body.admin-mode .admin-buttons { display: block !important; }
     right: 30px;
     color: white;
     font-size: 1.5em;
-    cursor: pointer;
     font-weight: bold;
 }
 #lightbox-close:hover {
@@ -502,7 +506,6 @@ body.admin-mode .admin-buttons { display: block !important; }
     bottom: 20px;
     left: 20px;
     z-index: 10001;
-    cursor: pointer;
     opacity: 0.5;
     transition: all 0.2s ease;
 }
@@ -610,7 +613,6 @@ body.admin-mode .admin-buttons { display: block !important; }
     margin-top: 5px;
     padding: 10px;
     font-size: 0.9em;
-    cursor: pointer;
     font-weight: bold;
     border: none;
     white-space: nowrap;
@@ -628,7 +630,6 @@ body.admin-mode .admin-buttons { display: block !important; }
     width: 16px;
     height: 16px;
     image-rendering: pixelated;
-    cursor: pointer;
     opacity: 0.3; 
     z-index: 10;
 }

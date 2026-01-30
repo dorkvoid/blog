@@ -47,7 +47,7 @@ const lightboxImg = document.getElementById('lightbox-img');
 const lightboxClose = document.getElementById('lightbox-close');
 const backToTopBtn = document.getElementById('back-to-top');
 
-// --- 3.5 AUDIO SYSTEM (POLISHED) ---
+// --- 3.5 AUDIO SYSTEM (CLEAN) ---
 const sounds = {
     click: new Audio('sounds/buttonclick.mp3'),
     hum: new Audio('sounds/backgroundhum.mp3'),
@@ -69,45 +69,32 @@ const sounds = {
 sounds.hum.loop = true;
 sounds.hum.volume = 0.1; 
 sounds.confirm.volume = 0.2; 
-sounds.hover.volume = 0.2; // FIX: Lowered hover volume
+sounds.hover.volume = 0.2;
 
 // 1. Strict localStorage check
 let isMuted = localStorage.getItem('siteMuted') !== 'false'; 
 
 function updateSoundUI() {
     if (isMuted) {
-        soundIcon.src = 'sound-off.png';
+        // UPDATED PATH
+        soundIcon.src = 'images/sound-off.png';
         sounds.hum.pause();
     } else {
-        soundIcon.src = 'sound-on.png';
+        // UPDATED PATH
+        soundIcon.src = 'images/sound-on.png';
+        // Try to play immediately (browser might block)
         sounds.hum.play().catch(() => {}); 
     }
 }
 updateSoundUI();
 
-// 2. ROBUST UNLOCKER (Fix for Persistence)
-// We try to play the hum on every user interaction until it succeeds.
-const unlockAudio = () => {
+// 2. SIMPLE UNLOCKER
+// If sound is supposed to be ON but is paused (refresh), wait for 1st click to start it.
+document.addEventListener('click', () => {
     if (!isMuted && sounds.hum.paused) {
-        sounds.hum.play().then(() => {
-            // Only remove listeners if playback actually STARTED
-            document.removeEventListener('click', unlockAudio);
-            document.removeEventListener('keydown', unlockAudio);
-            document.removeEventListener('mousemove', unlockAudio);
-            document.removeEventListener('touchstart', unlockAudio);
-            document.removeEventListener('wheel', unlockAudio);
-        }).catch(e => {
-            // If it failed (still blocked), we keep the listeners active to try again
-        });
+        sounds.hum.play().catch(() => {});
     }
-};
-
-// Attach to document to catch EVERYTHING
-document.addEventListener('click', unlockAudio);
-document.addEventListener('keydown', unlockAudio);
-document.addEventListener('mousemove', unlockAudio);
-document.addEventListener('touchstart', unlockAudio);
-document.addEventListener('wheel', unlockAudio);
+}, { once: true });
 
 // 3. Toggle Logic
 soundToggle.addEventListener('click', (e) => {
@@ -135,24 +122,25 @@ function playSound(name) {
         const audio = sounds[name].cloneNode();
         if (name === 'hum') audio.volume = 0.1;
         else if (name === 'confirm') audio.volume = 0.2;
-        else if (name === 'hover') audio.volume = 0.2; // Ensure clone uses low volume
+        else if (name === 'hover') audio.volume = 0.2;
         else audio.volume = 1.0;
 
         audio.play().catch(() => {});
     }
 }
 
-// Attach Hover Sounds
+// Attach Global Button Sounds
 document.querySelectorAll('button').forEach(btn => {
-    // FIX: Ignore formatting buttons for HOVER sound
+    // Hover Sound
     btn.addEventListener('mouseenter', () => {
         if (btn.id !== 'fmtBold' && btn.id !== 'fmtItalic' && btn.id !== 'fmtSpoiler') {
             playSound('hover');
         }
     });
 
+    // Click Sound
     btn.addEventListener('click', () => {
-        // Formatting buttons are silent on CLICK too (as requested previously)
+        // Formatting buttons are silent
         if (btn.id !== 'fmtBold' && btn.id !== 'fmtItalic' && btn.id !== 'fmtSpoiler') {
             playSound('click');
         }
@@ -203,7 +191,6 @@ if (passwordInput) {
             try {
                 await signInWithEmailAndPassword(auth, "kickside02@gmail.com", e.target.value);
                 showToast("ACCESS GRANTED");
-                // Silent success on login
             } catch (error) {
                 playSound('error');
                 if(errorMsg) {
@@ -218,7 +205,7 @@ if (passwordInput) {
 
 if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
-        playSound('click');
+        // Removed manual playSound('click') - Global listener handles it
         await signOut(auth);
         showToast("LOGGED OUT");
     });
@@ -351,7 +338,7 @@ textInput.addEventListener('keydown', (e) => {
 });
 
 postBtn.addEventListener('click', async function() {
-    playSound('click');
+    // Removed manual playSound('click') - Global listener handles it
     if (!auth.currentUser) return showToast("LOGIN REQUIRED");
 
     const text = textInput.value;
@@ -397,7 +384,7 @@ postBtn.addEventListener('click', async function() {
 
 if (cancelBtn) {
     cancelBtn.addEventListener('click', () => {
-        playSound('click');
+        // Removed manual playSound('click')
         resetForm();
     });
 }
@@ -432,7 +419,7 @@ confirmYes.addEventListener('click', async () => {
 });
 
 confirmNo.addEventListener('click', () => {
-    playSound('click');
+    // Removed manual playSound('click')
     idToDelete = null;
     confirmModal.classList.add('hidden');
 });
@@ -477,7 +464,8 @@ function addPostToDOM(post) {
     let pinHTML = "";
     if (isAdmin || post.pinned) {
         const pinClass = post.pinned ? "pin-icon active" : "pin-icon";
-        pinHTML = `<img src="pin.png" class="${pinClass}" data-id="${id}" title="Pin/Unpin">`;
+        // UPDATED PATH
+        pinHTML = `<img src="images/pin.png" class="${pinClass}" data-id="${id}" title="Pin/Unpin">`;
     }
 
     let mediaHTML = "";
@@ -542,7 +530,7 @@ function addPostToDOM(post) {
     postDiv.innerHTML = `
         ${pinHTML}
         <div class="post-content">
-            <img src="plxeyes.png" class="avatar-icon">
+            <img src="images/plxeyes.png" class="avatar-icon">
             <div class="post-text-container">
                 <p class="post-text">${processedText}</p>
             </div>
@@ -588,7 +576,7 @@ function addPostToDOM(post) {
     editBtn.innerText = "EDIT";
     editBtn.classList.add('btn-edit');
     editBtn.onclick = () => {
-        playSound('click');
+        // Removed manual playSound('click')
         startEdit(id, post.text, post.image);
     };
     editBtn.addEventListener('mouseenter', () => playSound('hover'));
@@ -625,7 +613,6 @@ function startEdit(id, text, image) {
 
 // --- 11. LIGHTBOX & BACK TO TOP LOGIC ---
 
-// Global Escape Key Listener
 document.addEventListener('keydown', (e) => {
     if (e.key === "Escape" && !lightboxModal.classList.contains('hidden')) {
         lightboxModal.classList.add('hidden');
@@ -644,7 +631,6 @@ lightboxModal.addEventListener('click', (e) => {
         lightboxModal.classList.add('hidden');
     }
 });
-// (Removed the listener on lightboxImg so clicking the image does nothing)
 
 window.addEventListener('scroll', () => {
     if (window.scrollY > 300) {
