@@ -47,7 +47,7 @@ const lightboxImg = document.getElementById('lightbox-img');
 const lightboxClose = document.getElementById('lightbox-close');
 const backToTopBtn = document.getElementById('back-to-top');
 
-// --- 3.5 AUDIO SYSTEM (REFINED UNLOCKER) ---
+// --- 3.5 AUDIO SYSTEM (THE TACTILE UPDATE) ---
 const sounds = {
     click: new Audio('sounds/buttonclick.mp3'),
     hum: new Audio('sounds/backgroundhum.mp3'),
@@ -57,7 +57,6 @@ const sounds = {
     type4: 'sounds/type4.mp3',
     delete: new Audio('sounds/deletedpost.wav'),
     success: new Audio('sounds/successfulpost.mp3'),
-    login: new Audio('sounds/successfulpost.mp3'),
     edit: new Audio('sounds/editedpost.wav'),
     toast: new Audio('sounds/toast.wav'),
     confirm: new Audio('sounds/yousure.wav'),
@@ -69,56 +68,42 @@ const sounds = {
 // Config
 sounds.hum.loop = true;
 sounds.hum.volume = 0.1; 
-sounds.confirm.volume = 0.4;
 
-// 1. Strict localStorage check
+// THE FIX: Check localStorage and update UI immediately
 let isMuted = localStorage.getItem('siteMuted') !== 'false'; 
-
-function updateSoundUI() {
-    if (isMuted) {
-        soundIcon.src = 'sound-off.png';
-        sounds.hum.pause();
-    } else {
-        soundIcon.src = 'sound-on.png';
-        // Try to play immediately (might still be blocked until first move)
-        sounds.hum.play().catch(() => {}); 
-    }
-}
 updateSoundUI();
 
-// 2. THE FORCE-START: Bypassing the "Click Only" restriction
-// We listen for ANY signal that the user is present (scroll, move, or key)
-const unlockAudio = () => {
+// NEW: Global interaction listener to bypass browser autoplay blocks
+document.addEventListener('click', () => {
     if (!isMuted && sounds.hum.paused) {
-        sounds.hum.play().then(() => {
-            // Once it finally starts playing, remove these listeners to save performance
-            window.removeEventListener('mousemove', unlockAudio);
-            window.removeEventListener('touchstart', unlockAudio);
-            window.removeEventListener('keydown', unlockAudio);
-            window.removeEventListener('wheel', unlockAudio);
-        }).catch(e => {});
+        sounds.hum.play().catch(e => console.log("Autoplay still blocked"));
     }
-};
+}, { once: false }); // Keep active so it catches the first click after refresh
 
-// Attach listeners to every possible user action
-window.addEventListener('mousemove', unlockAudio);
-window.addEventListener('touchstart', unlockAudio);
-window.addEventListener('keydown', unlockAudio);
-window.addEventListener('wheel', unlockAudio);
-document.addEventListener('click', unlockAudio);
-
-// 3. Toggle Logic
+// Toggle Logic
 soundToggle.addEventListener('click', (e) => {
-    e.stopPropagation(); 
+    e.stopPropagation(); // Prevents the global click listener from double-firing
     isMuted = !isMuted;
-    localStorage.setItem('siteMuted', isMuted.toString());
+    localStorage.setItem('siteMuted', isMuted);
     updateSoundUI();
     
     if(!isMuted) {
         playSound('click');
         sounds.hum.play();
+    } else {
+        sounds.hum.pause();
     }
 });
+
+function updateSoundUI() {
+    if (isMuted) {
+        soundIcon.src = 'sound-off.png';
+    } else {
+        soundIcon.src = 'sound-on.png';
+        // Try to play immediately, though browser might still block until first click
+        sounds.hum.play().catch(() => {}); 
+    }
+}
 
 // --- 4. VISITOR COUNTER ---
 const statsRef = doc(db, "site_stats", "global");
