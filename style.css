@@ -1,0 +1,266 @@
+/* Reset basic settings */
+@font-face {
+    font-family: 'Determination';
+    src: url('DeterminationMonoWebRegular-Z5oq.ttf');
+}
+
+body {
+    background-color: black;
+    color: white;
+    font-family: 'Determination', sans-serif;
+    font-size: 18px;
+    image-rendering: pixelated; 
+    -webkit-font-smoothing: none;
+    padding-bottom: 100px;
+    cursor: url('cursor.png'), auto;
+}
+
+body:active {
+    cursor: url('cursor-click.png'), auto;
+}
+
+button:active, a:active {
+    cursor: url('cursor-click.png'), auto;
+}
+
+.container {
+    width: 100%;
+    max-width: 600px;
+}
+
+/* Input Section Styling */
+.input-area {
+    border: 2px solid white;
+    padding: 15px;
+    margin-bottom: 40px;
+    background: black;
+    display: none !important;
+}
+
+textarea, input {
+    width: 100%;
+    background: black;
+    color: white;
+    border: 1px solid white;
+    padding: 10px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+/* Global Button Style */
+button {
+    background: white;
+    color: black;
+    border: none;
+    padding: 10px 20px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%; /* This is what was making your Logout button huge! */
+}
+
+button:hover {
+    background: #ccc;
+}
+
+/* NEW: Button Row for Post/Cancel */
+.button-row {
+    display: flex;
+    gap: 10px;
+}
+
+/* NEW: Cancel Button Style */
+#cancelBtn {
+    background: #333;
+    color: white;
+    border: 1px solid white;
+}
+#cancelBtn:hover {
+    background: #555;
+}
+
+/* The Post Styling */
+.post {
+    border: 2px solid white;
+    padding: 20px;
+    margin-bottom: 20px;
+    background: black;
+}
+
+.timestamp {
+    font-size: 0.8em;
+    border-bottom: 1px solid white;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+    display: block;
+}
+
+/* NEW: The Grey "Edited" Text */
+.edited-timestamp {
+    color: #888;
+    margin-left: 8px;
+    font-style: italic;
+    font-size: 0.9em;
+}
+
+.post-image, video {
+    max-width: 100%;
+    border: 1px solid white;
+    margin-top: 10px;
+    display: block;
+}
+
+#view-count {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    color: white;
+    font-family: inherit;
+    font-size: 0.8em;
+    background: black;
+    border: 1px solid white;
+    padding: 10px;
+    z-index: 100;
+}
+
+/* --- AVATAR / ICON STYLES --- */
+.post-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.avatar-icon {
+    width: 50px;
+    height: 50px;
+    image-rendering: pixelated;
+    border: 1px solid white;
+    flex-shrink: 0;
+}
+
+.post-content p {
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* --- UNIVERSAL MEDIA STYLES --- */
+.post-media, .post-image {
+    display: block;
+    max-width: 100%;
+    margin-top: 10px;
+    border: 1px solid white;
+}
+
+audio.post-media {
+    width: 100%;
+    height: 40px;
+    border-radius: 0;
+    filter: invert(1);
+}
+
+/* --- ADMIN STYLES --- */
+
+.hidden {
+    display: none !important;
+}
+
+#admin-login-bar {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: black;
+    border: 1px solid white;
+    padding: 10px;
+    z-index: 1000;
+    min-width: 200px;
+    text-align: center;
+}
+
+#admin-login-bar input {
+    width: 120px;
+    border: 1px solid white;
+    background: black;
+    color: white;
+    font-family: inherit;
+    margin-left: 10px;
+    padding: 2px 5px;
+}
+
+/* Buttons */
+.admin-buttons {
+    display: none !important; 
+    margin-top: 10px;
+    border-top: 1px dotted white;
+    padding-top: 10px;
+    text-align: right;
+}
+
+.admin-buttons button {
+    width: auto !important;
+    background: black !important;
+    color: white !important;
+    border: 1px solid white !important;
+    padding: 5px 10px !important;
+    cursor: pointer;
+    font-family: inherit; 
+    font-size: 0.8em;
+    margin-left: 10px;
+}
+
+.admin-buttons button:hover {
+    background: white !important;
+    color: black !important;
+}
+
+/* --- THE MAGIC SWITCH --- */
+body.admin-mode .input-area {
+    display: block !important;
+}
+body.admin-mode .admin-buttons {
+    display: block !important;
+}
+
+/* --- NEW LOGIN UI --- */
+
+#login-error {
+    display: none;
+    color: red;
+    font-weight: bold;
+    position: absolute;
+    top: -30px;
+    right: 0;
+    width: 100%;
+    text-align: right;
+}
+
+/* FIXED LOGOUT MENU STYLING */
+#admin-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.login-status {
+    color: rgb(251, 255, 0); 
+    font-size: 0.8em; 
+    margin-bottom: 5px;
+}
+
+#logoutBtn {
+    width: auto !important; /* Forces it to shrink to fit text */
+    background: white;
+    color: black;
+    border: none;
+    font-family: inherit;
+    font-size: 0.7em;
+    padding: 5px 15px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#logoutBtn:hover {
+    background: red;
+    color: white;
+}

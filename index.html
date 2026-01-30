@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mikevoid</title>
+    <link rel="icon" type="image/png" href="plxeyestiny.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <div class="input-area">
+            <textarea id="postText" placeholder="Write something..."></textarea>
+            <input type="text" id="imageUrl" placeholder="Media URL (optional)...">
+            
+            <div class="button-row">
+                <button id="postBtn">POST</button>
+                <button id="cancelBtn" class="hidden">CANCEL</button>
+            </div>
+        </div>
+
+        <div id="feed"></div>
+    </div>
+    
+    <div id="view-count">VISITS: .....</div>
+    
+    <div id="admin-login-bar">
+        <div id="login-error">ACCESS DENIED</div>
+
+        <div id="login-input-container">
+            <span>ADMIN:</span>
+            <input type="password" id="adminPassword" placeholder="Key...">
+        </div>
+
+        <div id="admin-menu" class="hidden">
+            <div class="login-status">[ LOGGED IN ]</div>
+            <button id="logoutBtn">LOG OUT</button>
+        </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
