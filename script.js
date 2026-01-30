@@ -47,7 +47,7 @@ const lightboxImg = document.getElementById('lightbox-img');
 const lightboxClose = document.getElementById('lightbox-close');
 const backToTopBtn = document.getElementById('back-to-top');
 
-// --- 3.5 AUDIO SYSTEM (THE TACTILE UPDATE) ---
+// --- 3.5 AUDIO SYSTEM (REFINED) ---
 const sounds = {
     click: new Audio('sounds/buttonclick.mp3'),
     hum: new Audio('sounds/backgroundhum.mp3'),
@@ -68,65 +68,82 @@ const sounds = {
 // Config
 sounds.hum.loop = true;
 sounds.hum.volume = 0.1; 
+sounds.confirm.volume = 0.2; // FIX: Lowered volume
 
-// THE FIX: Check localStorage and update UI immediately
+// 1. Strict localStorage check
 let isMuted = localStorage.getItem('siteMuted') !== 'false'; 
+
+function updateSoundUI() {
+    if (isMuted) {
+        soundIcon.src = 'sound-off.png';
+        sounds.hum.pause();
+    } else {
+        soundIcon.src = 'sound-on.png';
+        // Try to play immediately
+        sounds.hum.play().catch(() => {}); 
+    }
+}
 updateSoundUI();
 
-// NEW: Global interaction listener to bypass browser autoplay blocks
-document.addEventListener('click', () => {
+// 2. AGGRESSIVE UNLOCKER (Fix for refresh silence)
+// We listen for ANY interaction (Mouse move, scroll, key) to force audio to start
+const unlockAudio = () => {
     if (!isMuted && sounds.hum.paused) {
-        sounds.hum.play().catch(e => console.log("Autoplay still blocked"));
+        sounds.hum.play().then(() => {
+            // Cleanup listeners once audio is running
+            ['mousemove', 'touchstart', 'keydown', 'wheel', 'click'].forEach(evt => 
+                window.removeEventListener(evt, unlockAudio)
+            );
+        }).catch(e => {});
     }
-}, { once: false }); // Keep active so it catches the first click after refresh
+};
 
-// Toggle Logic
+// Attach aggressive listeners
+['mousemove', 'touchstart', 'keydown', 'wheel', 'click'].forEach(evt => 
+    window.addEventListener(evt, unlockAudio)
+);
+
+// 3. Toggle Logic
 soundToggle.addEventListener('click', (e) => {
-    e.stopPropagation(); // Prevents the global click listener from double-firing
+    e.stopPropagation(); 
     isMuted = !isMuted;
-    localStorage.setItem('siteMuted', isMuted);
+    localStorage.setItem('siteMuted', isMuted.toString());
     updateSoundUI();
     
     if(!isMuted) {
         playSound('click');
         sounds.hum.play();
-    } else {
-        sounds.hum.pause();
     }
 });
-
-function updateSoundUI() {
-    if (isMuted) {
-        soundIcon.src = 'sound-off.png';
-    } else {
-        soundIcon.src = 'sound-on.png';
-        // Try to play immediately, though browser might still block until first click
-        sounds.hum.play().catch(() => {}); 
-    }
-}
 
 // Global Sound Player
 function playSound(name) {
     if (isMuted) return;
 
     if (name === 'type') {
-        // Random Typing Sound
         const rand = Math.floor(Math.random() * 4) + 1;
         const audio = new Audio(sounds[`type${rand}`]);
         audio.volume = 0.5;
         audio.play().catch(() => {});
     } else if (sounds[name]) {
-        // Clone allows overlapping sounds (rapid clicks)
         const audio = sounds[name].cloneNode();
-        audio.volume = (name === 'hum') ? 0.1 : 1.0; 
+        if (name === 'hum') audio.volume = 0.1;
+        else if (name === 'confirm') audio.volume = 0.2; // Ensure volume stays low on clone
+        else audio.volume = 1.0;
+
         audio.play().catch(() => {});
     }
 }
 
-// Attach Hover Sounds to Buttons
+// Attach Hover Sounds
 document.querySelectorAll('button').forEach(btn => {
     btn.addEventListener('mouseenter', () => playSound('hover'));
-    btn.addEventListener('click', () => playSound('click'));
+    btn.addEventListener('click', () => {
+        // Formatting buttons are silent on click now
+        if (btn.id !== 'fmtBold' && btn.id !== 'fmtItalic' && btn.id !== 'fmtSpoiler') {
+            playSound('click');
+        }
+    });
 });
 
 // --- 4. VISITOR COUNTER ---
@@ -173,9 +190,9 @@ if (passwordInput) {
             try {
                 await signInWithEmailAndPassword(auth, "kickside02@gmail.com", e.target.value);
                 showToast("ACCESS GRANTED");
-                playSound('success'); 
+                // FIX: No success sound here
             } catch (error) {
-                playSound('error'); // ERROR SOUND
+                playSound('error');
                 if(errorMsg) {
                     errorMsg.style.display = 'block';
                     setTimeout(() => errorMsg.style.display = 'none', 2000);
@@ -197,8 +214,18 @@ if (logoutBtn) {
 // --- 6. COMMAND & SEARCH LOGIC ---
 let isFeedHidden = false; 
 
+// Shared Typing Logic (Fix for Spam)
+function handleTypingSound(e) {
+    if (e.repeat) return; // FIX: Prevents machine-gun sound when holding key
+    // Optional: Only play for actual characters if desired, but any keydown is fine for effect
+    playSound('type');
+}
+
+searchInput.addEventListener('keydown', handleTypingSound);
+textInput.addEventListener('keydown', handleTypingSound);
+imageInput.addEventListener('keydown', handleTypingSound); // FIX: Media bar now has sound
+
 searchInput.addEventListener('input', (e) => {
-    playSound('type'); // TYPE SOUND
     const val = e.target.value;
     
     if (val.startsWith('/')) {
@@ -270,7 +297,7 @@ function reloadFeed() {
 let editingPostId = null; 
 
 function insertTag(tagStart, tagEnd) {
-    playSound('click'); 
+    // FIX: Removed playSound('click') here
     const start = textInput.selectionStart;
     const end = textInput.selectionEnd;
     const text = textInput.value;
@@ -290,7 +317,7 @@ fmtItalic.onclick = () => insertTag("*", "*");
 fmtSpoiler.onclick = () => insertTag("||", "||");
 
 textInput.addEventListener('input', function() {
-    playSound('type'); // TYPE SOUND
+    // Note: Typing sound moved to 'keydown' handler above
     this.style.height = 'auto'; 
     this.style.height = (this.scrollHeight) + 'px';
     if (!editingPostId) { 
@@ -308,6 +335,7 @@ function restoreDraft() {
 }
 
 textInput.addEventListener('keydown', (e) => {
+    // Handle Ctrl+Enter
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault(); 
         postBtn.click();
@@ -334,7 +362,7 @@ postBtn.addEventListener('click', async function() {
                 editedDate: new Date().toLocaleString()
             });
             showToast("POST UPDATED");
-            playSound('edit'); // EDIT SOUND
+            playSound('edit'); 
             resetForm();
         } else {
             await addDoc(collection(db, "posts"), {
@@ -345,7 +373,7 @@ postBtn.addEventListener('click', async function() {
                 pinned: false 
             });
             showToast("POST SUCCESSFUL");
-            playSound('success'); // SUCCESS SOUND
+            playSound('success'); 
             localStorage.removeItem('postDraft');
             resetForm();
         }
@@ -380,14 +408,14 @@ function resetForm() {
 let idToDelete = null;
 
 function triggerDelete(id) {
-    playSound('confirm'); // YOUSURE SOUND
+    playSound('confirm'); 
     idToDelete = id;
     confirmModal.classList.remove('hidden');
 }
 
 confirmYes.addEventListener('click', async () => {
     if (idToDelete) {
-        playSound('delete'); // DELETE SOUND
+        playSound('delete'); 
         await deleteDoc(doc(db, "posts", idToDelete));
         idToDelete = null;
         confirmModal.classList.add('hidden');
@@ -402,7 +430,7 @@ confirmNo.addEventListener('click', () => {
 });
 
 function showToast(message) {
-    playSound('toast'); // TOAST SOUND
+    playSound('toast'); 
     const toast = document.createElement('div');
     toast.className = 'toast';
     toast.innerText = `[ SYSTEM: ${message} ]`;
@@ -415,7 +443,6 @@ function showToast(message) {
     }, 3000);
 }
 
-// ... [TimeAgo Function remains the same] ...
 function timeAgo(date) {
     if (!date) return "";
     const seconds = Math.floor((new Date() - date) / 1000);
@@ -445,7 +472,6 @@ function addPostToDOM(post) {
         pinHTML = `<img src="pin.png" class="${pinClass}" data-id="${id}" title="Pin/Unpin">`;
     }
 
-    // ... [Media Logic remains same] ...
     let mediaHTML = "";
     if (post.image) {
         const url = post.image;
@@ -464,7 +490,6 @@ function addPostToDOM(post) {
         }
     }
 
-    // ... [Time/Text Logic remains same] ...
     const postDate = post.timestamp ? post.timestamp.toDate() : new Date();
     let editedDateObj = null;
     if (post.editedTimestamp) editedDateObj = post.editedTimestamp.toDate();
@@ -523,6 +548,7 @@ function addPostToDOM(post) {
     feed.appendChild(postDiv); 
     const textContainer = postDiv.querySelector('.post-text-container');
     
+    // TRUNCATION / COLLAPSE LOGIC
     if (textContainer.scrollHeight > 150) {
         textContainer.classList.add('truncated');
         
@@ -532,8 +558,9 @@ function addPostToDOM(post) {
         
         expandBtn.onclick = () => {
             playSound('click');
-            textContainer.classList.remove('truncated');
-            expandBtn.remove();
+            // FIX: Toggle between Expand and Collapse
+            const isNowTruncated = textContainer.classList.toggle('truncated');
+            expandBtn.innerText = isNowTruncated ? "[ EXPAND ]" : "[ COLLAPSE ]";
         };
         
         textContainer.parentNode.insertBefore(expandBtn, textContainer.nextSibling);
@@ -542,12 +569,11 @@ function addPostToDOM(post) {
     const pinBtn = postDiv.querySelector('.pin-icon');
     if (pinBtn && isAdmin) {
         pinBtn.addEventListener('click', async () => {
-            playSound('pin'); // PIN SOUND
+            playSound('pin'); 
             const newStatus = !post.pinned;
             await updateDoc(doc(db, "posts", id), { pinned: newStatus });
             showToast(newStatus ? "POST PINNED" : "POST UNPINNED");
         });
-        // Hover effect for pin
         pinBtn.addEventListener('mouseenter', () => playSound('hover'));
     }
 
@@ -591,6 +617,16 @@ function startEdit(id, text, image) {
     textInput.style.height = (textInput.scrollHeight) + 'px';
 }
 
+// --- 11. LIGHTBOX & BACK TO TOP LOGIC ---
+
+// Global Escape Key Listener
+document.addEventListener('keydown', (e) => {
+    if (e.key === "Escape" && !lightboxModal.classList.contains('hidden')) {
+        lightboxModal.classList.add('hidden');
+        playSound('click');
+    }
+});
+
 lightboxClose.addEventListener('click', () => {
     playSound('click');
     lightboxModal.classList.add('hidden');
@@ -601,8 +637,10 @@ lightboxModal.addEventListener('click', (e) => {
         lightboxModal.classList.add('hidden');
     }
 });
+lightboxImg.addEventListener('click', () => {
+    lightboxModal.classList.add('hidden');
+});
 
-// ... [Back to top / Scroll listeners remain same] ...
 window.addEventListener('scroll', () => {
     if (window.scrollY > 300) {
         backToTopBtn.classList.remove('hidden');
