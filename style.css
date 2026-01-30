@@ -537,3 +537,46 @@ iframe[src*="spotify"] {
     aspect-ratio: auto; /* Spotify needs specific height */
     height: 152px; /* Standard compact player height */
 }
+
+/* --- 11. TOAST NOTIFICATIONS & FORMATTING --- */
+
+/* A. Toast Container & Animation */
+#toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10003; /* Above everything */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    background: black;
+    border: 2px solid white;
+    color: white;
+    padding: 15px 25px;
+    font-family: 'Determination', sans-serif;
+    min-width: 200px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    
+    /* Animation: Slide In from Right */
+    animation: slideIn 0.3s ease-out forwards;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* B. Text Formatting */
+.post-text b, .post-text strong {
+    color: #fff;
+    font-weight: bold;
+    text-shadow: 0 0 2px white; /* Extra pop for bold */
+}
+
+.post-text i, .post-text em {
+    font-style: italic;
+    color: #ccc;
+}

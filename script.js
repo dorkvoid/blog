@@ -26,6 +26,7 @@ const imageInput = document.getElementById('imageUrl');
 const passwordInput = document.getElementById('adminPassword');
 const counterElement = document.getElementById('view-count');
 const searchInput = document.getElementById('searchBar');
+const toastContainer = document.getElementById('toast-container');
 
 // UI Elements
 const confirmModal = document.getElementById('confirm-modal');
@@ -60,6 +61,8 @@ onAuthStateChanged(auth, (user) => {
         document.body.classList.add('admin-mode');
         if (loginContainer) loginContainer.classList.add('hidden');
         if (adminMenu) adminMenu.classList.remove('hidden');
+        // Check for Ghost Save
+        restoreDraft();
     } else {
         document.body.classList.remove('admin-mode');
         if (loginContainer) loginContainer.classList.remove('hidden');
@@ -72,6 +75,7 @@ if (passwordInput) {
         if (e.key === 'Enter') {
             try {
                 await signInWithEmailAndPassword(auth, "kickside02@gmail.com", e.target.value);
+                showToast("ACCESS GRANTED");
             } catch (error) {
                 if(errorMsg) {
                     errorMsg.style.display = 'block';
@@ -86,6 +90,7 @@ if (passwordInput) {
 if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
         await signOut(auth);
+        showToast("LOGGED OUT");
     });
 }
 
@@ -96,19 +101,31 @@ onSnapshot(q, (snapshot) => {
     snapshot.forEach((doc) => {
         addPostToDOM(doc.data(), doc.id);
     });
-    // Re-run search filter if text exists in bar (handles live updates)
     if(searchInput.value) filterPosts(searchInput.value);
 });
 
 // --- 7. POST LOGIC ---
 let editingPostId = null; 
 
+// A. GHOST SAVE: Save to local storage on typing
 textInput.addEventListener('input', function() {
     this.style.height = 'auto'; 
     this.style.height = (this.scrollHeight) + 'px';
+    if (!editingPostId) { // Only save draft for new posts
+        localStorage.setItem('postDraft', this.value);
+    }
 });
 
-// Power Send (Ctrl + Enter)
+function restoreDraft() {
+    const draft = localStorage.getItem('postDraft');
+    if (draft && !textInput.value) {
+        textInput.value = draft;
+        textInput.style.height = 'auto';
+        textInput.style.height = (textInput.scrollHeight) + 'px';
+    }
+}
+
+// B. Power Send (Ctrl + Enter)
 textInput.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault(); 
@@ -117,7 +134,7 @@ textInput.addEventListener('keydown', (e) => {
 });
 
 postBtn.addEventListener('click', async function() {
-    if (!auth.currentUser) return alert("You are not logged in!");
+    if (!auth.currentUser) return showToast("LOGIN REQUIRED");
 
     const text = textInput.value;
     const img = imageInput.value;
@@ -134,6 +151,7 @@ postBtn.addEventListener('click', async function() {
                 editedTimestamp: serverTimestamp(),
                 editedDate: new Date().toLocaleString()
             });
+            showToast("POST UPDATED");
             resetForm();
         } else {
             await addDoc(collection(db, "posts"), {
@@ -142,11 +160,14 @@ postBtn.addEventListener('click', async function() {
                 timestamp: serverTimestamp(),
                 readableDate: new Date().toLocaleString()
             });
+            showToast("POST SUCCESSFUL");
+            // Clear Ghost Save
+            localStorage.removeItem('postDraft');
             resetForm();
         }
     } catch (e) {
         console.error("Error: ", e);
-        alert("Error posting.");
+        showToast("ERROR: COULD NOT POST");
     } finally {
         postBtn.disabled = false;
         postBtn.innerText = "POST";
@@ -164,6 +185,8 @@ function resetForm() {
     editingPostId = null;
     postBtn.innerText = "POST";
     if(cancelBtn) cancelBtn.classList.add('hidden');
+    // Clear draft if we cancel a new post
+    localStorage.removeItem('postDraft');
 }
 
 // --- 8. DELETE MODAL LOGIC ---
@@ -179,6 +202,7 @@ confirmYes.addEventListener('click', async () => {
         await deleteDoc(doc(db, "posts", idToDelete));
         idToDelete = null;
         confirmModal.classList.add('hidden');
+        showToast("ENTRY DELETED");
     }
 });
 
@@ -187,7 +211,24 @@ confirmNo.addEventListener('click', () => {
     confirmModal.classList.add('hidden');
 });
 
-// --- 9. DISPLAY FUNCTION (Media Embeds + Search) ---
+// --- 9. HELPERS (Toasts, Formatting, etc) ---
+
+// NEW: Toast Notification System
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerText = `[ SYSTEM: ${message} ]`;
+    
+    toastContainer.appendChild(toast);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        toast.style.transition = 'all 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
 
 function timeAgo(date) {
     if (!date) return "";
@@ -206,7 +247,7 @@ function timeAgo(date) {
     return "Just now";
 }
 
-// A. NEW: Search Filter Logic
+// Search Filter
 searchInput.addEventListener('input', (e) => {
     filterPosts(e.target.value);
 });
@@ -214,7 +255,6 @@ searchInput.addEventListener('input', (e) => {
 function filterPosts(searchTerm) {
     const term = searchTerm.toLowerCase();
     const posts = document.querySelectorAll('.post');
-    
     posts.forEach(post => {
         const text = post.innerText.toLowerCase();
         if (text.includes(term)) {
@@ -225,40 +265,32 @@ function filterPosts(searchTerm) {
     });
 }
 
+// --- 10. DISPLAY FUNCTION ---
+
 function addPostToDOM(post, id) {
     const postDiv = document.createElement('div');
     postDiv.classList.add('post');
 
-    // B. NEW: Media Embed Logic
     let mediaHTML = "";
     if (post.image) {
         const url = post.image;
-        
-        // 1. YouTube Detection
-        // Matches standard links and short links (youtu.be)
         const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
-        
-        // 2. Spotify Detection
         const spMatch = url.match(/open\.spotify\.com\/(track|album|playlist)\/([a-zA-Z0-9]+)/);
         
         if (ytMatch) {
-            // YouTube Embed
             mediaHTML = `<iframe class="media-embed" src="https://www.youtube.com/embed/${ytMatch[1]}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
         } else if (spMatch) {
-            // Spotify Embed
             mediaHTML = `<iframe class="media-embed" src="https://open.spotify.com/embed/${spMatch[1]}/${spMatch[2]}" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>`;
         } else {
-            // Standard File Detection
             const isVideo = url.match(/\.(mp4|webm|ogg|mov)/i);
             const isAudio = url.match(/\.(mp3|wav)/i);
-            
             if (isVideo) mediaHTML = `<video src="${url}" controls loop playsinline class="post-media"></video>`;
             else if (isAudio) mediaHTML = `<audio src="${url}" controls class="post-media"></audio>`;
             else mediaHTML = `<img src="${url}" class="post-image click-to-zoom">`;
         }
     }
 
-    // Relative Time Logic
+    // Time Logic
     const postDate = post.timestamp ? post.timestamp.toDate() : new Date();
     let editedDateObj = null;
     if (post.editedTimestamp) editedDateObj = post.editedTimestamp.toDate();
@@ -272,15 +304,11 @@ function addPostToDOM(post, id) {
     function updateTimeDisplay() {
         if (showExact) {
             let display = postDate.toLocaleString();
-            if (editedDateObj && !isNaN(editedDateObj)) {
-                display += ` <span class="edited-timestamp">(edited ${editedDateObj.toLocaleString()})</span>`;
-            }
+            if (editedDateObj && !isNaN(editedDateObj)) display += ` <span class="edited-timestamp">(edited ${editedDateObj.toLocaleString()})</span>`;
             timeSpan.innerHTML = display;
         } else {
             let display = timeAgo(postDate);
-            if (editedDateObj && !isNaN(editedDateObj)) {
-                display += ` <span class="edited-timestamp">(edited ${timeAgo(editedDateObj)})</span>`;
-            }
+            if (editedDateObj && !isNaN(editedDateObj)) display += ` <span class="edited-timestamp">(edited ${timeAgo(editedDateObj)})</span>`;
             timeSpan.innerHTML = display;
         }
     }
@@ -290,7 +318,20 @@ function addPostToDOM(post, id) {
         updateTimeDisplay();
     });
 
-    let processedText = post.text.replace(
+    // NEW: FORMATTING (Markdown) + AUTO-LINKER
+    // 1. Sanitize HTML (prevent script injection)
+    let tempDiv = document.createElement("div");
+    tempDiv.textContent = post.text;
+    let safeText = tempDiv.innerHTML;
+
+    // 2. Parse Markdown (**bold**, *italic*)
+    // Replaces **text** with <b>text</b> and *text* with <i>text</i>
+    safeText = safeText
+        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+        .replace(/\*(.*?)\*/g, '<i>$1</i>');
+
+    // 3. Auto-Link
+    let processedText = safeText.replace(
         /(https?:\/\/[^\s]+)/g, 
         '<a href="$1" target="_blank">$1</a>'
     );
@@ -344,7 +385,7 @@ function startEdit(id, text, image) {
     textInput.style.height = (textInput.scrollHeight) + 'px';
 }
 
-// --- 10. LIGHTBOX & BACK TO TOP LOGIC ---
+// --- 11. LIGHTBOX & BACK TO TOP LOGIC ---
 lightboxClose.addEventListener('click', () => {
     lightboxModal.classList.add('hidden');
 });
