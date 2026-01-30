@@ -162,8 +162,12 @@ a:active {
     padding: 20px;
     margin-bottom: 20px;
     background: black;
+    
+    /* CRITICAL FIX: This anchors the pin inside the box */
+    position: relative; 
 }
 
+/* ... keep timestamp/content styles the same ... */
 .timestamp {
     font-size: 0.8em;
     border-bottom: 1px solid white;
@@ -171,21 +175,18 @@ a:active {
     margin-bottom: 10px;
     display: block;
 }
-
 .edited-timestamp {
     color: #888;
     margin-left: 8px;
     font-style: italic;
     font-size: 0.9em;
 }
-
 .post-content {
     display: flex;
     align-items: flex-start;
     gap: 15px;
     margin-bottom: 10px;
 }
-
 .avatar-icon {
     width: 50px;
     height: 50px;
@@ -193,13 +194,11 @@ a:active {
     border: 1px solid white;
     flex-shrink: 0;
 }
-
 .post-content p {
     margin: 0;
     line-height: 1.4;
     white-space: pre-wrap; 
 }
-
 .post-media, .post-image {
     display: block;
     max-width: 100%;
@@ -589,7 +588,6 @@ iframe[src*="spotify"] {
     gap: 5px;
     margin-bottom: 5px;
 }
-
 .formatting-bar button {
     width: 30px;
     height: 30px;
@@ -599,13 +597,10 @@ iframe[src*="spotify"] {
     background: black;
     color: white;
 }
-
 .formatting-bar button:hover {
     background: white;
     color: black;
 }
-
-/* FIX: Remove brackets specifically for these tiny buttons */
 .formatting-bar button:hover::before,
 .formatting-bar button:hover::after {
     content: none; 
@@ -619,7 +614,6 @@ iframe[src*="spotify"] {
     padding: 0 4px;
     transition: all 0.2s;
 }
-
 .spoiler:hover, .spoiler.revealed {
     background: #333;
     color: white; 
@@ -630,21 +624,18 @@ iframe[src*="spotify"] {
 .post-text-container {
     position: relative;
 }
-
 .post-text-container.truncated {
     max-height: 150px; 
     overflow: hidden;
-    /* Fades out the text at the bottom */
     mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
     -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
 }
-
 .expand-btn {
     display: block;
     width: 100%;
     text-align: center;
-    background: transparent; /* Transparent, no box */
-    color: #888; /* Dimmed text */
+    background: transparent; 
+    color: #888; 
     margin-top: 5px;
     padding: 10px;
     font-size: 0.9em;
@@ -653,14 +644,14 @@ iframe[src*="spotify"] {
     border: none;
 }
 .expand-btn:hover {
-    color: white; /* Lights up on hover */
+    color: white; 
     background: transparent;
 }
 
-/* D. Pinned Post Icon */
+/* D. Pinned Post Icon - FIXED */
 .pin-icon {
     position: absolute;
-    /* MOVED: Sits nicely in the padding corner now */
+    /* This puts it 10px from the top/right of THE POST, not the screen */
     top: 10px;
     right: 10px;
     
@@ -668,26 +659,26 @@ iframe[src*="spotify"] {
     height: 16px;
     image-rendering: pixelated;
     cursor: pointer;
-    opacity: 0.2; /* Very faint when inactive */
+    
+    /* Default state: Dim */
+    opacity: 0.3; 
     z-index: 10;
-    transition: opacity 0.2s;
 }
 
 .pin-icon.active {
     opacity: 1; /* Bright white when pinned */
-    filter: drop-shadow(0 0 4px white); /* Slight glow */
+    /* REMOVED: filter: drop-shadow(0 0 4px white); */
+    filter: none;
 }
 
 .pin-icon:hover {
     opacity: 1;
 }
 
-/* GUEST LOGIC: */
-/* 1. If not admin, hide the inactive pin buttons completely */
+/* GUEST LOGIC */
 body:not(.admin-mode) .pin-icon:not(.active) {
     display: none !important;
 }
-/* 2. If not admin, show the active pin, but make it unclickable */
 body:not(.admin-mode) .pin-icon.active {
     cursor: default;
     pointer-events: none;
