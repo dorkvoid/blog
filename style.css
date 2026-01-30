@@ -334,30 +334,30 @@ body.admin-mode .admin-buttons { display: block !important; }
 
 /* --- 7. NEW UI FEATURES --- */
 
-/* A. Back to Top Arrow - RELOCATED */
+/* A. Back to Top Arrow - MOVED LEFT */
 #back-to-top {
     position: fixed;
     bottom: 20px;
     
-    /* Logic: Center of screen (50%) + Half of container (300px) + Padding (20px) */
-    left: calc(50% + 320px); 
-    right: auto; /* Unset the old position */
+    /* MOVED LEFT: Reduced offset from 320px to 305px to hug the posts tighter */
+    left: calc(50% + 305px); 
+    right: auto; 
     
-    width: 50px;  /* Bigger */
-    height: 50px; /* Bigger */
+    width: 50px; 
+    height: 50px;
     cursor: pointer;
     z-index: 10001; 
     
-    opacity: 1; /* Fully visible, no ghosting */
+    opacity: 1; 
     image-rendering: pixelated;
     transition: transform 0.2s ease;
 }
 
 #back-to-top:hover {
-    transform: translateY(-5px); /* distinct hop animation */
+    transform: translateY(-5px); 
 }
 
-/* Mobile Fallback: If screen is too small to fit the arrow on the side, put it back in the corner */
+/* Mobile Fallback */
 @media (max-width: 1000px) {
     #back-to-top {
         left: auto;
@@ -384,7 +384,7 @@ body.admin-mode .admin-buttons { display: block !important; }
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.9); /* Darker background for focus */
+    background: rgba(0, 0, 0, 0.9); 
     z-index: 10002; 
     display: flex;
     justify-content: center;
@@ -392,22 +392,25 @@ body.admin-mode .admin-buttons { display: block !important; }
     backdrop-filter: blur(2px);
 }
 
-/* D. The "Are You Sure" Box - FLATTENED */
+/* D. The "Are You Sure" Box - REFINED */
 .modal-box {
     background: black;
-    border: 2px solid white; /* Sharp, thick border */
-    padding: 30px; /* More breathing room */
+    border: 2px solid white; 
+    padding: 30px; 
     text-align: center;
     min-width: 300px;
-    
-    /* REMOVED: box-shadow: 0 0 15px white; */
     box-shadow: none; 
 }
 
 .modal-box p {
-    font-size: 1.2em; /* Larger text */
-    margin-bottom: 20px;
-    font-weight: bold;
+    font-size: 1.2em;
+    /* UN-BOLDED: Makes the pixel font crisp */
+    font-weight: normal; 
+    
+    /* RE-CENTERED: Balanced top/bottom spacing */
+    margin-top: 0;
+    margin-bottom: 15px; 
+    
     text-transform: uppercase;
     letter-spacing: 2px;
 }
@@ -415,11 +418,11 @@ body.admin-mode .admin-buttons { display: block !important; }
 .modal-buttons {
     display: flex;
     gap: 20px;
-    justify-content: center; /* Center the buttons */
-    margin-top: 20px;
+    justify-content: center; 
+    /* RE-CENTERED: Reduced top margin to pull buttons up slightly */
+    margin-top: 15px; 
 }
 
-/* Make modal buttons look identical to main buttons */
 .modal-buttons button {
     border: 2px solid white;
     background: black;
@@ -438,7 +441,6 @@ body.admin-mode .admin-buttons { display: block !important; }
     max-width: 90%;
     max-height: 90%;
     border: 2px solid white;
-    /* Removed the glow here too to match */
     box-shadow: none; 
 }
 
