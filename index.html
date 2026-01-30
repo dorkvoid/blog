@@ -4,24 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>mikevoid</title>
-    <link rel="icon" type="image/png" href="images/plxeyestiny.png">
+    <link rel="icon" type="image/png" href="plxeyestiny.png">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<svg style="display: none;">
-  <defs>
-    <filter id="crt-warp">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="0.5" result="blur" />
-      <feColorMatrix type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0" in="blur" result="coloredBlur" />
-      <feMorphology operator="dilate" radius="0.5" in="coloredBlur" result="dilated" />
-      
-      <feImage xlink:href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiPjxkZWZzPjxyYWRpYWxHcmFkaWVudCBpZD0iZyIgY3g9IjUwJSIgY3k9IjUwJSIgcj0iNTAlIiBmeD0iNTAlIiBmeT0iNTAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSJ3aGl0ZSIvPjxzdG9wIG9mZnNldD0iMTAwJSIgc3RvcC1jb2xvcj0iYmxhY2siLz48L3JhZGlhbEdyYWRpZW50PjwvZGVmcz48cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2cpIi8+PC9zdmc+" result="displacement-map" />
-      <feDisplacementMap in="dilated" in2="displacement-map" scale="20" xChannelSelector="R" yChannelSelector="G" result="warped" />
-    </filter>
-  </defs>
-</svg>
 
-<div class="crt-overlay"></div>
     <div class="container">
         <div class="input-area">
             <div class="formatting-bar">
@@ -46,10 +33,10 @@
     
     <div id="toast-container"></div>
     
-    <img id="back-to-top" src="images/uparrow.png" class="hidden" title="Return to Surface">
+    <img id="back-to-top" src="uparrow.png" class="hidden" title="Return to Surface">
     
     <div id="sound-toggle" title="Toggle Audio">
-        <img id="sound-icon" src="images/sound-off.png" alt="Sound Toggle">
+        <img id="sound-icon" src="sound-off.png" alt="Sound Toggle">
     </div>
 
     <div id="view-count">VISITS: .....</div>
