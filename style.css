@@ -648,6 +648,9 @@ iframe[src*="spotify"] {
     cursor: pointer;
     font-weight: bold;
     border: none;
+    
+    /* THE FIX: Forces [ EXPAND ] to stay on one line */
+    white-space: nowrap;
 }
 .expand-btn:hover {
     color: white; 
