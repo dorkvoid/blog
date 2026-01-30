@@ -47,7 +47,7 @@ const lightboxImg = document.getElementById('lightbox-img');
 const lightboxClose = document.getElementById('lightbox-close');
 const backToTopBtn = document.getElementById('back-to-top');
 
-// --- 3.5 AUDIO SYSTEM ---
+// --- 3.5 AUDIO SYSTEM (REFINED UNLOCKER) ---
 const sounds = {
     click: new Audio('sounds/buttonclick.mp3'),
     hum: new Audio('sounds/backgroundhum.mp3'),
@@ -74,35 +74,50 @@ sounds.confirm.volume = 0.4;
 // 1. Strict localStorage check
 let isMuted = localStorage.getItem('siteMuted') !== 'false'; 
 
-// 2. Immediate UI Update
 function updateSoundUI() {
     if (isMuted) {
         soundIcon.src = 'sound-off.png';
         sounds.hum.pause();
     } else {
         soundIcon.src = 'sound-on.png';
-        // We try to play, but browser will likely block until click
+        // Try to play immediately (might still be blocked until first move)
         sounds.hum.play().catch(() => {}); 
     }
 }
 updateSoundUI();
 
-// 3. THE FIX: Global "Unlocker"
-// This waits for your first click anywhere on the page after a refresh
-document.addEventListener('click', () => {
+// 2. THE FORCE-START: Bypassing the "Click Only" restriction
+// We listen for ANY signal that the user is present (scroll, move, or key)
+const unlockAudio = () => {
     if (!isMuted && sounds.hum.paused) {
-        sounds.hum.play().catch(e => console.log("Audio unlock failed:", e));
+        sounds.hum.play().then(() => {
+            // Once it finally starts playing, remove these listeners to save performance
+            window.removeEventListener('mousemove', unlockAudio);
+            window.removeEventListener('touchstart', unlockAudio);
+            window.removeEventListener('keydown', unlockAudio);
+            window.removeEventListener('wheel', unlockAudio);
+        }).catch(e => {});
     }
-}, { once: true }); // Only runs once per refresh to jumpstart the hum
+};
 
-// 4. Toggle Logic
+// Attach listeners to every possible user action
+window.addEventListener('mousemove', unlockAudio);
+window.addEventListener('touchstart', unlockAudio);
+window.addEventListener('keydown', unlockAudio);
+window.addEventListener('wheel', unlockAudio);
+document.addEventListener('click', unlockAudio);
+
+// 3. Toggle Logic
 soundToggle.addEventListener('click', (e) => {
-    e.stopPropagation(); // Prevents the unlocker from firing simultaneously
+    e.stopPropagation(); 
     isMuted = !isMuted;
     localStorage.setItem('siteMuted', isMuted.toString());
     updateSoundUI();
     
-    if(!isMuted) playSound('click');
+    if(!isMuted) {
+        playSound('click');
+        sounds.hum.play();
+    }
 });
 
 // --- 4. VISITOR COUNTER ---
