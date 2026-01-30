@@ -47,7 +47,7 @@ const lightboxImg = document.getElementById('lightbox-img');
 const lightboxClose = document.getElementById('lightbox-close');
 const backToTopBtn = document.getElementById('back-to-top');
 
-// --- 3.5 AUDIO SYSTEM (THE TACTILE UPDATE) ---
+// --- 3.5 AUDIO SYSTEM ---
 const sounds = {
     click: new Audio('sounds/buttonclick.mp3'),
     hum: new Audio('sounds/backgroundhum.mp3'),
@@ -56,7 +56,8 @@ const sounds = {
     type3: 'sounds/type3.mp3',
     type4: 'sounds/type4.mp3',
     delete: new Audio('sounds/deletedpost.wav'),
-    success: new Audio('sounds/successfulpost.mp3'),
+    success: new Audio('sounds/successfulpost.mp3'), // Only for posting now
+    login: new Audio('sounds/successfulpost.mp3'),   // Placeholder if you want a login sound, or leave empty
     edit: new Audio('sounds/editedpost.wav'),
     toast: new Audio('sounds/toast.wav'),
     confirm: new Audio('sounds/yousure.wav'),
@@ -69,40 +70,51 @@ const sounds = {
 sounds.hum.loop = true;
 sounds.hum.volume = 0.1; 
 
-// THE FIX: Check localStorage and update UI immediately
-let isMuted = localStorage.getItem('siteMuted') !== 'false'; 
-updateSoundUI();
+// THE FIX: Turning down the volume on the "yousure" sound
+sounds.confirm.volume = 0.4; // Set to 40% volume
 
-// NEW: Global interaction listener to bypass browser autoplay blocks
-document.addEventListener('click', () => {
-    if (!isMuted && sounds.hum.paused) {
-        sounds.hum.play().catch(e => console.log("Autoplay still blocked"));
-    }
-}, { once: false }); // Keep active so it catches the first click after refresh
+// ... [Keep updateSoundUI and Interaction Listener the same] ...
 
-// Toggle Logic
-soundToggle.addEventListener('click', (e) => {
-    e.stopPropagation(); // Prevents the global click listener from double-firing
-    isMuted = !isMuted;
-    localStorage.setItem('siteMuted', isMuted);
-    updateSoundUI();
-    
-    if(!isMuted) {
-        playSound('click');
-        sounds.hum.play();
-    } else {
-        sounds.hum.pause();
-    }
-});
+// Global Sound Player
+function playSound(name) {
+    if (isMuted) return;
 
-function updateSoundUI() {
-    if (isMuted) {
-        soundIcon.src = 'sound-off.png';
-    } else {
-        soundIcon.src = 'sound-on.png';
-        // Try to play immediately, though browser might still block until first click
-        sounds.hum.play().catch(() => {}); 
+    if (name === 'type') {
+        const rand = Math.floor(Math.random() * 4) + 1;
+        const audio = new Audio(sounds[`type${rand}`]);
+        audio.volume = 0.5;
+        audio.play().catch(() => {});
+    } else if (sounds[name]) {
+        const audio = sounds[name].cloneNode();
+        
+        // Ensure volume settings carry over to the clones
+        if (name === 'hum') audio.volume = 0.1;
+        else if (name === 'confirm') audio.volume = 0.4; 
+        else audio.volume = 1.0;
+
+        audio.play().catch(() => {});
     }
+}
+
+// ... [Keep Auth Logic] ...
+
+if (passwordInput) {
+    passwordInput.addEventListener('keyup', async (e) => {
+        if (e.key === 'Enter') {
+            try {
+                await signInWithEmailAndPassword(auth, "kickside02@gmail.com", e.target.value);
+                showToast("ACCESS GRANTED");
+                // FIX: Removed playSound('success') from here so it's silent on login
+            } catch (error) {
+                playSound('error');
+                if(errorMsg) {
+                    errorMsg.style.display = 'block';
+                    setTimeout(() => errorMsg.style.display = 'none', 2000);
+                }
+                e.target.value = "";
+            }
+        }
+    });
 }
 
 // --- 4. VISITOR COUNTER ---
