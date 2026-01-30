@@ -26,7 +26,14 @@
             </div>
         </div>
 
-        <input type="text" id="searchBar" placeholder="> Search (or /help)..." autocomplete="off">
+        <div class="control-bar">
+            <input type="text" id="searchBar" placeholder="> Search (or /help)..." autocomplete="off">
+            
+            <div class="view-toggles">
+                <img id="viewListBtn" src="images/list-button.png" title="List View" class="active-view">
+                <img id="viewTileBtn" src="images/tile-button.png" title="Tile View">
+            </div>
+        </div>
 
         <div id="feed"></div>
     </div>
@@ -51,7 +58,7 @@
 
         <div id="admin-menu" class="hidden">
             <div class="login-status">[ LOGGED IN ]</div>
-            <button id="logoutBtn">LOG OUT</button>
+            <img id="logoutBtn" src="images/logout.png" title="Log Out">
         </div>
     </div>
 

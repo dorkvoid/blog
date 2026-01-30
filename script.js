@@ -1,6 +1,6 @@
 // --- 1. IMPORTS ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, updateDoc, doc, increment, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, updateDoc, doc, increment, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
 
 // --- 2. CONFIGURATION ---
@@ -28,6 +28,11 @@ const counterElement = document.getElementById('view-count');
 const searchInput = document.getElementById('searchBar');
 const toastContainer = document.getElementById('toast-container');
 const adminLoginBar = document.getElementById('admin-login-bar'); 
+const container = document.querySelector('.container');
+
+// View Toggles
+const viewListBtn = document.getElementById('viewListBtn');
+const viewTileBtn = document.getElementById('viewTileBtn');
 
 // Sound UI
 const soundToggle = document.getElementById('sound-toggle');
@@ -62,7 +67,8 @@ const sounds = {
     confirm: new Audio('sounds/yousure.wav'),
     pin: new Audio('sounds/pinbutton.wav'),
     hover: new Audio('sounds/hoverbutton.wav'),
-    error: new Audio('sounds/loginerror.wav')
+    error: new Audio('sounds/loginerror.wav'),
+    logout: new Audio('sounds/turn-off.mp3') // NEW LOGOUT SOUND
 };
 
 // Config
@@ -76,27 +82,21 @@ let isMuted = localStorage.getItem('siteMuted') !== 'false';
 
 function updateSoundUI() {
     if (isMuted) {
-        // UPDATED PATH
         soundIcon.src = 'images/sound-off.png';
         sounds.hum.pause();
     } else {
-        // UPDATED PATH
         soundIcon.src = 'images/sound-on.png';
-        // Try to play immediately (browser might block)
         sounds.hum.play().catch(() => {}); 
     }
 }
 updateSoundUI();
 
-// 2. SIMPLE UNLOCKER
-// If sound is supposed to be ON but is paused (refresh), wait for 1st click to start it.
 document.addEventListener('click', () => {
     if (!isMuted && sounds.hum.paused) {
         sounds.hum.play().catch(() => {});
     }
 }, { once: true });
 
-// 3. Toggle Logic
 soundToggle.addEventListener('click', (e) => {
     e.stopPropagation(); 
     isMuted = !isMuted;
@@ -109,7 +109,6 @@ soundToggle.addEventListener('click', (e) => {
     }
 });
 
-// Global Sound Player
 function playSound(name) {
     if (isMuted) return;
 
@@ -129,18 +128,14 @@ function playSound(name) {
     }
 }
 
-// Attach Global Button Sounds
+// Global Button Sounds
 document.querySelectorAll('button').forEach(btn => {
-    // Hover Sound
     btn.addEventListener('mouseenter', () => {
         if (btn.id !== 'fmtBold' && btn.id !== 'fmtItalic' && btn.id !== 'fmtSpoiler') {
             playSound('hover');
         }
     });
-
-    // Click Sound
     btn.addEventListener('click', () => {
-        // Formatting buttons are silent
         if (btn.id !== 'fmtBold' && btn.id !== 'fmtItalic' && btn.id !== 'fmtSpoiler') {
             playSound('click');
         }
@@ -160,7 +155,7 @@ async function trackVisit() {
 }
 trackVisit();
 
-// --- 5. AUTH LOGIC ---
+// --- 5. AUTH LOGIC & LOGOUT UI ---
 const loginContainer = document.getElementById('login-input-container');
 const adminMenu = document.getElementById('admin-menu');
 const logoutBtn = document.getElementById('logoutBtn');
@@ -203,15 +198,87 @@ if (passwordInput) {
     });
 }
 
+// Updated Logout Logic
 if (logoutBtn) {
+    // Hover Effects
+    logoutBtn.addEventListener('mouseenter', () => {
+        logoutBtn.src = 'images/logout-hover.png';
+        playSound('hover');
+    });
+    logoutBtn.addEventListener('mouseleave', () => {
+        logoutBtn.src = 'images/logout.png';
+    });
+
     logoutBtn.addEventListener('click', async () => {
-        // Removed manual playSound('click') - Global listener handles it
+        playSound('logout'); // Plays turn-off.mp3
         await signOut(auth);
         showToast("LOGGED OUT");
     });
 }
 
-// --- 6. COMMAND & SEARCH LOGIC ---
+// --- 6. VIEW TOGGLE LOGIC (TILE VS LIST) ---
+let currentView = localStorage.getItem('viewMode') || 'list';
+
+function setView(mode) {
+    currentView = mode;
+    localStorage.setItem('viewMode', mode);
+    
+    if (mode === 'tile') {
+        feed.classList.add('grid-view');
+        container.style.maxWidth = '900px'; // Wider container for grid
+        viewTileBtn.classList.add('active-view');
+        viewListBtn.classList.remove('active-view');
+    } else {
+        feed.classList.remove('grid-view');
+        container.style.maxWidth = '600px'; // Standard width
+        viewListBtn.classList.add('active-view');
+        viewTileBtn.classList.remove('active-view');
+    }
+}
+
+// Initialize View
+setView(currentView);
+
+viewListBtn.addEventListener('click', () => {
+    playSound('click');
+    setView('list');
+});
+viewTileBtn.addEventListener('click', () => {
+    playSound('click');
+    setView('tile');
+});
+
+
+// --- 7. LOAD POSTS ---
+let allPosts = []; 
+const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
+
+onSnapshot(q, (snapshot) => {
+    allPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    reloadFeed();
+});
+
+function reloadFeed() {
+    feed.innerHTML = "";
+    
+    allPosts.sort((a, b) => {
+        if (a.pinned === b.pinned) {
+            return (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0);
+        }
+        return a.pinned ? -1 : 1;
+    });
+
+    const term = searchInput.value.toLowerCase();
+    const visiblePosts = (term && !term.startsWith('/')) ? allPosts.filter(p => p.text.toLowerCase().includes(term)) : allPosts;
+
+    visiblePosts.forEach(post => {
+        addPostToDOM(post);
+    });
+}
+
+// --- 8. POST & COMMAND LOGIC ---
+// (Command & Search logic combined in reloadFeed and event listener below)
+
 let isFeedHidden = false; 
 
 function handleTypingSound(e) {
@@ -259,39 +326,6 @@ searchInput.addEventListener('input', (e) => {
     reloadFeed(); 
 });
 
-// --- 7. LOAD POSTS ---
-let allPosts = []; 
-const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
-
-onSnapshot(q, (snapshot) => {
-    allPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    reloadFeed();
-});
-
-function reloadFeed() {
-    if (isFeedHidden) {
-        feed.innerHTML = ""; 
-        return; 
-    }
-
-    feed.innerHTML = "";
-    
-    allPosts.sort((a, b) => {
-        if (a.pinned === b.pinned) {
-            return (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0);
-        }
-        return a.pinned ? -1 : 1;
-    });
-
-    const term = searchInput.value.toLowerCase();
-    const visiblePosts = (term && !term.startsWith('/')) ? allPosts.filter(p => p.text.toLowerCase().includes(term)) : allPosts;
-
-    visiblePosts.forEach(post => {
-        addPostToDOM(post);
-    });
-}
-
-// --- 8. POST LOGIC ---
 let editingPostId = null; 
 
 function insertTag(tagStart, tagEnd) {
@@ -338,7 +372,6 @@ textInput.addEventListener('keydown', (e) => {
 });
 
 postBtn.addEventListener('click', async function() {
-    // Removed manual playSound('click') - Global listener handles it
     if (!auth.currentUser) return showToast("LOGIN REQUIRED");
 
     const text = textInput.value;
@@ -384,7 +417,6 @@ postBtn.addEventListener('click', async function() {
 
 if (cancelBtn) {
     cancelBtn.addEventListener('click', () => {
-        // Removed manual playSound('click')
         resetForm();
     });
 }
@@ -419,7 +451,6 @@ confirmYes.addEventListener('click', async () => {
 });
 
 confirmNo.addEventListener('click', () => {
-    // Removed manual playSound('click')
     idToDelete = null;
     confirmModal.classList.add('hidden');
 });
@@ -454,17 +485,83 @@ function timeAgo(date) {
     return "Just now";
 }
 
-// --- 10. DISPLAY FUNCTION ---
+// --- 10. DRAG AND DROP (ADMIN ONLY) ---
+let draggedItem = null;
+
+function handleDragStart(e) {
+    draggedItem = this;
+    e.dataTransfer.effectAllowed = 'move';
+    this.classList.add('dragging');
+}
+
+function handleDragOver(e) {
+    if (e.preventDefault) e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    this.classList.add('drag-over');
+    return false;
+}
+
+function handleDragLeave(e) {
+    this.classList.remove('drag-over');
+}
+
+async function handleDrop(e) {
+    if (e.stopPropagation) e.stopPropagation();
+    
+    // Cleanup styles
+    this.classList.remove('drag-over');
+    draggedItem.classList.remove('dragging');
+
+    if (draggedItem !== this) {
+        const id1 = draggedItem.dataset.id; // Dragged Post
+        const id2 = this.dataset.id;        // Target Post
+        
+        // Find the actual data objects
+        const post1 = allPosts.find(p => p.id === id1);
+        const post2 = allPosts.find(p => p.id === id2);
+
+        if (post1 && post2) {
+            showToast("SWAPPING ORDER...");
+            
+            // SWAP TIMESTAMP STRATEGY
+            // This reorders them in the feed by tricking the "orderBy timestamp" query
+            const ts1 = post1.timestamp;
+            const ts2 = post2.timestamp;
+
+            try {
+                await updateDoc(doc(db, "posts", id1), { timestamp: ts2 });
+                await updateDoc(doc(db, "posts", id2), { timestamp: ts1 });
+                playSound('success');
+            } catch (err) {
+                console.error(err);
+                playSound('error');
+                showToast("ERROR SWAPPING");
+            }
+        }
+    }
+    return false;
+}
+
+// --- 11. DISPLAY FUNCTION ---
 
 function addPostToDOM(post) {
     const id = post.id;
     const postDiv = document.createElement('div');
     postDiv.classList.add('post');
+    postDiv.dataset.id = id;
+
+    // ENABLE DRAG FOR ADMINS
+    if (isAdmin) {
+        postDiv.setAttribute('draggable', 'true');
+        postDiv.addEventListener('dragstart', handleDragStart);
+        postDiv.addEventListener('dragover', handleDragOver);
+        postDiv.addEventListener('dragleave', handleDragLeave);
+        postDiv.addEventListener('drop', handleDrop);
+    }
 
     let pinHTML = "";
     if (isAdmin || post.pinned) {
         const pinClass = post.pinned ? "pin-icon active" : "pin-icon";
-        // UPDATED PATH
         pinHTML = `<img src="images/pin.png" class="${pinClass}" data-id="${id}" title="Pin/Unpin">`;
     }
 
@@ -576,7 +673,6 @@ function addPostToDOM(post) {
     editBtn.innerText = "EDIT";
     editBtn.classList.add('btn-edit');
     editBtn.onclick = () => {
-        // Removed manual playSound('click')
         startEdit(id, post.text, post.image);
     };
     editBtn.addEventListener('mouseenter', () => playSound('hover'));
@@ -625,7 +721,6 @@ lightboxClose.addEventListener('click', () => {
     lightboxModal.classList.add('hidden');
 });
 lightboxModal.addEventListener('click', (e) => {
-    // FIX: Only close if clicking the background overlay, NOT the image itself
     if (e.target === lightboxModal) {
         playSound('click');
         lightboxModal.classList.add('hidden');

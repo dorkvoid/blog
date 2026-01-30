@@ -4,7 +4,6 @@
     src: url('DeterminationMonoWebRegular-Z5oq.ttf');
 }
 
-/* Custom "Void" Scrollbar */
 ::-webkit-scrollbar {
     width: 12px;
 }
@@ -20,7 +19,6 @@
     background: #ccc; 
 }
 
-/* FIX: "Terminal" Text Selection */
 ::selection {
     background: white;
     color: black;
@@ -32,7 +30,6 @@
     text-shadow: none;
 }
 
-/* 1. This ensures the "body" covers the whole screen so you can click the void */
 html, body {
     height: 100%;
 }
@@ -45,32 +42,28 @@ body {
     image-rendering: pixelated; 
     -webkit-font-smoothing: none;
     padding-bottom: 100px;
-    
-    /* UPDATED PATH */
     cursor: url('images/cursor.png'), auto;
-    
     background-image: none;
 }
 
 body:active {
-    /* UPDATED PATH */
     cursor: url('images/cursor-click.png'), auto;
 }
 
 /* --- INTERACTIVE CURSOR LOGIC --- */
 a, button, .timestamp, .spoiler, .expand-btn, .pin-icon,
-#back-to-top, #sound-toggle, #lightbox-close, .click-to-zoom {
-    /* UPDATED PATH */
+#back-to-top, #sound-toggle, #lightbox-close, .click-to-zoom,
+#viewListBtn, #viewTileBtn, #logoutBtn {
     cursor: url('images/link-select.png'), pointer;
 }
 
 a:active, button:active, .timestamp:active, .spoiler:active, .expand-btn:active, .pin-icon:active,
-#back-to-top:active, #sound-toggle:active, #lightbox-close:active, .click-to-zoom:active {
-    /* UPDATED PATH */
+#back-to-top:active, #sound-toggle:active, #lightbox-close:active, .click-to-zoom:active,
+#viewListBtn:active, #viewTileBtn:active, #logoutBtn:active {
     cursor: url('images/link-select-click.png'), pointer;
 }
 
-/* SCANLINES: Static (No Animation) */
+/* SCANLINES */
 body::before {
     content: " ";
     display: block;
@@ -94,15 +87,67 @@ body::before {
     padding-right: 20px;
     box-sizing: border-box; 
     position: relative;
+    transition: max-width 0.3s ease; /* Smooth transition when switching views */
 }
 
-/* --- 3. INPUTS & TEXT --- */
+/* --- 3. CONTROL BAR (NEW) --- */
+.control-bar {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 30px;
+    border-bottom: 2px dashed #444;
+    padding-bottom: 10px;
+}
+
+/* Search bar takes available space */
+#searchBar {
+    flex-grow: 1;
+    background: black;
+    color: white;
+    border: none;
+    padding: 10px;
+    font-family: 'Determination', sans-serif;
+    font-size: 1.1em;
+    outline: none;
+    margin-bottom: 0; /* Reset */
+}
+#searchBar:focus {
+    background: #111;
+}
+
+.view-toggles {
+    display: flex;
+    gap: 5px;
+}
+
+.view-toggles img {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #333;
+    padding: 2px;
+    opacity: 0.5;
+    transition: all 0.2s;
+}
+
+.view-toggles img:hover {
+    border-color: white;
+    opacity: 1;
+}
+
+.view-toggles img.active-view {
+    border-color: white;
+    opacity: 1;
+    background: #222;
+}
+
+/* --- 4. INPUTS --- */
 .input-area {
     border: 2px solid white;
     padding: 15px;
     margin-bottom: 40px;
     background: black;
-    display: none !important; /* Hidden for guests */
+    display: none !important; 
 }
 
 textarea, input {
@@ -114,16 +159,13 @@ textarea, input {
     margin-bottom: 10px;
     box-sizing: border-box;
     font-family: inherit;
-    /* Inputs keep the text cursor */
     cursor: text;
 }
 
-/* Auto-Expanding Input */
 textarea {
     resize: none; 
     overflow-y: hidden;
     min-height: 50px; 
-    transition: height 0.1s ease;
 }
 
 textarea:focus, input:focus {
@@ -133,7 +175,7 @@ textarea:focus, input:focus {
     background-color: #111; 
 }
 
-/* --- 4. BUTTONS --- */
+/* --- 5. BUTTONS --- */
 button {
     background: white;
     color: black;
@@ -142,46 +184,55 @@ button {
     font-weight: bold;
     width: 100%;
     transition: all 0.2s ease;
-    /* Cursor handled by Interactive Logic above */
 }
 
 button:hover {
     background: #ccc;
 }
-
-/* TERMINAL BRACKETS */
 button:hover::before { content: "[ "; color: black; }
 button:hover::after { content: " ]"; color: black; }
+button:active { transform: translateY(2px); }
 
-button:active {
-    transform: translateY(2px);
-    box-shadow: inset 0px 3px 5px rgba(0,0,0,0.2);
-}
+.button-row { display: flex; gap: 10px; }
 
-.button-row {
-    display: flex;
-    gap: 10px;
-}
+#cancelBtn { background: #333; color: white; border: 1px solid white; }
+#cancelBtn:hover { background: #555; }
+#cancelBtn:hover::before, #cancelBtn:hover::after { color: white; }
 
-#cancelBtn {
-    background: #333;
-    color: white;
-    border: 1px solid white;
-}
-#cancelBtn:hover {
-    background: #555;
-}
-#cancelBtn:hover::before, #cancelBtn:hover::after {
-    color: white;
-}
+/* --- 6. POSTS & MASONRY GRID --- */
 
-/* --- 5. POSTS --- */
+/* DEFAULT LIST VIEW */
 .post {
     border: 2px solid white;
     padding: 20px;
     margin-bottom: 20px;
     background: black;
-    position: relative; /* Anchors the pin */
+    position: relative;
+    /* Clean break for printing/columns */
+    break-inside: avoid; 
+}
+
+/* TILE VIEW (Grid) - Applied to #feed */
+#feed.grid-view {
+    column-count: 2; /* 2 Columns like Masonry */
+    column-gap: 20px;
+}
+
+/* On small screens, force 1 column even in grid mode */
+@media (max-width: 600px) {
+    #feed.grid-view {
+        column-count: 1;
+    }
+}
+
+/* DRAG AND DROP STYLES */
+.post.dragging {
+    opacity: 0.5;
+    border: 2px dashed #888;
+}
+.post.drag-over {
+    border-color: yellow;
+    background: #111;
 }
 
 .timestamp {
@@ -193,15 +244,8 @@ button:active {
     user-select: none;
     transition: color 0.2s;
 }
-.timestamp:hover {
-    color: #ccc;
-}
-.edited-timestamp {
-    color: #888;
-    margin-left: 8px;
-    font-style: italic;
-    font-size: 0.9em;
-}
+.timestamp:hover { color: #ccc; }
+.edited-timestamp { color: #888; margin-left: 8px; font-style: italic; font-size: 0.9em; }
 
 .post-content {
     display: flex;
@@ -217,64 +261,33 @@ button:active {
     flex-shrink: 0;
 }
 
+/* In Grid Mode, maybe make avatar smaller or hide? Keeping it for now. */
+
 .post-content p {
     margin: 0;
     line-height: 1.4;
     white-space: pre-wrap; 
-    word-break: break-word; /* Fixes long unbroken strings */
+    word-break: break-word; 
     overflow-wrap: break-word;
 }
 
-/* Text Formatting */
-.post-text b, .post-text strong {
-    color: #fff;
-    font-weight: bold;
-    text-shadow: 0 0 2px white;
-}
-.post-text i, .post-text em {
-    font-style: italic;
-    color: #ccc;
-}
-.post-text a {
-    color: #fff;
-    text-decoration: underline;
-    font-weight: bold;
-}
-.post-text a:hover {
-    background: white;
-    color: black;
-    text-decoration: none;
-}
+.post-text b, .post-text strong { color: #fff; font-weight: bold; text-shadow: 0 0 2px white; }
+.post-text i, .post-text em { font-style: italic; color: #ccc; }
+.post-text a { color: #fff; text-decoration: underline; font-weight: bold; }
+.post-text a:hover { background: white; color: black; text-decoration: none; }
 
-/* Media */
 .post-media, .post-image {
     display: block;
     max-width: 100%;
     margin-top: 10px;
     border: 1px solid white;
 }
-audio.post-media {
-    width: 100%;
-    height: 40px;
-    border-radius: 0;
-    filter: invert(1);
-}
-.media-embed {
-    width: 100%;
-    border: 2px solid white;
-    margin-top: 10px;
-    display: block;
-}
-iframe.media-embed {
-    aspect-ratio: 16 / 9;
-    height: auto;
-}
-iframe[src*="spotify"] {
-    aspect-ratio: auto;
-    height: 152px;
-}
+audio.post-media { width: 100%; height: 40px; border-radius: 0; filter: invert(1); }
+.media-embed { width: 100%; border: 2px solid white; margin-top: 10px; display: block; }
+iframe.media-embed { aspect-ratio: 16 / 9; height: auto; }
+iframe[src*="spotify"] { aspect-ratio: auto; height: 152px; }
 
-/* --- 6. ADMIN UI & ANIMATIONS --- */
+/* --- 7. ADMIN UI --- */
 @keyframes blink {
     0%, 100% { opacity: 1; }
     50% { opacity: 0; }
@@ -292,15 +305,9 @@ iframe[src*="spotify"] {
     padding: 10px;
     z-index: 100;
 }
-#view-count::after {
-    content: " █";
-    animation: blink 1s step-end infinite;
-    color: white;
-}
+#view-count::after { content: " █"; animation: blink 1s step-end infinite; color: white; }
 
-.hidden {
-    display: none !important;
-}
+.hidden { display: none !important; }
 
 #admin-login-bar {
     position: fixed;
@@ -310,7 +317,7 @@ iframe[src*="spotify"] {
     border: 1px solid white;
     padding: 10px;
     z-index: 1000;
-    min-width: 200px;
+    min-width: 150px;
     text-align: center;
 }
 
@@ -324,7 +331,6 @@ iframe[src*="spotify"] {
     padding: 2px 5px;
 }
 
-/* Admin Button Visibility Logic */
 .admin-buttons {
     display: none !important; 
     margin-top: 10px;
@@ -344,10 +350,7 @@ body.admin-mode .admin-buttons { display: block !important; }
     font-size: 0.8em;
     margin-left: 10px;
 }
-.admin-buttons button:hover {
-    background: white !important;
-    color: black !important;
-}
+.admin-buttons button:hover { background: white !important; color: black !important; }
 
 #login-error {
     display: none;
@@ -364,240 +367,83 @@ body.admin-mode .admin-buttons { display: block !important; }
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px;
+    gap: 10px;
 }
-.login-status {
-    color: rgb(251, 255, 0); 
-    font-size: 0.8em; 
-    margin-bottom: 5px;
-}
+.login-status { color: rgb(251, 255, 0); font-size: 0.8em; }
+
+/* NEW LOGOUT BUTTON */
 #logoutBtn {
-    width: auto !important;
-    background: white;
-    color: black;
+    width: 32px;
+    height: 32px;
     border: none;
-    font-family: inherit;
-    font-size: 0.7em;
-    padding: 5px 15px;
-    font-weight: bold;
+    transition: transform 0.1s;
 }
-#logoutBtn:hover {
-    background: red;
-    color: white;
-}
-#logoutBtn:hover::before, #logoutBtn:hover::after {
-    content: "";
-}
+#logoutBtn:active { transform: scale(0.9); }
 
-/* --- 7. UI FEATURES (Search, Back to Top, Modals) --- */
-
-/* Back to Top Arrow */
+/* --- 8. UI FEATURES --- */
 #back-to-top {
     position: fixed;
     bottom: 20px;
     left: calc(50% + 310px); 
-    right: auto; 
     width: 50px; 
     height: 50px;
     z-index: 10001; 
-    opacity: 1; 
-    image-rendering: pixelated;
     transition: transform 0.2s ease;
 }
-#back-to-top:hover {
-    transform: translateY(-5px); 
-}
+#back-to-top:hover { transform: translateY(-5px); }
 @media (max-width: 750px) {
-    #back-to-top {
-        left: auto;
-        right: 10px;
-        bottom: 10px;
-    }
+    #back-to-top { left: auto; right: 10px; bottom: 10px; }
 }
 
-/* Search Bar */
-#searchBar {
-    width: 100%;
-    background: black;
-    color: white;
-    border: none;
-    border-bottom: 2px dashed #444; 
-    padding: 10px;
-    margin-bottom: 30px; 
-    font-family: 'Determination', sans-serif;
-    font-size: 1.1em;
-    outline: none;
-    transition: border-color 0.2s;
-}
-#searchBar:focus {
-    border-bottom: 2px solid white; 
-}
-
-/* Modals */
 .modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.9); 
     z-index: 10002; 
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    display: flex; justify-content: center; align-items: center;
     backdrop-filter: blur(2px);
 }
 .modal-box {
-    background: black;
-    border: 2px solid white; 
-    padding: 30px; 
-    text-align: center;
+    background: black; border: 2px solid white; padding: 30px; text-align: center;
     min-width: 300px;
-    box-shadow: none; 
 }
-.modal-box p {
-    font-size: 1.2em;
-    font-weight: normal; 
-    margin-top: 0;
-    margin-bottom: 20px; 
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
-.modal-buttons {
-    display: flex;
-    gap: 20px;
-    justify-content: center; 
-    margin-top: 10px; 
-}
-.modal-buttons button {
-    border: 2px solid white;
-    background: black;
-    color: white;
-    font-family: inherit;
-    text-transform: uppercase;
-}
-.modal-buttons button:hover {
-    background: white;
-    color: black;
-}
+.modal-box p { font-size: 1.2em; margin: 0 0 20px 0; letter-spacing: 2px; }
+.modal-buttons { display: flex; gap: 20px; justify-content: center; }
+.modal-buttons button { border: 2px solid white; background: black; color: white; }
+.modal-buttons button:hover { background: white; color: black; }
 
-/* Lightbox */
-#lightbox-img {
-    max-width: 90%;
-    max-height: 90%;
-    border: 2px solid white;
-    box-shadow: none; 
-}
-#lightbox-close {
-    position: absolute;
-    top: 20px;
-    right: 30px;
-    color: white;
-    font-size: 1.5em;
-    font-weight: bold;
-}
-#lightbox-close:hover {
-    color: red;
-}
+#lightbox-img { max-width: 90%; max-height: 90%; border: 2px solid white; }
+#lightbox-close { position: absolute; top: 20px; right: 30px; color: white; font-size: 1.5em; font-weight: bold; }
+#lightbox-close:hover { color: red; }
 
-/* Sound Toggle */
 #sound-toggle {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    z-index: 10001;
-    opacity: 0.5;
-    transition: all 0.2s ease;
+    position: fixed; bottom: 20px; left: 20px; z-index: 10001; opacity: 0.5; transition: all 0.2s ease;
 }
+#sound-toggle img { width: 32px; height: 32px; }
+#sound-toggle:hover { opacity: 1; transform: scale(1.1); }
+@media (max-width: 600px) { #sound-toggle { bottom: 70px; } }
 
-#sound-toggle img {
-    width: 32px; 
-    height: 32px;
-    image-rendering: pixelated;
-}
-
-#sound-toggle:hover {
-    opacity: 1;
-    transform: scale(1.1);
-}
-
-/* Ensure it doesn't overlap with the admin bar on small screens */
-@media (max-width: 600px) {
-    #sound-toggle {
-        bottom: 70px; /* Moves up if admin bar is present */
-    }
-}
-
-/* --- 8. TOAST NOTIFICATIONS --- */
 #toast-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 10003; 
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    position: fixed; top: 20px; right: 20px; z-index: 10003; 
+    display: flex; flex-direction: column; gap: 10px;
 }
 .toast {
-    background: black;
-    border: 2px solid white;
-    color: white;
-    padding: 15px 25px;
-    font-family: 'Determination', sans-serif;
-    min-width: 200px;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    background: black; border: 2px solid white; color: white;
+    padding: 15px 25px; font-family: 'Determination', sans-serif;
+    min-width: 200px; box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
     animation: slideIn 0.3s ease-out forwards;
 }
-@keyframes slideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-/* --- 9. NEW CONTENT FEATURES --- */
+.formatting-bar { display: flex; gap: 5px; margin-bottom: 5px; }
+.formatting-bar button { width: 30px; height: 30px; padding: 0; font-size: 0.9em; border: 1px solid white; background: black; color: white; }
+.formatting-bar button:hover { background: white; color: black; }
+.formatting-bar button:hover::before, .formatting-bar button:hover::after { content: none; }
 
-/* Formatting Toolbar */
-.formatting-bar {
-    display: flex;
-    gap: 5px;
-    margin-bottom: 5px;
-}
-.formatting-bar button {
-    width: 30px;
-    height: 30px;
-    padding: 0;
-    font-size: 0.9em;
-    border: 1px solid white;
-    background: black;
-    color: white;
-}
-.formatting-bar button:hover {
-    background: white;
-    color: black;
-}
-/* No Brackets for small toolbar buttons */
-.formatting-bar button:hover::before,
-.formatting-bar button:hover::after {
-    content: none; 
-}
+.spoiler { background: white; color: white; cursor: help; padding: 0 4px; transition: all 0.2s; }
+.spoiler:hover, .spoiler.revealed { background: #333; color: white; text-decoration: none; }
 
-/* Spoiler Text */
-.spoiler {
-    background: white;
-    color: white; 
-    cursor: help;
-    padding: 0 4px;
-    transition: all 0.2s;
-}
-.spoiler:hover, .spoiler.revealed {
-    background: #333;
-    color: white; 
-    text-decoration: none;
-}
-
-/* Read More / Truncation */
-.post-text-container {
-    position: relative;
-}
+.post-text-container { position: relative; }
 .post-text-container.truncated {
     max-height: 150px; 
     overflow: hidden;
@@ -605,47 +451,17 @@ body.admin-mode .admin-buttons { display: block !important; }
     -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
 }
 .expand-btn {
-    display: block;
-    width: 100%;
-    text-align: center;
-    background: transparent; 
-    color: #888; 
-    margin-top: 5px;
-    padding: 10px;
-    font-size: 0.9em;
-    font-weight: bold;
-    border: none;
-    white-space: nowrap;
+    display: block; width: 100%; text-align: center; background: transparent; 
+    color: #888; margin-top: 5px; padding: 10px;
+    font-size: 0.9em; font-weight: bold; border: none;
 }
-.expand-btn:hover {
-    color: white; 
-    background: transparent;
-}
+.expand-btn:hover { color: white; }
 
-/* Pinned Post Icon */
 .pin-icon {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 16px;
-    height: 16px;
-    image-rendering: pixelated;
-    opacity: 0.3; 
-    z-index: 10;
+    position: absolute; top: 10px; right: 10px; width: 16px; height: 16px;
+    image-rendering: pixelated; opacity: 0.3; z-index: 10;
 }
-.pin-icon.active {
-    opacity: 1; 
-    filter: none;
-}
-.pin-icon:hover {
-    opacity: 1;
-}
-
-/* Guest Logic for Pins */
-body:not(.admin-mode) .pin-icon:not(.active) {
-    display: none !important;
-}
-body:not(.admin-mode) .pin-icon.active {
-    cursor: default;
-    pointer-events: none;
-}
+.pin-icon.active { opacity: 1; }
+.pin-icon:hover { opacity: 1; }
+body:not(.admin-mode) .pin-icon:not(.active) { display: none !important; }
+body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; }
