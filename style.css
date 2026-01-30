@@ -459,3 +459,20 @@ body.admin-mode .admin-buttons { display: block !important; }
 #lightbox-close:hover {
     color: red;
 }
+
+/* --- 8. GLOBAL CLICK FIX --- */
+
+/* 1. This ensures the "body" covers the whole screen so you can click the void */
+html, body {
+    height: 100%;
+}
+
+/* 2. This tells the browser: "When clicking ANYWHERE, swap the cursor" */
+body:active {
+    cursor: url('cursor-click.png'), auto;
+}
+
+/* 3. (Optional) Keeps the text cursor normal when highlighting text */
+textarea:active, input:active {
+    cursor: text; 
+}
