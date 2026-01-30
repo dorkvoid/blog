@@ -39,6 +39,29 @@ body {
     -webkit-font-smoothing: none;
     padding-bottom: 100px;
     cursor: url('cursor.png'), auto;
+    
+    /* NEW: Effect 4 - CRT Text Glow */
+    text-shadow: 0 0 2px rgba(255, 255, 255, 0.4);
+
+    /* NEW: Effect 5 - Static Noise Background */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+    background-attachment: fixed;
+}
+
+/* NEW: Slight Scanlines Overlay */
+body::before {
+    content: " ";
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 999;
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none; /* Lets you click through it */
+    opacity: 0.6; /* Keeps it subtle */
 }
 
 /* --- 2. LAYOUT & CONTAINER --- */
@@ -58,6 +81,8 @@ body {
     margin-bottom: 40px;
     background: black;
     display: none !important;
+    position: relative;
+    z-index: 1000; /* Ensures input sits above scanlines */
 }
 
 textarea, input {
@@ -95,6 +120,19 @@ button:hover {
     background: #ccc;
 }
 
+/* NEW: Effect 2 - Terminal Brackets on Hover */
+button {
+    transition: all 0.2s ease;
+}
+button:hover::before {
+    content: "[ ";
+    color: black; /* Matches button text color */
+}
+button:hover::after {
+    content: " ]";
+    color: black;
+}
+
 /* The "Mechanical" Click Effect */
 button:active {
     transform: translateY(2px);
@@ -120,6 +158,11 @@ a:active {
 #cancelBtn:hover {
     background: #555;
 }
+/* Bracket override for Cancel button since it is dark */
+#cancelBtn:hover::before, #cancelBtn:hover::after {
+    color: white;
+}
+
 
 /* --- 5. POSTS --- */
 .post {
@@ -127,6 +170,8 @@ a:active {
     padding: 20px;
     margin-bottom: 20px;
     background: black;
+    position: relative;
+    z-index: 1000; /* Sits above scanlines */
 }
 
 .timestamp {
@@ -135,6 +180,8 @@ a:active {
     padding-bottom: 5px;
     margin-bottom: 10px;
     display: block;
+    /* Extra glow for time */
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
 }
 
 .edited-timestamp {
@@ -179,7 +226,14 @@ audio.post-media {
     filter: invert(1);
 }
 
-/* --- 6. ADMIN UI --- */
+/* --- 6. ADMIN UI & ANIMATIONS --- */
+
+/* NEW: Effect 3 - Blinking Cursor Animation */
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
 #view-count {
     position: fixed;
     top: 20px;
@@ -191,6 +245,13 @@ audio.post-media {
     border: 1px solid white;
     padding: 10px;
     z-index: 100;
+}
+
+/* Adds the blinking block to view count */
+#view-count::after {
+    content: " █";
+    animation: blink 1s step-end infinite;
+    color: white;
 }
 
 .hidden {
@@ -269,6 +330,7 @@ body.admin-mode .admin-buttons { display: block !important; }
     color: rgb(251, 255, 0); 
     font-size: 0.8em; 
     margin-bottom: 5px;
+    text-shadow: 0 0 5px rgba(251, 255, 0, 0.7); /* Yellow glow */
 }
 
 #logoutBtn {
@@ -286,4 +348,7 @@ body.admin-mode .admin-buttons { display: block !important; }
 #logoutBtn:hover {
     background: red;
     color: white;
+}
+#logoutBtn:hover::before, #logoutBtn:hover::after {
+    content: ""; /* No brackets on the tiny logout button */
 }
