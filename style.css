@@ -281,12 +281,15 @@ iframe[src*="spotify"] { aspect-ratio: auto; height: 152px; }
 .drag-handle {
     position: absolute;
     top: 10px;
-    right: 35px; /* Sits to the left of the Pin icon */
+    right: 35px;
     width: 16px;
     height: 16px;
     opacity: 0.3;
-    cursor: grab; /* Shows the open hand */
     z-index: 10;
+    
+    /* Custom Open Hand (Hover) */
+    /* 18 18 sets the active click point to the center of the 36x36 image */
+    cursor: url('images/grab-hand.png') 18 18, grab; 
 }
 
 .drag-handle:hover {
@@ -294,12 +297,8 @@ iframe[src*="spotify"] { aspect-ratio: auto; height: 152px; }
 }
 
 .drag-handle:active {
-    cursor: grabbing; /* Shows the closed hand */
-}
-
-/* Ensure the main post allows text selection now */
-.post {
-    user-select: text; 
+    /* Custom Closed Hand (Dragging) */
+    cursor: url('images/closed-grab-hand.png') 18 18, grabbing;
 }
 
 /* --- 7. ADMIN UI (UPDATED: Tight & Neat) --- */
