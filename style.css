@@ -287,9 +287,9 @@ iframe[src*="spotify"] { aspect-ratio: auto; height: 152px; }
     opacity: 0.3;
     z-index: 10;
     
-    /* Custom Open Hand (Hover) */
-    /* 18 18 sets the active click point to the center of the 36x36 image */
-    cursor: url('images/grab-hand.png') 18 18, grab; 
+    /* FIX: Changed fallback to 'auto' to force coordinates */
+    /* 18 18 puts the "click point" in the dead center of your 36x36 image */
+    cursor: url('images/grab-hand.png') 18 18, auto; 
 }
 
 .drag-handle:hover {
@@ -297,8 +297,8 @@ iframe[src*="spotify"] { aspect-ratio: auto; height: 152px; }
 }
 
 .drag-handle:active {
-    /* Custom Closed Hand (Dragging) */
-    cursor: url('images/closed-grab-hand.png') 18 18, grabbing;
+    /* FIX: Changed fallback to 'auto' */
+    cursor: url('images/closed-grab-hand.png') 18 18, auto;
 }
 
 /* --- 7. ADMIN UI (UPDATED: Tight & Neat) --- */
