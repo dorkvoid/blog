@@ -493,14 +493,17 @@ function handleDragStart(e) {
     // 2. Set the effect
     e.dataTransfer.effectAllowed = 'move';
     
-    // 3. DYNAMIC GHOST IMAGE POSITIONING
+    // 3. EXACT GEOMETRY LOCK
+    // We get the exact screen coordinates of the post
+    const rect = draggedItem.getBoundingClientRect();
+    
+    // We calculate exactly where your mouse is relative to the post's corner
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    // We lock the ghost image to that exact coordinate
     if (e.dataTransfer.setDragImage) {
-        // Instead of hardcoding 550, we calculate the width of the post.
-        // We subtract 40px because your handle is roughly 40px from the right edge.
-        const xOffset = draggedItem.offsetWidth - 40;
-        
-        // (post, dynamic-width, static-height)
-        e.dataTransfer.setDragImage(draggedItem, xOffset, 20); 
+        e.dataTransfer.setDragImage(draggedItem, x, y);
     }
 
     // 4. Add styling
