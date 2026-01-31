@@ -487,9 +487,11 @@ function timeAgo(date) {
 let draggedItem = null;
 
 function handleDragStart(e) {
-    draggedItem = this;
+    // UPDATED: Grab the parent post, because 'this' is now the handle image
+    draggedItem = this.closest('.post'); 
+    
     e.dataTransfer.effectAllowed = 'move';
-    this.classList.add('dragging');
+    draggedItem.classList.add('dragging');
 }
 
 function handleDragOver(e) {
@@ -525,7 +527,7 @@ async function handleDrop(e) {
             try {
                 await updateDoc(doc(db, "posts", id1), { timestamp: ts2 });
                 await updateDoc(doc(db, "posts", id2), { timestamp: ts1 });
-                playSound('swap'); // NEW SWAP SOUND
+                playSound('swap'); 
             } catch (err) {
                 console.error(err);
                 playSound('error');
@@ -544,9 +546,12 @@ function addPostToDOM(post) {
     postDiv.classList.add('post');
     postDiv.dataset.id = id;
 
+    // UPDATED: No global draggable attribute here. 
+    // We attach the Drag Start Listener to the HANDLE later.
+    
+    // Drop Targets (dragover/drop) MUST stay on the main div 
+    // so you have a big target to drop onto.
     if (isAdmin) {
-        postDiv.setAttribute('draggable', 'true');
-        postDiv.addEventListener('dragstart', handleDragStart);
         postDiv.addEventListener('dragover', handleDragOver);
         postDiv.addEventListener('dragleave', handleDragLeave);
         postDiv.addEventListener('drop', handleDrop);
@@ -556,6 +561,13 @@ function addPostToDOM(post) {
     if (isAdmin || post.pinned) {
         const pinClass = post.pinned ? "pin-icon active" : "pin-icon";
         pinHTML = `<img src="images/pin.png" class="${pinClass}" data-id="${id}" title="Pin/Unpin">`;
+    }
+
+    // NEW: Drag Handle HTML
+    let dragHTML = "";
+    if (isAdmin) {
+        // Only the handle is draggable
+        dragHTML = `<img src="images/drag-handle.png" class="drag-handle" draggable="true" title="Drag to Reorder">`;
     }
 
     let mediaHTML = "";
@@ -617,7 +629,9 @@ function addPostToDOM(post) {
         '<a href="$1" target="_blank">$1</a>'
     );
 
+    // UPDATED: Insert ${dragHTML}
     postDiv.innerHTML = `
+        ${dragHTML}
         ${pinHTML}
         <div class="post-content">
             <img src="images/plxeyes.png" class="avatar-icon">
@@ -660,6 +674,15 @@ function addPostToDOM(post) {
             showToast(newStatus ? "POST PINNED" : "POST UNPINNED");
         });
         pinBtn.addEventListener('mouseenter', () => playSound('hover'));
+    }
+
+    // NEW: Attach Drag Start to the Handle
+    if (isAdmin) {
+        const handle = postDiv.querySelector('.drag-handle');
+        if (handle) {
+            handle.addEventListener('dragstart', handleDragStart);
+            handle.addEventListener('mouseenter', () => playSound('hover')); // Optional: Add sound to handle hover
+        }
     }
 
     const btnContainer = postDiv.querySelector('.admin-buttons');
