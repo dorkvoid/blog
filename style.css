@@ -1,7 +1,7 @@
 /* --- 1. GLOBAL & SCROLLBAR --- */
 @font-face {
-    font-family: 'Determination';
-    src: url('DeterminationMonoWebRegular-Z5oq.ttf');
+    font-family: 'Nope8';
+    src: url('Nope8.ttf'); /* Matches the renamed file */
 }
 
 ::-webkit-scrollbar {
@@ -37,8 +37,8 @@ html, body {
 body {
     background-color: black;
     color: white;
-    font-family: 'Determination', sans-serif;
-    font-size: 18px;
+    font-family: 'Nope8', sans-serif; 
+    font-size: 16px;
     image-rendering: pixelated; 
     -webkit-font-smoothing: none;
     padding-bottom: 100px;
