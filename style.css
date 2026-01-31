@@ -1,7 +1,7 @@
 /* --- 1. GLOBAL & SCROLLBAR --- */
 @font-face {
     font-family: 'Nope8';
-    src: url('Nope8.ttf'); /* Matches the renamed file */
+    src: url('Nope8.ttf'); 
 }
 
 ::-webkit-scrollbar {
@@ -39,8 +39,8 @@ body {
     color: white;
     font-family: 'Nope8', sans-serif; 
     
-    /* UPDATED: Increased size to 24px */
-    font-size: 24px;
+    /* UPDATED: Set to 18px */
+    font-size: 18px;
     
     image-rendering: pixelated; 
     -webkit-font-smoothing: none;
@@ -109,7 +109,10 @@ body::before {
     color: white;
     border: none;
     padding: 10px;
-    font-family: 'Determination', sans-serif;
+    
+    /* UPDATED: Search Bar now uses Nope8 */
+    font-family: 'Nope8', sans-serif;
+    
     font-size: 1.1em;
     outline: none;
     margin-bottom: 0; 
@@ -160,10 +163,7 @@ textarea, input {
     padding: 10px;
     margin-bottom: 10px;
     box-sizing: border-box;
-    
-    /* UPDATED: Force input font */
     font-family: 'Nope8', sans-serif; 
-    
     cursor: text;
 }
 
@@ -189,8 +189,6 @@ button {
     font-weight: bold;
     width: 100%;
     transition: all 0.2s ease;
-    
-    /* UPDATED: Force button font */
     font-family: 'Nope8', sans-serif;
 }
 
@@ -295,9 +293,6 @@ iframe[src*="spotify"] { aspect-ratio: auto; height: 152px; }
     height: 16px;
     opacity: 0.3;
     z-index: 10;
-    
-    /* FIX: Changed fallback to 'auto' to force coordinates */
-    /* 18 18 puts the "click point" in the dead center of your 36x36 image */
     cursor: url('images/grab-hand.png') 18 18, auto; 
 }
 
@@ -306,11 +301,10 @@ iframe[src*="spotify"] { aspect-ratio: auto; height: 152px; }
 }
 
 .drag-handle:active {
-    /* FIX: Changed fallback to 'auto' */
     cursor: url('images/closed-grab-hand.png') 18 18, auto;
 }
 
-/* --- 7. ADMIN UI (UPDATED: Tight & Neat) --- */
+/* --- 7. ADMIN UI --- */
 @keyframes blink {
     0%, 100% { opacity: 1; }
     50% { opacity: 0; }
@@ -339,9 +333,9 @@ iframe[src*="spotify"] { aspect-ratio: auto; height: 152px; }
     right: 20px;
     background: black;
     border: 1px solid white;
-    padding: 8px; /* Reduced padding */
+    padding: 8px; 
     z-index: 1000;
-    min-width: auto; /* Remove fixed width */
+    min-width: auto; 
     text-align: center;
 }
 
@@ -392,11 +386,11 @@ body.admin-mode .admin-buttons { display: block !important; }
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 5px; /* Tighter gap */
+    gap: 5px; 
 }
 .login-status { 
     color: rgb(251, 255, 0); 
-    font-size: 0.7em; /* Slightly smaller */
+    font-size: 0.7em; 
     letter-spacing: 1px;
     margin-bottom: 2px;
 }
