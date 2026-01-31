@@ -452,7 +452,11 @@ body.admin-mode .admin-buttons { display: block !important; }
 }
 .toast {
     background: black; border: 2px solid white; color: white;
-    padding: 15px 25px; font-family: 'Determination', sans-serif;
+    padding: 15px 25px; 
+    
+    /* FIX: Changed from 'Determination' to 'Nope8' */
+    font-family: 'Nope8', sans-serif;
+    
     min-width: 200px; box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
     animation: slideIn 0.3s ease-out forwards;
 }

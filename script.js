@@ -573,10 +573,12 @@ function addPostToDOM(post) {
         postDiv.addEventListener('drop', handleDrop);
     }
 
-    let pinHTML = "";
+ let pinHTML = "";
     if (isAdmin || post.pinned) {
         const pinClass = post.pinned ? "pin-icon active" : "pin-icon";
-        pinHTML = `<img src="images/pin.png" class="${pinClass}" data-id="${id}" title="Pin/Unpin">`;
+        
+        // FIX: Added draggable="false" so it doesn't act like a ghost handle
+        pinHTML = `<img src="images/pin.png" class="${pinClass}" data-id="${id}" title="Pin/Unpin" draggable="false">`;
     }
 
     // NEW: Drag Handle HTML
