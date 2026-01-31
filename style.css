@@ -38,7 +38,10 @@ body {
     background-color: black;
     color: white;
     font-family: 'Nope8', sans-serif; 
-    font-size: 16px;
+    
+    /* UPDATED: Increased size to 24px */
+    font-size: 24px;
+    
     image-rendering: pixelated; 
     -webkit-font-smoothing: none;
     padding-bottom: 100px;
@@ -157,7 +160,10 @@ textarea, input {
     padding: 10px;
     margin-bottom: 10px;
     box-sizing: border-box;
-    font-family: inherit;
+    
+    /* UPDATED: Force input font */
+    font-family: 'Nope8', sans-serif; 
+    
     cursor: text;
 }
 
@@ -183,6 +189,9 @@ button {
     font-weight: bold;
     width: 100%;
     transition: all 0.2s ease;
+    
+    /* UPDATED: Force button font */
+    font-family: 'Nope8', sans-serif;
 }
 
 button:hover {
