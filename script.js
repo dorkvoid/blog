@@ -487,10 +487,23 @@ function timeAgo(date) {
 let draggedItem = null;
 
 function handleDragStart(e) {
-    // UPDATED: Grab the parent post, because 'this' is now the handle image
+    // 1. Identify the whole post
     draggedItem = this.closest('.post'); 
     
+    // 2. Set the effect
     e.dataTransfer.effectAllowed = 'move';
+    
+    // 3. FORCE THE GHOST IMAGE TO BE THE WHOLE POST
+    // We pass 'draggedItem' (the div) instead of 'this' (the handle image).
+    // The coordinates (10, 10) mean the cursor grabs the post near the top-left corner.
+    if (e.dataTransfer.setDragImage) {
+        e.dataTransfer.setDragImage(draggedItem, 550, 20); 
+        // Note: I set X to 550 because your handle is on the RIGHT side.
+        // This makes the "Ghost Post" appear nicely under your mouse
+        // relative to where the handle actually is.
+    }
+
+    // 4. Add styling
     draggedItem.classList.add('dragging');
 }
 
