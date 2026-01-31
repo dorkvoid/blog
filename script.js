@@ -105,8 +105,12 @@ soundToggle.addEventListener('click', (e) => {
     updateSoundUI();
     
     if(!isMuted) {
-        playSound('click');
-        sounds.hum.play();
+        // FIX: Play the master file directly instead of cloning it.
+        // This is faster and prevents the sound from getting "swallowed".
+        sounds.click.currentTime = 0;
+        sounds.click.play().catch(() => {});
+        
+        sounds.hum.play().catch(() => {});
     }
 });
 
