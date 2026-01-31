@@ -493,14 +493,14 @@ function handleDragStart(e) {
     // 2. Set the effect
     e.dataTransfer.effectAllowed = 'move';
     
-    // 3. FORCE THE GHOST IMAGE TO BE THE WHOLE POST
-    // We pass 'draggedItem' (the div) instead of 'this' (the handle image).
-    // The coordinates (10, 10) mean the cursor grabs the post near the top-left corner.
+    // 3. DYNAMIC GHOST IMAGE POSITIONING
     if (e.dataTransfer.setDragImage) {
-        e.dataTransfer.setDragImage(draggedItem, 550, 20); 
-        // Note: I set X to 550 because your handle is on the RIGHT side.
-        // This makes the "Ghost Post" appear nicely under your mouse
-        // relative to where the handle actually is.
+        // Instead of hardcoding 550, we calculate the width of the post.
+        // We subtract 40px because your handle is roughly 40px from the right edge.
+        const xOffset = draggedItem.offsetWidth - 40;
+        
+        // (post, dynamic-width, static-height)
+        e.dataTransfer.setDragImage(draggedItem, xOffset, 20); 
     }
 
     // 4. Add styling
