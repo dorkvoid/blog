@@ -166,7 +166,9 @@ onAuthStateChanged(auth, (user) => {
         adminLoginBar.classList.remove('hidden'); 
         if (loginContainer) loginContainer.classList.add('hidden');
         if (adminMenu) adminMenu.classList.remove('hidden');
-        restoreDraft();
+        
+        // FIX: Removed 'restoreDraft()' because it was crashing the site on refresh
+        
     } else {
         isAdmin = false;
         document.body.classList.remove('admin-mode');
@@ -225,7 +227,6 @@ function setView(mode) {
 }
 setView(currentView);
 
-// UPDATED: Added Click Sounds here
 viewListBtn.addEventListener('click', () => {
     playSound('click');
     setView('list');
@@ -304,7 +305,6 @@ function reloadFeed() {
 
 // --- 8. POST & COMMAND LOGIC ---
 
-// RESTORED: Typing Sounds
 function handleTypingSound(e) {
     if (e.repeat) return; 
     playSound('type');
@@ -329,7 +329,6 @@ tagToggles.forEach(toggle => {
     });
 });
 
-// RESTORED: Full Command Logic (/login, /clear, /help)
 searchInput.addEventListener('input', (e) => {
     const val = e.target.value;
     
@@ -575,7 +574,8 @@ function addPostToDOM(post) {
     if (post.tags && post.tags.length > 0) {
         tagsHTML = `<div class="post-tags">`;
         post.tags.forEach(tag => {
-            tagsHTML += `<span class="post-tag" onclick="document.getElementById('searchBar').value='#${tag}'; document.getElementById('searchBar').dispatchEvent(new Event('input'));">${tag}</span>`;
+            // UPDATED: Now calls toggleSearchTag() instead of direct assignment
+            tagsHTML += `<span class="post-tag" onclick="window.toggleSearchTag('${tag}')">${tag}</span>`;
         });
         tagsHTML += `</div>`;
     }
@@ -707,3 +707,19 @@ window.addEventListener('scroll', () => {
 backToTopBtn.addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });
+
+// --- 12. GLOBAL HELPERS ---
+window.toggleSearchTag = function(tag) {
+    playSound('click');
+    const currentVal = searchInput.value;
+    const targetVal = '#' + tag;
+
+    if (currentVal === targetVal) {
+        searchInput.value = ''; // Toggle Off
+        showToast("FILTER CLEARED");
+    } else {
+        searchInput.value = targetVal; // Toggle On
+    }
+    // Trigger the search logic immediately
+    searchInput.dispatchEvent(new Event('input'));
+};
