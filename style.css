@@ -20,14 +20,15 @@
 }
 
 ::selection {
-    background: white;
-    color: black;
-    text-shadow: none;
+    background: rgba(255, 255, 255, 0.1); /* Barely visible background for usability */
+    color: white;
+    text-shadow: 0 0 8px white, 0 0 15px white; /* The "Highlight" is now pure light */
 }
+
 ::-moz-selection {
-    background: white;
-    color: black;
-    text-shadow: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    text-shadow: 0 0 8px white, 0 0 15px white;
 }
 
 html, body {
