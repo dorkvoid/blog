@@ -575,3 +575,21 @@ body.admin-mode .admin-buttons { display: block !important; }
 .pin-icon:hover { opacity: 1; }
 body:not(.admin-mode) .pin-icon:not(.active) { display: none !important; }
 body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; }
+
+/* NO SIGNAL MESSAGE */
+.no-signal {
+    text-align: center;
+    color: #666;
+    margin-top: 50px;
+    font-family: 'Nope8', sans-serif;
+    border: 1px dashed #444;
+    padding: 20px;
+    animation: blink 2s infinite;
+}
+
+.no-signal span {
+    display: block;
+    font-size: 0.8em;
+    margin-top: 10px;
+    color: #444;
+}

@@ -275,30 +275,34 @@ loadMoreBtn.addEventListener('click', () => {
 function reloadFeed() {
     feed.innerHTML = "";
     
-    // Sort logic (Pins first)
-    allPosts.sort((a, b) => {
-        if (a.pinned === b.pinned) {
-            return (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0);
-        }
-        return a.pinned ? -1 : 1;
-    });
+    // Sort logic... (unchanged)
+    allPosts.sort((a, b) => { /*...*/ });
 
-    // FILTER LOGIC
+    // FILTER LOGIC... (unchanged)
     const term = searchInput.value.toLowerCase();
-    
-    const visiblePosts = allPosts.filter(p => {
-        // 1. Tag Filter
-        if (term.startsWith('#')) {
-            const tagQuery = term.substring(1).toUpperCase();
-            if (!p.tags) return false;
-            return p.tags.includes(tagQuery);
+    const visiblePosts = allPosts.filter(p => { /*...*/ });
+
+    // --- NEW: CHECK FOR EMPTY RESULTS ---
+    if (visiblePosts.length === 0) {
+        // If we have data but filtered it all away:
+        if (allPosts.length > 0) {
+            feed.innerHTML = `
+                <div class="no-signal">
+                    [ NO DATA FOUND IN CURRENT BUFFER ]
+                    <span>TRY LOADING MORE SECTORS...</span>
+                </div>`;
+        } else {
+            // If the database is actually empty (fresh install):
+            feed.innerHTML = `<div class="no-signal">[ VOID IS EMPTY ]</div>`;
         }
-        // 2. Text Filter
-        else if (term && !term.startsWith('/')) {
-            return p.text.toLowerCase().includes(term);
-        }
-        return true;
-    });
+        
+        // Hide the load more button visually if filtered (optional, but cleaner)
+        if(term) loadMoreBtn.classList.add('hidden');
+        else loadMoreBtn.classList.remove('hidden');
+        
+        return; 
+    }
+    // ------------------------------------
 
     visiblePosts.forEach(post => {
         addPostToDOM(post);
