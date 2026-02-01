@@ -29,7 +29,7 @@ const searchInput = document.getElementById('searchBar');
 const toastContainer = document.getElementById('toast-container');
 const adminLoginBar = document.getElementById('admin-login-bar'); 
 const container = document.querySelector('.container');
-const loadMoreBtn = document.getElementById('loadMoreBtn'); // NEW
+const loadMoreBtn = document.getElementById('loadMoreBtn'); 
 
 // Tag Elements
 const tagToggles = document.querySelectorAll('.tag-toggle');
@@ -231,8 +231,9 @@ viewTileBtn.addEventListener('click', () => setView('tile'));
 
 // --- 7. LOAD POSTS (PAGINATION + TAGS) ---
 let allPosts = []; 
-let feedLimit = 10; // STARTING LIMIT
+let feedLimit = 10; 
 let unsubscribe = null;
+let isFeedHidden = false; // RESTORED: Needed for /clear toggle logic
 
 function setupSubscription() {
     if (unsubscribe) unsubscribe();
@@ -254,10 +255,10 @@ function setupSubscription() {
 }
 
 loadMoreBtn.addEventListener('click', () => {
-    feedLimit += 10; // INCREASE LIMIT
+    feedLimit += 10; 
     playSound('click');
     loadMoreBtn.innerText = "LOADING...";
-    setupSubscription(); // RELOAD WITH NEW LIMIT
+    setupSubscription(); 
     setTimeout(() => { loadMoreBtn.innerText = "[ LOAD MORE... ]"; }, 500);
 });
 
@@ -298,7 +299,7 @@ function reloadFeed() {
 
 // RESTORED: Typing Sounds
 function handleTypingSound(e) {
-    if (e.repeat) return; // Don't spam sound if key is held down
+    if (e.repeat) return; 
     playSound('type');
 }
 
@@ -321,21 +322,50 @@ tagToggles.forEach(toggle => {
     });
 });
 
+// RESTORED: Full Command Logic (/login, /clear, /help)
 searchInput.addEventListener('input', (e) => {
     const val = e.target.value;
+    
+    // 1. COMMAND MODE
     if (val.startsWith('/')) {
-        // Command logic (unchanged)
         if (val === '/login') {
-            adminLoginBar.classList.toggle('hidden');
-            if(!adminLoginBar.classList.contains('hidden')) passwordInput.focus();
+            // Toggle Login Bar
+            if (adminLoginBar.classList.contains('hidden')) {
+                adminLoginBar.classList.remove('hidden');
+                passwordInput.focus();
+                showToast("LOGIN TERMINAL OPEN");
+            } else {
+                adminLoginBar.classList.add('hidden');
+                showToast("LOGIN TERMINAL CLOSED");
+            }
             searchInput.value = ''; 
+            
+        } else if (val === '/help') {
+            // Show Help
+            showToast("CMDS: /login, /clear");
+            searchInput.value = '';
+            
         } else if (val === '/clear') {
-            feed.innerHTML = ''; 
+            // Toggle Feed Visibility
+            if (isFeedHidden) {
+                isFeedHidden = false;
+                reloadFeed(); 
+                showToast("FEED RESTORED");
+            } else {
+                isFeedHidden = true;
+                feed.innerHTML = ''; 
+                showToast("FEED CLEARED");
+            }
             searchInput.value = '';
         }
-    } else {
-        reloadFeed();
+        return; // Stop here so we don't trigger a search
     }
+    
+    // 2. SEARCH MODE
+    // If we start typing normally, we assume the user wants to see results,
+    // so we disable the "Hidden" state and reload.
+    if (isFeedHidden) isFeedHidden = false;
+    reloadFeed(); 
 });
 
 let editingPostId = null; 
@@ -370,7 +400,7 @@ postBtn.addEventListener('click', async function() {
             await updateDoc(doc(db, "posts", editingPostId), { 
                 text: text, 
                 image: img,
-                tags: selectedTags, // SAVE TAGS
+                tags: selectedTags, 
                 editedTimestamp: serverTimestamp()
             });
             showToast("POST UPDATED");
@@ -380,7 +410,7 @@ postBtn.addEventListener('click', async function() {
             await addDoc(collection(db, "posts"), {
                 text: text,
                 image: img,
-                tags: selectedTags, // SAVE TAGS
+                tags: selectedTags, 
                 timestamp: serverTimestamp(),
                 pinned: false 
             });
@@ -543,7 +573,7 @@ function addPostToDOM(post) {
         tagsHTML += `</div>`;
     }
 
-    // Media HTML (Youtube, Spotify, Images)
+    // Media HTML
     let mediaHTML = "";
     if (post.image) {
         const url = post.image;
