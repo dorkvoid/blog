@@ -20,13 +20,13 @@
 }
 
 ::selection {
-    background: rgba(255, 255, 255, 0.1); /* Barely visible background for usability */
+    background: transparent; 
     color: white;
-    text-shadow: 0 0 8px white, 0 0 15px white; /* The "Highlight" is now pure light */
+    text-shadow: 0 0 8px white, 0 0 15px white; 
 }
 
 ::-moz-selection {
-    background: rgba(255, 255, 255, 0.1);
+    background: transparent;
     color: white;
     text-shadow: 0 0 8px white, 0 0 15px white;
 }
@@ -553,8 +553,10 @@ body.admin-mode .admin-buttons { display: block !important; }
     font-size: 0.9em; 
     font-weight: bold; 
     border: none;
-    cursor: pointer;
+    
+    /* DELETED: cursor: pointer; <--- Remove this line! */
 }
+
 .expand-btn:hover { color: white; }
 
 .pin-icon {
