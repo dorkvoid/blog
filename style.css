@@ -585,8 +585,24 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
     border: 1px dashed #444;
     padding: 20px;
     animation: blink 2s infinite;
+
+    /* FIX 1: Spans across both columns in Tile View */
+    column-span: all;
+    -webkit-column-span: all; /* For Safari/Chrome compatibility */
     
-    /* NEW: Forces the box to stretch across both columns in Tile View */
-    column-span: all; 
+    /* Safety: Never let the box split in half */
+    break-inside: avoid;
+    page-break-inside: avoid;
+    
     width: 100%;
+    box-sizing: border-box;
+}
+
+.no-signal span {
+    /* FIX 2: Forces it to a new line */
+    display: block !important; 
+    
+    font-size: 0.8em;
+    margin-top: 10px;
+    color: #444;
 }

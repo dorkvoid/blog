@@ -305,8 +305,8 @@ function reloadFeed() {
         if (allPosts.length > 0) {
             feed.innerHTML = `
                 <div class="no-signal">
-                    [ NO DATA FOUND IN CURRENT BUFFER ]
-                    <span>TRY LOADING MORE SECTORS...</span>
+                    [ NO DATA FOUND ]
+                    <span>TRY A DIFFERENT SEARCH TERM.</span>
                 </div>`;
         } else {
             feed.innerHTML = `<div class="no-signal">[ VOID IS EMPTY ]</div>`;
