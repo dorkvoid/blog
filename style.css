@@ -20,15 +20,15 @@
 }
 
 ::selection {
-    background: transparent; 
-    color: white;
-    text-shadow: 0 0 8px white, 0 0 15px white; 
+    background: white; /* Solid block */
+    color: black;      /* Black text */
+    text-shadow: none; /* No glow */
 }
 
 ::-moz-selection {
-    background: transparent;
-    color: white;
-    text-shadow: 0 0 8px white, 0 0 15px white;
+    background: white;
+    color: black;
+    text-shadow: none;
 }
 
 html, body {

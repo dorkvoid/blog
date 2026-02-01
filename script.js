@@ -552,6 +552,7 @@ async function handleDrop(e) {
 }
 
 // --- 11. DISPLAY FUNCTION ---
+// --- 11. DISPLAY FUNCTION ---
 function addPostToDOM(post) {
     const id = post.id;
     const postDiv = document.createElement('div');
@@ -607,6 +608,14 @@ function addPostToDOM(post) {
 
     const postDate = post.timestamp ? post.timestamp.toDate() : new Date();
     
+    // RESTORED: Edited Timestamp Logic
+    let editedHTML = "";
+    if (post.editedTimestamp) {
+        const editDate = post.editedTimestamp.toDate();
+        // Uses the .edited-timestamp class from your CSS
+        editedHTML = `<span class="edited-timestamp">(edited ${timeAgo(editDate)})</span>`;
+    }
+
     // Text Formatting
     let safeText = post.text
         .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') 
@@ -618,7 +627,10 @@ function addPostToDOM(post) {
     postDiv.innerHTML = `
         ${dragHTML}
         ${pinHTML}
-        <span class="timestamp">${timeAgo(postDate)}</span>
+        <div style="margin-bottom: 5px;">
+            <span class="timestamp" title="Click to toggle exact time">${timeAgo(postDate)}</span>
+            ${editedHTML}
+        </div>
         ${tagsHTML} 
         <div class="post-content">
             <img src="images/plxeyes.png" class="avatar-icon">
@@ -632,13 +644,30 @@ function addPostToDOM(post) {
 
     feed.appendChild(postDiv);
 
-    // UPDATED: Add hover sounds to dynamic tags immediately after creation
+    // RESTORED: Timestamp Toggle Listener
+    const tsSpan = postDiv.querySelector('.timestamp');
+    if (tsSpan) {
+        tsSpan.addEventListener('click', () => {
+            playSound('click');
+            const current = tsSpan.innerText;
+            const relative = timeAgo(postDate);
+            const exact = postDate.toLocaleString();
+            
+            // Toggle between Relative and Exact
+            if (current === relative) {
+                tsSpan.innerText = exact;
+            } else {
+                tsSpan.innerText = relative;
+            }
+        });
+    }
+
+    // Add hover sounds to dynamic tags immediately after creation
     postDiv.querySelectorAll('.post-tag').forEach(tag => {
         tag.addEventListener('mouseenter', () => playSound('hover'));
     });
 
-    // RESTORED: Truncation Logic
-    // We check the height immediately after appending to DOM.
+    // Truncation Logic
     const textContainer = postDiv.querySelector('.post-text-container');
     if (textContainer.scrollHeight > 150) {
         textContainer.classList.add('truncated');
@@ -647,7 +676,6 @@ function addPostToDOM(post) {
         expandBtn.className = 'expand-btn';
         expandBtn.innerText = "[ EXPAND ]";
         
-        // UPDATED: Added hover sound listener to expand button
         expandBtn.onmouseenter = () => playSound('hover');
 
         expandBtn.onclick = () => {
@@ -656,7 +684,6 @@ function addPostToDOM(post) {
             expandBtn.innerText = textContainer.classList.contains('truncated') ? "[ EXPAND ]" : "[ COLLAPSE ]";
         };
         
-        // Insert it right after the text-content block (before media/admin buttons)
         postDiv.insertBefore(expandBtn, postDiv.querySelector('.post-content').nextSibling);
     }
 
