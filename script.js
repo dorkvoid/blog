@@ -225,15 +225,22 @@ function setView(mode) {
 }
 setView(currentView);
 
-viewListBtn.addEventListener('click', () => setView('list'));
-viewTileBtn.addEventListener('click', () => setView('tile'));
+// UPDATED: Added Click Sounds here
+viewListBtn.addEventListener('click', () => {
+    playSound('click');
+    setView('list');
+});
+viewTileBtn.addEventListener('click', () => {
+    playSound('click');
+    setView('tile');
+});
 
 
 // --- 7. LOAD POSTS (PAGINATION + TAGS) ---
 let allPosts = []; 
 let feedLimit = 10; 
 let unsubscribe = null;
-let isFeedHidden = false; // RESTORED: Needed for /clear toggle logic
+let isFeedHidden = false; 
 
 function setupSubscription() {
     if (unsubscribe) unsubscribe();
@@ -620,12 +627,14 @@ function addPostToDOM(post) {
 
     feed.appendChild(postDiv);
 
-    // Attach Listeners
+    // UPDATED: Added Pin Toasts and Logic
     const pinBtn = postDiv.querySelector('.pin-icon');
     if (pinBtn && isAdmin) {
         pinBtn.addEventListener('click', async () => {
             playSound('pin');
-            await updateDoc(doc(db, "posts", id), { pinned: !post.pinned });
+            const newStatus = !post.pinned;
+            await updateDoc(doc(db, "posts", id), { pinned: newStatus });
+            showToast(newStatus ? "POST PINNED" : "POST UNPINNED");
         });
     }
 
@@ -679,7 +688,13 @@ function startEdit(id, text, image, tags) {
 document.addEventListener('keydown', (e) => {
     if (e.key === "Escape") lightboxModal.classList.add('hidden');
 });
-lightboxClose.addEventListener('click', () => lightboxModal.classList.add('hidden'));
+
+// UPDATED: Added Click Sound to Close Button
+lightboxClose.addEventListener('click', () => {
+    playSound('click');
+    lightboxModal.classList.add('hidden');
+});
+
 lightboxModal.addEventListener('click', (e) => {
     if(e.target === lightboxModal) lightboxModal.classList.add('hidden');
 });
