@@ -585,11 +585,8 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
     border: 1px dashed #444;
     padding: 20px;
     animation: blink 2s infinite;
-}
-
-.no-signal span {
-    display: block;
-    font-size: 0.8em;
-    margin-top: 10px;
-    color: #444;
+    
+    /* NEW: Forces the box to stretch across both columns in Tile View */
+    column-span: all; 
+    width: 100%;
 }

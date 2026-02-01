@@ -275,16 +275,33 @@ loadMoreBtn.addEventListener('click', () => {
 function reloadFeed() {
     feed.innerHTML = "";
     
-    // Sort logic... (unchanged)
-    allPosts.sort((a, b) => { /*...*/ });
+    // 1. SORT LOGIC (Restored)
+    allPosts.sort((a, b) => {
+        if (a.pinned === b.pinned) {
+            return (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0);
+        }
+        return a.pinned ? -1 : 1;
+    });
 
-    // FILTER LOGIC... (unchanged)
+    // 2. FILTER LOGIC (Restored)
     const term = searchInput.value.toLowerCase();
-    const visiblePosts = allPosts.filter(p => { /*...*/ });
+    
+    const visiblePosts = allPosts.filter(p => {
+        // Tag Filter
+        if (term.startsWith('#')) {
+            const tagQuery = term.substring(1).toUpperCase();
+            if (!p.tags) return false;
+            return p.tags.includes(tagQuery);
+        }
+        // Text Filter
+        else if (term && !term.startsWith('/')) {
+            return p.text.toLowerCase().includes(term);
+        }
+        return true; // Show everything if no search term
+    });
 
-    // --- NEW: CHECK FOR EMPTY RESULTS ---
+    // 3. EMPTY STATE CHECK (The new part)
     if (visiblePosts.length === 0) {
-        // If we have data but filtered it all away:
         if (allPosts.length > 0) {
             feed.innerHTML = `
                 <div class="no-signal">
@@ -292,18 +309,16 @@ function reloadFeed() {
                     <span>TRY LOADING MORE SECTORS...</span>
                 </div>`;
         } else {
-            // If the database is actually empty (fresh install):
             feed.innerHTML = `<div class="no-signal">[ VOID IS EMPTY ]</div>`;
         }
         
-        // Hide the load more button visually if filtered (optional, but cleaner)
         if(term) loadMoreBtn.classList.add('hidden');
         else loadMoreBtn.classList.remove('hidden');
         
         return; 
     }
-    // ------------------------------------
 
+    // 4. RENDER
     visiblePosts.forEach(post => {
         addPostToDOM(post);
     });
