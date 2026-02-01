@@ -166,9 +166,6 @@ onAuthStateChanged(auth, (user) => {
         adminLoginBar.classList.remove('hidden'); 
         if (loginContainer) loginContainer.classList.add('hidden');
         if (adminMenu) adminMenu.classList.remove('hidden');
-        
-        // FIX: Removed 'restoreDraft()' because it was crashing the site on refresh
-        
     } else {
         isAdmin = false;
         document.body.classList.remove('admin-mode');
@@ -574,7 +571,6 @@ function addPostToDOM(post) {
     if (post.tags && post.tags.length > 0) {
         tagsHTML = `<div class="post-tags">`;
         post.tags.forEach(tag => {
-            // UPDATED: Now calls toggleSearchTag() instead of direct assignment
             tagsHTML += `<span class="post-tag" onclick="window.toggleSearchTag('${tag}')">${tag}</span>`;
         });
         tagsHTML += `</div>`;
@@ -627,7 +623,26 @@ function addPostToDOM(post) {
 
     feed.appendChild(postDiv);
 
-    // UPDATED: Added Pin Toasts and Logic
+    // RESTORED: Truncation Logic
+    // We check the height immediately after appending to DOM.
+    const textContainer = postDiv.querySelector('.post-text-container');
+    if (textContainer.scrollHeight > 150) {
+        textContainer.classList.add('truncated');
+        
+        const expandBtn = document.createElement('button');
+        expandBtn.className = 'expand-btn';
+        expandBtn.innerText = "[ EXPAND ]";
+        expandBtn.onclick = () => {
+            playSound('click');
+            textContainer.classList.toggle('truncated');
+            expandBtn.innerText = textContainer.classList.contains('truncated') ? "[ EXPAND ]" : "[ COLLAPSE ]";
+        };
+        
+        // Insert it right after the text-content block (before media/admin buttons)
+        postDiv.insertBefore(expandBtn, postDiv.querySelector('.post-content').nextSibling);
+    }
+
+    // Pin Button Logic
     const pinBtn = postDiv.querySelector('.pin-icon');
     if (pinBtn && isAdmin) {
         pinBtn.addEventListener('click', async () => {
@@ -689,7 +704,7 @@ document.addEventListener('keydown', (e) => {
     if (e.key === "Escape") lightboxModal.classList.add('hidden');
 });
 
-// UPDATED: Added Click Sound to Close Button
+// Close Button
 lightboxClose.addEventListener('click', () => {
     playSound('click');
     lightboxModal.classList.add('hidden');
@@ -704,7 +719,10 @@ window.addEventListener('scroll', () => {
     if (window.scrollY > 300) backToTopBtn.classList.remove('hidden');
     else backToTopBtn.classList.add('hidden');
 });
+
+// RESTORED: Back to Top Click Sound
 backToTopBtn.addEventListener('click', () => {
+    playSound('click'); // Added Sound
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
