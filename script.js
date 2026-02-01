@@ -567,7 +567,6 @@ async function handleDrop(e) {
 }
 
 // --- 11. DISPLAY FUNCTION ---
-// --- 11. DISPLAY FUNCTION ---
 function addPostToDOM(post) {
     const id = post.id;
     const postDiv = document.createElement('div');
@@ -621,14 +620,14 @@ function addPostToDOM(post) {
         }
     }
 
+    // --- NEW TIMESTAMP LOGIC ---
     const postDate = post.timestamp ? post.timestamp.toDate() : new Date();
-    
-    // RESTORED: Edited Timestamp Logic
-    let editedHTML = "";
-    if (post.editedTimestamp) {
-        const editDate = post.editedTimestamp.toDate();
-        // Uses the .edited-timestamp class from your CSS
-        editedHTML = `<span class="edited-timestamp">(edited ${timeAgo(editDate)})</span>`;
+    const editDate = post.editedTimestamp ? post.editedTimestamp.toDate() : null;
+
+    // Build initial HTML
+    let metaContent = `<span class="main-ts">${timeAgo(postDate)}</span>`;
+    if (editDate) {
+        metaContent += `<span class="edited-ts">(edited ${timeAgo(editDate)})</span>`;
     }
 
     // Text Formatting
@@ -642,10 +641,11 @@ function addPostToDOM(post) {
     postDiv.innerHTML = `
         ${dragHTML}
         ${pinHTML}
-        <div style="margin-bottom: 5px;">
-            <span class="timestamp" title="Click to toggle exact time">${timeAgo(postDate)}</span>
-            ${editedHTML}
+        
+        <div class="timestamp-wrapper" title="Toggle precise time">
+            ${metaContent}
         </div>
+
         ${tagsHTML} 
         <div class="post-content">
             <img src="images/plxeyes.png" class="avatar-icon">
@@ -659,20 +659,30 @@ function addPostToDOM(post) {
 
     feed.appendChild(postDiv);
 
-    // RESTORED: Timestamp Toggle Listener
-    const tsSpan = postDiv.querySelector('.timestamp');
-    if (tsSpan) {
-        tsSpan.addEventListener('click', () => {
+    // --- NEW TIMESTAMP TOGGLE LISTENER ---
+    const tsWrapper = postDiv.querySelector('.timestamp-wrapper');
+    if (tsWrapper) {
+        tsWrapper.addEventListener('click', () => {
             playSound('click');
-            const current = tsSpan.innerText;
-            const relative = timeAgo(postDate);
-            const exact = postDate.toLocaleString();
             
-            // Toggle between Relative and Exact
-            if (current === relative) {
-                tsSpan.innerText = exact;
+            // Check if we are currently showing relative time by looking at the text
+            const currentText = tsWrapper.innerText;
+            const isRelative = currentText.includes("ago") || currentText.includes("Just now");
+
+            if (isRelative) {
+                // Switch to Exact
+                let exactHTML = `<span class="main-ts">${postDate.toLocaleString()}</span>`;
+                if (editDate) {
+                    exactHTML += `<span class="edited-ts">(edited ${editDate.toLocaleString()})</span>`;
+                }
+                tsWrapper.innerHTML = exactHTML;
             } else {
-                tsSpan.innerText = relative;
+                // Switch back to Relative
+                let relHTML = `<span class="main-ts">${timeAgo(postDate)}</span>`;
+                if (editDate) {
+                    relHTML += `<span class="edited-ts">(edited ${timeAgo(editDate)})</span>`;
+                }
+                tsWrapper.innerHTML = relHTML;
             }
         });
     }

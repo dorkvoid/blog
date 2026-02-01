@@ -300,17 +300,29 @@ button:active { transform: translateY(2px); }
     background: #111;
 }
 
-.timestamp {
+/* UPDATED: Timestamp Wrapper (Holds both posted and edited times) */
+.timestamp-wrapper {
+    display: inline-block; /* Keeps them side-by-side */
     font-size: 0.8em;
     border-bottom: 1px solid white;
     padding-bottom: 5px;
     margin-bottom: 10px;
-    display: block;
     user-select: none;
     transition: color 0.2s;
+    cursor: url('images/link-select.png'), pointer;
 }
-.timestamp:hover { color: #ccc; }
-.edited-timestamp { color: #888; margin-left: 8px; font-style: italic; font-size: 0.9em; }
+
+.timestamp-wrapper:hover { 
+    color: #ccc; 
+}
+
+.timestamp-wrapper:active {
+    cursor: url('images/link-select-click.png'), pointer;
+}
+
+/* Individual text spans inside */
+.main-ts { font-weight: normal; }
+.edited-ts { color: #888; margin-left: 5px; font-style: italic; }
 
 .post-content {
     display: flex;
