@@ -15,6 +15,14 @@
                 <button id="fmtBold" title="Bold">B</button>
                 <button id="fmtItalic" title="Italic">I</button>
                 <button id="fmtSpoiler" title="Spoiler">||</button>
+                
+                <div class="tag-selector">
+                    <span class="tag-toggle" data-tag="ART">ART</span>
+                    <span class="tag-toggle" data-tag="DEV">DEV</span>
+                    <span class="tag-toggle" data-tag="LOG">LOG</span>
+                    <span class="tag-toggle" data-tag="CLASS">CLASS</span>
+                    <span class="tag-toggle" data-tag="MUSIC">MUSIC</span>
+                </div>
             </div>
 
             <textarea id="postText" placeholder="Write something..."></textarea>
@@ -36,6 +44,7 @@
         </div>
 
         <div id="feed"></div>
+        <button id="loadMoreBtn" class="hidden">[ LOAD MORE... ]</button>
     </div>
     
     <div id="toast-container"></div>

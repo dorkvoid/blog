@@ -205,6 +205,70 @@ button:active { transform: translateY(2px); }
 #cancelBtn:hover { background: #555; }
 #cancelBtn:hover::before, #cancelBtn:hover::after { color: white; }
 
+/* --- TAG SYSTEM --- */
+.tag-selector {
+    display: flex;
+    gap: 5px;
+    margin-left: auto; /* Pushes tags to the right of the formatting bar */
+}
+
+.tag-toggle {
+    border: 1px solid #444;
+    color: #666;
+    padding: 2px 6px;
+    font-size: 0.8em;
+    cursor: pointer;
+    user-select: none;
+    font-family: 'Nope8', sans-serif;
+}
+
+.tag-toggle:hover {
+    border-color: white;
+    color: white;
+}
+
+.tag-toggle.selected {
+    background: white;
+    color: black;
+    border-color: white;
+}
+
+/* Tags on the posts */
+.post-tags {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.post-tag {
+    background: #222;
+    border: 1px solid #444;
+    color: #ccc;
+    font-size: 0.7em;
+    padding: 2px 6px;
+    cursor: pointer;
+    font-family: 'Nope8', sans-serif;
+}
+
+.post-tag:hover {
+    border-color: white;
+    color: white;
+}
+
+/* LOAD MORE BUTTON */
+#loadMoreBtn {
+    margin-top: 20px;
+    margin-bottom: 50px;
+    background: black;
+    color: #666;
+    border: 1px dashed #444;
+}
+#loadMoreBtn:hover {
+    border-color: white;
+    color: white;
+    background: #111;
+}
+
 /* --- 6. POSTS & MASONRY GRID --- */
 .post {
     border: 2px solid white;

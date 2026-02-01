@@ -1,6 +1,6 @@
 // --- 1. IMPORTS ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, updateDoc, doc, increment, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, updateDoc, doc, increment, setDoc, limit } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
 
 // --- 2. CONFIGURATION ---
@@ -29,6 +29,11 @@ const searchInput = document.getElementById('searchBar');
 const toastContainer = document.getElementById('toast-container');
 const adminLoginBar = document.getElementById('admin-login-bar'); 
 const container = document.querySelector('.container');
+const loadMoreBtn = document.getElementById('loadMoreBtn'); // NEW
+
+// Tag Elements
+const tagToggles = document.querySelectorAll('.tag-toggle');
+let selectedTags = [];
 
 // View Toggles
 const viewListBtn = document.getElementById('viewListBtn');
@@ -52,7 +57,7 @@ const lightboxImg = document.getElementById('lightbox-img');
 const lightboxClose = document.getElementById('lightbox-close');
 const backToTopBtn = document.getElementById('back-to-top');
 
-// --- 3.5 AUDIO SYSTEM (CLEAN) ---
+// --- 3.5 AUDIO SYSTEM ---
 const sounds = {
     click: new Audio('sounds/buttonclick.mp3'),
     hum: new Audio('sounds/backgroundhum.mp3'),
@@ -69,16 +74,14 @@ const sounds = {
     hover: new Audio('sounds/hoverbutton.wav'),
     error: new Audio('sounds/loginerror.wav'),
     logout: new Audio('sounds/turn-off.mp3'),
-    swap: new Audio('sounds/post-swapped.wav') // NEW SWAP SOUND
+    swap: new Audio('sounds/post-swapped.wav')
 };
 
-// Config
 sounds.hum.loop = true;
 sounds.hum.volume = 0.1; 
 sounds.confirm.volume = 0.2; 
 sounds.hover.volume = 0.2;
 
-// 1. Strict localStorage check
 let isMuted = localStorage.getItem('siteMuted') !== 'false'; 
 
 function updateSoundUI() {
@@ -105,11 +108,8 @@ soundToggle.addEventListener('click', (e) => {
     updateSoundUI();
     
     if(!isMuted) {
-        // FIX: Play the master file directly instead of cloning it.
-        // This is faster and prevents the sound from getting "swallowed".
         sounds.click.currentTime = 0;
         sounds.click.play().catch(() => {});
-        
         sounds.hum.play().catch(() => {});
     }
 });
@@ -133,18 +133,9 @@ function playSound(name) {
     }
 }
 
-// Global Button Sounds
-document.querySelectorAll('button').forEach(btn => {
-    btn.addEventListener('mouseenter', () => {
-        if (btn.id !== 'fmtBold' && btn.id !== 'fmtItalic' && btn.id !== 'fmtSpoiler') {
-            playSound('hover');
-        }
-    });
-    btn.addEventListener('click', () => {
-        if (btn.id !== 'fmtBold' && btn.id !== 'fmtItalic' && btn.id !== 'fmtSpoiler') {
-            playSound('click');
-        }
-    });
+document.querySelectorAll('button, .tag-toggle').forEach(btn => {
+    btn.addEventListener('mouseenter', () => playSound('hover'));
+    btn.addEventListener('click', () => playSound('click'));
 });
 
 // --- 4. VISITOR COUNTER ---
@@ -160,7 +151,7 @@ async function trackVisit() {
 }
 trackVisit();
 
-// --- 5. AUTH LOGIC & LOGOUT UI ---
+// --- 5. AUTH LOGIC ---
 const loginContainer = document.getElementById('login-input-container');
 const adminMenu = document.getElementById('admin-menu');
 const logoutBtn = document.getElementById('logoutBtn');
@@ -182,7 +173,7 @@ onAuthStateChanged(auth, (user) => {
         if (loginContainer) loginContainer.classList.remove('hidden');
         if (adminMenu) adminMenu.classList.add('hidden');
     }
-    reloadFeed(); 
+    setupSubscription(); 
 });
 
 if (passwordInput) {
@@ -203,16 +194,9 @@ if (passwordInput) {
     });
 }
 
-// Updated Logout Logic
 if (logoutBtn) {
-    logoutBtn.addEventListener('mouseenter', () => {
-        logoutBtn.src = 'images/logout-hover.png';
-        // HOVER SOUND REMOVED
-    });
-    logoutBtn.addEventListener('mouseleave', () => {
-        logoutBtn.src = 'images/logout.png';
-    });
-
+    logoutBtn.addEventListener('mouseenter', () => { logoutBtn.src = 'images/logout-hover.png'; });
+    logoutBtn.addEventListener('mouseleave', () => { logoutBtn.src = 'images/logout.png'; });
     logoutBtn.addEventListener('click', async () => {
         playSound('logout'); 
         await signOut(auth);
@@ -220,7 +204,7 @@ if (logoutBtn) {
     });
 }
 
-// --- 6. VIEW TOGGLE LOGIC (TILE VS LIST) ---
+// --- 6. VIEW TOGGLE LOGIC ---
 let currentView = localStorage.getItem('viewMode') || 'list';
 
 function setView(mode) {
@@ -239,31 +223,48 @@ function setView(mode) {
         viewTileBtn.classList.remove('active-view');
     }
 }
-
 setView(currentView);
 
-viewListBtn.addEventListener('click', () => {
-    playSound('click');
-    setView('list');
-});
-viewTileBtn.addEventListener('click', () => {
-    playSound('click');
-    setView('tile');
-});
+viewListBtn.addEventListener('click', () => setView('list'));
+viewTileBtn.addEventListener('click', () => setView('tile'));
 
 
-// --- 7. LOAD POSTS ---
+// --- 7. LOAD POSTS (PAGINATION + TAGS) ---
 let allPosts = []; 
-const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
+let feedLimit = 10; // STARTING LIMIT
+let unsubscribe = null;
 
-onSnapshot(q, (snapshot) => {
-    allPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    reloadFeed();
+function setupSubscription() {
+    if (unsubscribe) unsubscribe();
+
+    // Query with LIMIT
+    const q = query(collection(db, "posts"), orderBy("timestamp", "desc"), limit(feedLimit));
+
+    unsubscribe = onSnapshot(q, (snapshot) => {
+        allPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        reloadFeed();
+        
+        // Show Load More only if we hit the limit
+        if (allPosts.length >= feedLimit) {
+            loadMoreBtn.classList.remove('hidden');
+        } else {
+            loadMoreBtn.classList.add('hidden');
+        }
+    });
+}
+
+loadMoreBtn.addEventListener('click', () => {
+    feedLimit += 10; // INCREASE LIMIT
+    playSound('click');
+    loadMoreBtn.innerText = "LOADING...";
+    setupSubscription(); // RELOAD WITH NEW LIMIT
+    setTimeout(() => { loadMoreBtn.innerText = "[ LOAD MORE... ]"; }, 500);
 });
 
 function reloadFeed() {
     feed.innerHTML = "";
     
+    // Sort logic (Pins first)
     allPosts.sort((a, b) => {
         if (a.pinned === b.pinned) {
             return (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0);
@@ -271,8 +272,22 @@ function reloadFeed() {
         return a.pinned ? -1 : 1;
     });
 
+    // FILTER LOGIC
     const term = searchInput.value.toLowerCase();
-    const visiblePosts = (term && !term.startsWith('/')) ? allPosts.filter(p => p.text.toLowerCase().includes(term)) : allPosts;
+    
+    const visiblePosts = allPosts.filter(p => {
+        // 1. Tag Filter
+        if (term.startsWith('#')) {
+            const tagQuery = term.substring(1).toUpperCase();
+            if (!p.tags) return false;
+            return p.tags.includes(tagQuery);
+        }
+        // 2. Text Filter
+        else if (term && !term.startsWith('/')) {
+            return p.text.toLowerCase().includes(term);
+        }
+        return true;
+    });
 
     visiblePosts.forEach(post => {
         addPostToDOM(post);
@@ -281,51 +296,35 @@ function reloadFeed() {
 
 // --- 8. POST & COMMAND LOGIC ---
 
-let isFeedHidden = false; 
-
-function handleTypingSound(e) {
-    if (e.repeat) return; 
-    playSound('type');
-}
-
-searchInput.addEventListener('keydown', handleTypingSound);
-textInput.addEventListener('keydown', handleTypingSound);
-imageInput.addEventListener('keydown', handleTypingSound); 
+// Tag Toggle Logic
+tagToggles.forEach(toggle => {
+    toggle.addEventListener('click', () => {
+        const tag = toggle.dataset.tag;
+        if (selectedTags.includes(tag)) {
+            selectedTags = selectedTags.filter(t => t !== tag);
+            toggle.classList.remove('selected');
+        } else {
+            selectedTags.push(tag);
+            toggle.classList.add('selected');
+        }
+    });
+});
 
 searchInput.addEventListener('input', (e) => {
     const val = e.target.value;
-    
     if (val.startsWith('/')) {
+        // Command logic (unchanged)
         if (val === '/login') {
-            if (adminLoginBar.classList.contains('hidden')) {
-                adminLoginBar.classList.remove('hidden');
-                passwordInput.focus();
-                showToast("LOGIN TERMINAL OPEN");
-            } else {
-                adminLoginBar.classList.add('hidden');
-                showToast("LOGIN TERMINAL CLOSED");
-            }
+            adminLoginBar.classList.toggle('hidden');
+            if(!adminLoginBar.classList.contains('hidden')) passwordInput.focus();
             searchInput.value = ''; 
-            
-        } else if (val === '/help') {
-            showToast("CMDS: /login, /clear");
-            searchInput.value = '';
-            
         } else if (val === '/clear') {
-            if (isFeedHidden) {
-                isFeedHidden = false;
-                reloadFeed(); 
-                showToast("FEED RESTORED");
-            } else {
-                isFeedHidden = true;
-                feed.innerHTML = ''; 
-                showToast("FEED CLEARED");
-            }
+            feed.innerHTML = ''; 
             searchInput.value = '';
         }
-        return; 
+    } else {
+        reloadFeed();
     }
-    reloadFeed(); 
 });
 
 let editingPostId = null; 
@@ -334,50 +333,22 @@ function insertTag(tagStart, tagEnd) {
     const start = textInput.selectionStart;
     const end = textInput.selectionEnd;
     const text = textInput.value;
-    const before = text.substring(0, start);
-    const selected = text.substring(start, end);
-    const after = text.substring(end);
-    
-    textInput.value = before + tagStart + selected + tagEnd + after;
+    textInput.value = text.substring(0, start) + tagStart + text.substring(start, end) + tagEnd + text.substring(end);
     textInput.focus();
     textInput.selectionStart = start + tagStart.length;
     textInput.selectionEnd = end + tagStart.length;
-    textInput.dispatchEvent(new Event('input')); 
 }
 
 fmtBold.onclick = () => insertTag("**", "**");
 fmtItalic.onclick = () => insertTag("*", "*");
 fmtSpoiler.onclick = () => insertTag("||", "||");
 
-textInput.addEventListener('input', function() {
-    this.style.height = 'auto'; 
-    this.style.height = (this.scrollHeight) + 'px';
-    if (!editingPostId) { 
-        localStorage.setItem('postDraft', this.value);
-    }
-});
-
-function restoreDraft() {
-    const draft = localStorage.getItem('postDraft');
-    if (draft && !textInput.value) {
-        textInput.value = draft;
-        textInput.style.height = 'auto';
-        textInput.style.height = (textInput.scrollHeight) + 'px';
-    }
-}
-
-textInput.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-        e.preventDefault(); 
-        postBtn.click();
-    }
-});
-
 postBtn.addEventListener('click', async function() {
     if (!auth.currentUser) return showToast("LOGIN REQUIRED");
 
     const text = textInput.value;
     const img = imageInput.value;
+    
     if (text === "" && img === "") return;
 
     postBtn.disabled = true;
@@ -388,8 +359,8 @@ postBtn.addEventListener('click', async function() {
             await updateDoc(doc(db, "posts", editingPostId), { 
                 text: text, 
                 image: img,
-                editedTimestamp: serverTimestamp(),
-                editedDate: new Date().toLocaleString()
+                tags: selectedTags, // SAVE TAGS
+                editedTimestamp: serverTimestamp()
             });
             showToast("POST UPDATED");
             playSound('edit'); 
@@ -398,18 +369,17 @@ postBtn.addEventListener('click', async function() {
             await addDoc(collection(db, "posts"), {
                 text: text,
                 image: img,
+                tags: selectedTags, // SAVE TAGS
                 timestamp: serverTimestamp(),
-                readableDate: new Date().toLocaleString(),
                 pinned: false 
             });
             showToast("POST SUCCESSFUL");
             playSound('success'); 
-            localStorage.removeItem('postDraft');
             resetForm();
         }
     } catch (e) {
-        console.error("Error: ", e);
-        showToast("ERROR: COULD NOT POST");
+        console.error(e);
+        showToast("ERROR");
         playSound('error');
     } finally {
         postBtn.disabled = false;
@@ -417,23 +387,21 @@ postBtn.addEventListener('click', async function() {
     }
 });
 
-if (cancelBtn) {
-    cancelBtn.addEventListener('click', () => {
-        resetForm();
-    });
-}
+if (cancelBtn) cancelBtn.addEventListener('click', resetForm);
 
 function resetForm() {
     textInput.value = ''; 
     imageInput.value = '';
-    textInput.style.height = 'auto'; 
     editingPostId = null;
     postBtn.innerText = "POST";
     if(cancelBtn) cancelBtn.classList.add('hidden');
-    localStorage.removeItem('postDraft');
+    
+    // Reset Tags
+    selectedTags = [];
+    tagToggles.forEach(t => t.classList.remove('selected'));
 }
 
-// --- 9. HELPERS ---
+// --- 9. HELPERS (Delete, Toast, TimeAgo) ---
 let idToDelete = null;
 
 function triggerDelete(id) {
@@ -451,11 +419,7 @@ confirmYes.addEventListener('click', async () => {
         showToast("ENTRY DELETED");
     }
 });
-
-confirmNo.addEventListener('click', () => {
-    idToDelete = null;
-    confirmModal.classList.add('hidden');
-});
+confirmNo.addEventListener('click', () => { confirmModal.classList.add('hidden'); });
 
 function showToast(message) {
     playSound('toast'); 
@@ -466,7 +430,6 @@ function showToast(message) {
     setTimeout(() => {
         toast.style.opacity = '0';
         toast.style.transform = 'translateX(100%)';
-        toast.style.transition = 'all 0.3s ease';
         setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
@@ -474,43 +437,31 @@ function showToast(message) {
 function timeAgo(date) {
     if (!date) return "";
     const seconds = Math.floor((new Date() - date) / 1000);
-    let interval = seconds / 31536000;
-    if (interval > 1) return Math.floor(interval) + " years ago";
-    interval = seconds / 2592000;
-    if (interval > 1) return Math.floor(interval) + " months ago";
-    interval = seconds / 86400;
-    if (interval > 1) return Math.floor(interval) + " days ago";
-    interval = seconds / 3600;
-    if (interval > 1) return Math.floor(interval) + " hours ago";
-    interval = seconds / 60;
-    if (interval > 1) return Math.floor(interval) + " mins ago";
-    return "Just now";
+    if (seconds < 60) return "Just now";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return minutes + " mins ago";
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return hours + " hours ago";
+    const days = Math.floor(hours / 24);
+    if (days > 365) return Math.floor(days/365) + " years ago";
+    if (days > 30) return Math.floor(days/30) + " months ago";
+    return days + " days ago";
 }
 
-// --- 10. DRAG AND DROP (ADMIN ONLY) ---
+// --- 10. DRAG AND DROP (Geometry Locked) ---
 let draggedItem = null;
 
 function handleDragStart(e) {
-    // 1. Identify the whole post
     draggedItem = this.closest('.post'); 
-    
-    // 2. Set the effect
     e.dataTransfer.effectAllowed = 'move';
     
-    // 3. EXACT GEOMETRY LOCK
-    // We get the exact screen coordinates of the post
     const rect = draggedItem.getBoundingClientRect();
-    
-    // We calculate exactly where your mouse is relative to the post's corner
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
-    // We lock the ghost image to that exact coordinate
     if (e.dataTransfer.setDragImage) {
         e.dataTransfer.setDragImage(draggedItem, x, y);
     }
-
-    // 4. Add styling
     draggedItem.classList.add('dragging');
 }
 
@@ -520,85 +471,76 @@ function handleDragOver(e) {
     this.classList.add('drag-over');
     return false;
 }
-
-function handleDragLeave(e) {
-    this.classList.remove('drag-over');
-}
+function handleDragLeave(e) { this.classList.remove('drag-over'); }
 
 async function handleDrop(e) {
     if (e.stopPropagation) e.stopPropagation();
-    
     this.classList.remove('drag-over');
     draggedItem.classList.remove('dragging');
 
     if (draggedItem !== this) {
         const id1 = draggedItem.dataset.id; 
         const id2 = this.dataset.id;        
-        
         const post1 = allPosts.find(p => p.id === id1);
         const post2 = allPosts.find(p => p.id === id2);
 
         if (post1 && post2) {
             showToast("SWAPPING ORDER...");
-            
             const ts1 = post1.timestamp;
             const ts2 = post2.timestamp;
-
             try {
                 await updateDoc(doc(db, "posts", id1), { timestamp: ts2 });
                 await updateDoc(doc(db, "posts", id2), { timestamp: ts1 });
                 playSound('swap'); 
-            } catch (err) {
-                console.error(err);
-                playSound('error');
-                showToast("ERROR SWAPPING");
-            }
+            } catch (err) { console.error(err); }
         }
     }
     return false;
 }
 
 // --- 11. DISPLAY FUNCTION ---
-
 function addPostToDOM(post) {
     const id = post.id;
     const postDiv = document.createElement('div');
     postDiv.classList.add('post');
     postDiv.dataset.id = id;
 
-    // UPDATED: No global draggable attribute here. 
-    // We attach the Drag Start Listener to the HANDLE later.
-    
-    // Drop Targets (dragover/drop) MUST stay on the main div 
-    // so you have a big target to drop onto.
     if (isAdmin) {
         postDiv.addEventListener('dragover', handleDragOver);
         postDiv.addEventListener('dragleave', handleDragLeave);
         postDiv.addEventListener('drop', handleDrop);
     }
 
- let pinHTML = "";
+    let pinHTML = "";
     if (isAdmin || post.pinned) {
         const pinClass = post.pinned ? "pin-icon active" : "pin-icon";
-        
-        // FIX: Added draggable="false" so it doesn't act like a ghost handle
-        pinHTML = `<img src="images/pin.png" class="${pinClass}" data-id="${id}" title="Pin/Unpin" draggable="false">`;
+        pinHTML = `<img src="images/pin.png" class="${pinClass}" data-id="${id}" draggable="false">`;
     }
 
-    // NEW: Drag Handle HTML
     let dragHTML = "";
     if (isAdmin) {
-        // Only the handle is draggable
-        dragHTML = `<img src="images/drag-handle.png" class="drag-handle" draggable="true" title="Drag to Reorder">`;
+        dragHTML = `<img src="images/drag-handle.png" class="drag-handle" draggable="true">`;
     }
 
+    // TAGS HTML
+    let tagsHTML = "";
+    if (post.tags && post.tags.length > 0) {
+        tagsHTML = `<div class="post-tags">`;
+        post.tags.forEach(tag => {
+            tagsHTML += `<span class="post-tag" onclick="document.getElementById('searchBar').value='#${tag}'; document.getElementById('searchBar').dispatchEvent(new Event('input'));">${tag}</span>`;
+        });
+        tagsHTML += `</div>`;
+    }
+
+    // Media HTML (Youtube, Spotify, Images)
     let mediaHTML = "";
     if (post.image) {
         const url = post.image;
         const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
         const spMatch = url.match(/open\.spotify\.com\/(track|album|playlist)\/([a-zA-Z0-9]+)/);
+        
         if (ytMatch) {
-            mediaHTML = `<iframe class="media-embed" src="https://www.youtube.com/embed/${ytMatch[1]}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+            mediaHTML = `<iframe class="media-embed" src="https://www.youtube.com/embed/${ytMatch[1]}" frameborder="0" allowfullscreen></iframe>`;
         } else if (spMatch) {
             mediaHTML = `<iframe class="media-embed" src="https://open.spotify.com/embed/${spMatch[1]}/${spMatch[2]}" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>`;
         } else {
@@ -611,119 +553,61 @@ function addPostToDOM(post) {
     }
 
     const postDate = post.timestamp ? post.timestamp.toDate() : new Date();
-    let editedDateObj = null;
-    if (post.editedTimestamp) editedDateObj = post.editedTimestamp.toDate();
-    else if (post.editedDate) editedDateObj = new Date(post.editedDate);
-
-    const timeSpan = document.createElement('span');
-    timeSpan.classList.add('timestamp');
-    timeSpan.title = "Click to toggle exact time"; 
     
-    let showExact = false;
-    function updateTimeDisplay() {
-        if (showExact) {
-            let display = postDate.toLocaleString();
-            if (editedDateObj && !isNaN(editedDateObj)) display += ` <span class="edited-timestamp">(edited ${editedDateObj.toLocaleString()})</span>`;
-            timeSpan.innerHTML = display;
-        } else {
-            let display = timeAgo(postDate);
-            if (editedDateObj && !isNaN(editedDateObj)) display += ` <span class="edited-timestamp">(edited ${timeAgo(editedDateObj)})</span>`;
-            timeSpan.innerHTML = display;
-        }
-    }
-    updateTimeDisplay();
-    timeSpan.addEventListener('click', () => {
-        showExact = !showExact;
-        updateTimeDisplay();
-    });
-
-    let tempDiv = document.createElement("div");
-    tempDiv.textContent = post.text;
-    let safeText = tempDiv.innerHTML;
-
-    safeText = safeText
+    // Text Formatting
+    let safeText = post.text
         .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') 
         .replace(/\*(.*?)\*/g, '<i>$1</i>')   
         .replace(/\|\|(.*?)\|\|/g, '<span class="spoiler" onclick="this.classList.toggle(\'revealed\')">$1</span>'); 
+    
+    safeText = safeText.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
 
-    let processedText = safeText.replace(
-        /(https?:\/\/[^\s]+)/g, 
-        '<a href="$1" target="_blank">$1</a>'
-    );
-
-    // UPDATED: Insert ${dragHTML}
     postDiv.innerHTML = `
         ${dragHTML}
         ${pinHTML}
+        <span class="timestamp">${timeAgo(postDate)}</span>
+        ${tagsHTML} 
         <div class="post-content">
             <img src="images/plxeyes.png" class="avatar-icon">
             <div class="post-text-container">
-                <p class="post-text">${processedText}</p>
+                <p class="post-text">${safeText}</p>
             </div>
         </div>
         ${mediaHTML}
         <div class="admin-buttons"></div>
     `;
 
-    postDiv.prepend(timeSpan);
+    feed.appendChild(postDiv);
 
-    feed.appendChild(postDiv); 
-    const textContainer = postDiv.querySelector('.post-text-container');
-    
-    if (textContainer.scrollHeight > 150) {
-        textContainer.classList.add('truncated');
-        
-        const expandBtn = document.createElement('div');
-        expandBtn.classList.add('expand-btn');
-        expandBtn.innerText = "[ EXPAND ]";
-        
-        expandBtn.onclick = () => {
-            playSound('click');
-            const isNowTruncated = textContainer.classList.toggle('truncated');
-            expandBtn.innerText = isNowTruncated ? "[ EXPAND ]" : "[ COLLAPSE ]";
-        };
-        
-        // FIX: Insert OUTSIDE of .post-content so it spans full width
-        postDiv.querySelector('.post-content').after(expandBtn);
-    }
-
+    // Attach Listeners
     const pinBtn = postDiv.querySelector('.pin-icon');
     if (pinBtn && isAdmin) {
         pinBtn.addEventListener('click', async () => {
-            playSound('pin'); 
-            const newStatus = !post.pinned;
-            await updateDoc(doc(db, "posts", id), { pinned: newStatus });
-            showToast(newStatus ? "POST PINNED" : "POST UNPINNED");
+            playSound('pin');
+            await updateDoc(doc(db, "posts", id), { pinned: !post.pinned });
         });
-        pinBtn.addEventListener('mouseenter', () => playSound('hover'));
     }
 
-    // NEW: Attach Drag Start to the Handle
     if (isAdmin) {
         const handle = postDiv.querySelector('.drag-handle');
-        if (handle) {
-            handle.addEventListener('dragstart', handleDragStart);
-            handle.addEventListener('mouseenter', () => playSound('hover')); // Optional: Add sound to handle hover
-        }
+        if (handle) handle.addEventListener('dragstart', handleDragStart);
+        
+        const btnContainer = postDiv.querySelector('.admin-buttons');
+        
+        const editBtn = document.createElement('button');
+        editBtn.innerText = "EDIT";
+        editBtn.onclick = () => {
+            startEdit(id, post.text, post.image, post.tags);
+        };
+        btnContainer.appendChild(editBtn);
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.innerText = "DELETE";
+        deleteBtn.onclick = () => triggerDelete(id);
+        btnContainer.appendChild(deleteBtn);
     }
-
-    const btnContainer = postDiv.querySelector('.admin-buttons');
-    const editBtn = document.createElement('button');
-    editBtn.innerText = "EDIT";
-    editBtn.classList.add('btn-edit');
-    editBtn.onclick = () => {
-        startEdit(id, post.text, post.image);
-    };
-    editBtn.addEventListener('mouseenter', () => playSound('hover'));
-    btnContainer.appendChild(editBtn);
-
-    const deleteBtn = document.createElement('button');
-    deleteBtn.innerText = "DELETE";
-    deleteBtn.classList.add('btn-delete');
-    deleteBtn.onclick = () => triggerDelete(id);
-    deleteBtn.addEventListener('mouseenter', () => playSound('hover'));
-    btnContainer.appendChild(deleteBtn);
     
+    // Lightbox
     const imgElement = postDiv.querySelector('.click-to-zoom');
     if(imgElement) {
         imgElement.addEventListener('click', () => {
@@ -734,47 +618,36 @@ function addPostToDOM(post) {
     }
 }
 
-function startEdit(id, text, image) {
+function startEdit(id, text, image, tags) {
     textInput.value = text;
     imageInput.value = image;
     editingPostId = id;
     postBtn.innerText = "UPDATE POST";
     if(cancelBtn) cancelBtn.classList.remove('hidden');
     window.scrollTo(0, 0);
-    textInput.focus();
-    textInput.style.height = 'auto';
-    textInput.style.height = (textInput.scrollHeight) + 'px';
+    
+    // Load Tags
+    selectedTags = tags || [];
+    tagToggles.forEach(t => {
+        if(selectedTags.includes(t.dataset.tag)) t.classList.add('selected');
+        else t.classList.remove('selected');
+    });
 }
 
-// --- 11. LIGHTBOX & BACK TO TOP LOGIC ---
-
+// Lightbox Logic
 document.addEventListener('keydown', (e) => {
-    if (e.key === "Escape" && !lightboxModal.classList.contains('hidden')) {
-        lightboxModal.classList.add('hidden');
-        playSound('click');
-    }
+    if (e.key === "Escape") lightboxModal.classList.add('hidden');
 });
-
-lightboxClose.addEventListener('click', () => {
-    playSound('click');
-    lightboxModal.classList.add('hidden');
-});
+lightboxClose.addEventListener('click', () => lightboxModal.classList.add('hidden'));
 lightboxModal.addEventListener('click', (e) => {
-    if (e.target === lightboxModal) {
-        playSound('click');
-        lightboxModal.classList.add('hidden');
-    }
+    if(e.target === lightboxModal) lightboxModal.classList.add('hidden');
 });
 
+// Back to Top
 window.addEventListener('scroll', () => {
-    if (window.scrollY > 300) {
-        backToTopBtn.classList.remove('hidden');
-    } else {
-        backToTopBtn.classList.add('hidden');
-    }
+    if (window.scrollY > 300) backToTopBtn.classList.remove('hidden');
+    else backToTopBtn.classList.add('hidden');
 });
-
 backToTopBtn.addEventListener('click', () => {
-    playSound('click');
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });
