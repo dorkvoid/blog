@@ -296,6 +296,17 @@ function reloadFeed() {
 
 // --- 8. POST & COMMAND LOGIC ---
 
+// RESTORED: Typing Sounds
+function handleTypingSound(e) {
+    if (e.repeat) return; // Don't spam sound if key is held down
+    playSound('type');
+}
+
+searchInput.addEventListener('keydown', handleTypingSound);
+textInput.addEventListener('keydown', handleTypingSound);
+imageInput.addEventListener('keydown', handleTypingSound);
+if (passwordInput) passwordInput.addEventListener('keydown', handleTypingSound);
+
 // Tag Toggle Logic
 tagToggles.forEach(toggle => {
     toggle.addEventListener('click', () => {
