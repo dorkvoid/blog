@@ -138,6 +138,11 @@ document.querySelectorAll('button, .tag-toggle').forEach(btn => {
     btn.addEventListener('click', () => playSound('click'));
 });
 
+// UPDATED: Add hover sounds to the View Toggle buttons specifically
+[viewListBtn, viewTileBtn].forEach(btn => {
+    btn.addEventListener('mouseenter', () => playSound('hover'));
+});
+
 // --- 4. VISITOR COUNTER ---
 const statsRef = doc(db, "site_stats", "global");
 onSnapshot(statsRef, (docSnapshot) => {
@@ -623,6 +628,11 @@ function addPostToDOM(post) {
 
     feed.appendChild(postDiv);
 
+    // UPDATED: Add hover sounds to dynamic tags immediately after creation
+    postDiv.querySelectorAll('.post-tag').forEach(tag => {
+        tag.addEventListener('mouseenter', () => playSound('hover'));
+    });
+
     // RESTORED: Truncation Logic
     // We check the height immediately after appending to DOM.
     const textContainer = postDiv.querySelector('.post-text-container');
@@ -632,6 +642,10 @@ function addPostToDOM(post) {
         const expandBtn = document.createElement('button');
         expandBtn.className = 'expand-btn';
         expandBtn.innerText = "[ EXPAND ]";
+        
+        // UPDATED: Added hover sound listener to expand button
+        expandBtn.onmouseenter = () => playSound('hover');
+
         expandBtn.onclick = () => {
             playSound('click');
             textContainer.classList.toggle('truncated');
