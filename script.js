@@ -444,7 +444,8 @@ postBtn.addEventListener('click', async function() {
                 text: text,
                 image: img,
                 tags: selectedTags, 
-                timestamp: serverTimestamp(),
+                timestamp: serverTimestamp(),       // Used for Sorting
+                actualTimestamp: serverTimestamp(), // NEW: Used for Display
                 pinned: false 
             });
             showToast("POST SUCCESSFUL");
@@ -556,13 +557,13 @@ async function handleDrop(e) {
     this.classList.remove('drag-over');
     draggedItem.classList.remove('dragging');
 
-if (draggedItem !== this) {
+    if (draggedItem !== this) {
         const id1 = draggedItem.dataset.id; 
         const id2 = this.dataset.id;        
         const post1 = allPosts.find(p => p.id === id1);
         const post2 = allPosts.find(p => p.id === id2);
 
-        // NEW: Safety Lock
+        // Safety Lock for Pinned Posts
         if (post1.pinned || post2.pinned) {
             showToast("PINNED POSTS LOCKED");
             return false;
@@ -570,11 +571,31 @@ if (draggedItem !== this) {
 
         if (post1 && post2) {
             showToast("SWAPPING ORDER...");
-            const ts1 = post1.timestamp;
-            const ts2 = post2.timestamp;
+            
+            // 1. Get the Sort Orders (Timestamps)
+            const sortTs1 = post1.timestamp;
+            const sortTs2 = post2.timestamp;
+
+            // 2. Preserve History (Handle Migration for Old Posts)
+            // If actualTimestamp doesn't exist yet, we lock the current timestamp as the "Real Time"
+            const realTs1 = post1.actualTimestamp || post1.timestamp;
+            const realTs2 = post2.actualTimestamp || post2.timestamp;
+
             try {
-                await updateDoc(doc(db, "posts", id1), { timestamp: ts2 });
-                await updateDoc(doc(db, "posts", id2), { timestamp: ts1 });
+                // UPDATE POST 1:
+                // Take Post 2's Sort Order, but Keep Post 1's History
+                await updateDoc(doc(db, "posts", id1), { 
+                    timestamp: sortTs2,
+                    actualTimestamp: realTs1 
+                });
+
+                // UPDATE POST 2:
+                // Take Post 1's Sort Order, but Keep Post 2's History
+                await updateDoc(doc(db, "posts", id2), { 
+                    timestamp: sortTs1, 
+                    actualTimestamp: realTs2
+                });
+
                 playSound('swap'); 
             } catch (err) { console.error(err); }
         }
@@ -637,8 +658,11 @@ let dragHTML = "";
         }
     }
 
-    // --- NEW TIMESTAMP LOGIC ---
-    const postDate = post.timestamp ? post.timestamp.toDate() : new Date();
+// --- UPDATED DATE LOGIC ---
+    // Prefer actualTimestamp (Real History), fall back to timestamp (Sort Order)
+    const rawDate = post.actualTimestamp || post.timestamp;
+    const postDate = rawDate ? rawDate.toDate() : new Date();
+    
     const editDate = post.editedTimestamp ? post.editedTimestamp.toDate() : null;
 
     // Build initial HTML
