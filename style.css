@@ -388,11 +388,11 @@ iframe[src*="spotify"] { aspect-ratio: auto; height: 152px; }
 }
 
 #view-count {
-    /* Layout: Sit nicely in the bar */
+    /* Layout */
     position: static; 
     display: flex;
-    align-items: center;
-    gap: 8px; /* Space between eye and number */
+    align-items: center; /* Vertically center the eye and text */
+    gap: 8px; 
     
     margin-right: 15px;
     background: transparent;
@@ -401,22 +401,39 @@ iframe[src*="spotify"] { aspect-ratio: auto; height: 152px; }
     
     color: #666; 
     font-family: inherit;
+    
+    /* FIX 1: Prevent the cursor from wrapping to the next line */
+    white-space: nowrap; 
 }
 
-/* NEW: The Eye Icon Style */
+/* The Eye Icon */
 .stat-icon {
-    width: 24px;  /* Adjust size to match your text */
+    display: block; /* Removes weird image spacing */
+    width: 20px;    /* Force a clean width */
     height: auto;
-    image-rendering: pixelated; /* Keeps it crisp */
+    image-rendering: pixelated;
     opacity: 0.7;
+    
+    /* FIX 2: Nudge the eye up/down to match the text perfectly */
+    transform: translateY(1px); 
 }
 
-/* Optional: Keep the blinking cursor after the number */
+/* The Number Text */
+#view-number {
+    /* FIX 3: Reset line-height to kill invisible vertical space */
+    line-height: 1; 
+    display: inline-block;
+}
+
+/* The Cursor */
 #view-number::after { 
     content: " █"; 
     animation: blink 1s step-end infinite; 
     color: #444; 
     font-size: 0.8em;
+    
+    /* FIX 4: Ensure cursor aligns with the bottom of the numbers */
+    vertical-align: baseline;
 }
 
 /* Mobile Tweak */
