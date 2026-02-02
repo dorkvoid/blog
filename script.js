@@ -331,6 +331,12 @@ function handleTypingSound(e) {
     playSound('type');
 }
 
+// Auto-Expand Text Area
+textInput.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = (this.scrollHeight) + 'px';
+});
+
 searchInput.addEventListener('keydown', handleTypingSound);
 textInput.addEventListener('keydown', handleTypingSound);
 imageInput.addEventListener('keydown', handleTypingSound);
@@ -460,6 +466,10 @@ if (cancelBtn) cancelBtn.addEventListener('click', resetForm);
 function resetForm() {
     textInput.value = ''; 
     imageInput.value = '';
+    
+    // NEW: Reset height
+    textInput.style.height = 'auto';
+    
     editingPostId = null;
     postBtn.innerText = "POST";
     if(cancelBtn) cancelBtn.classList.add('hidden');
@@ -546,11 +556,17 @@ async function handleDrop(e) {
     this.classList.remove('drag-over');
     draggedItem.classList.remove('dragging');
 
-    if (draggedItem !== this) {
+if (draggedItem !== this) {
         const id1 = draggedItem.dataset.id; 
         const id2 = this.dataset.id;        
         const post1 = allPosts.find(p => p.id === id1);
         const post2 = allPosts.find(p => p.id === id2);
+
+        // NEW: Safety Lock
+        if (post1.pinned || post2.pinned) {
+            showToast("PINNED POSTS LOCKED");
+            return false;
+        }
 
         if (post1 && post2) {
             showToast("SWAPPING ORDER...");
@@ -585,8 +601,9 @@ function addPostToDOM(post) {
         pinHTML = `<img src="images/pin.png" class="${pinClass}" data-id="${id}" draggable="false">`;
     }
 
-    let dragHTML = "";
-    if (isAdmin) {
+let dragHTML = "";
+    // UPDATED: Only show drag handle if the post is NOT pinned
+    if (isAdmin && !post.pinned) {
         dragHTML = `<img src="images/drag-handle.png" class="drag-handle" draggable="true">`;
     }
 
@@ -712,12 +729,22 @@ function addPostToDOM(post) {
         postDiv.insertBefore(expandBtn, postDiv.querySelector('.post-content').nextSibling);
     }
 
-    // Pin Button Logic
+// Pin Button Logic (Updated for Single-Pin)
     const pinBtn = postDiv.querySelector('.pin-icon');
     if (pinBtn && isAdmin) {
         pinBtn.addEventListener('click', async () => {
             playSound('pin');
             const newStatus = !post.pinned;
+
+            // NEW: If we are pinning this post, unpin everyone else first
+            if (newStatus) {
+                const existingPin = allPosts.find(p => p.pinned && p.id !== id);
+                if (existingPin) {
+                    // Silently unpin the old one
+                    await updateDoc(doc(db, "posts", existingPin.id), { pinned: false });
+                }
+            }
+
             await updateDoc(doc(db, "posts", id), { pinned: newStatus });
             showToast(newStatus ? "POST PINNED" : "POST UNPINNED");
         });
@@ -756,12 +783,17 @@ function addPostToDOM(post) {
 function startEdit(id, text, image, tags) {
     textInput.value = text;
     imageInput.value = image;
+    
+    // NEW: Force resize immediately to fit the existing text
+    textInput.style.height = 'auto'; 
+    textInput.style.height = (textInput.scrollHeight) + 'px';
+    
     editingPostId = id;
     postBtn.innerText = "UPDATE POST";
     if(cancelBtn) cancelBtn.classList.remove('hidden');
     window.scrollTo(0, 0);
     
-    // Load Tags
+    // Load Tags... (rest of the function is fine)
     selectedTags = tags || [];
     tagToggles.forEach(t => {
         if(selectedTags.includes(t.dataset.tag)) t.classList.add('selected');
