@@ -24,7 +24,7 @@ const feed = document.getElementById('feed');
 const textInput = document.getElementById('postText');
 const imageInput = document.getElementById('imageUrl');
 const passwordInput = document.getElementById('adminPassword');
-const counterElement = document.getElementById('view-count');
+const counterElement = document.getElementById('view-number');
 const searchInput = document.getElementById('searchBar');
 const toastContainer = document.getElementById('toast-container');
 const adminLoginBar = document.getElementById('admin-login-bar'); 
@@ -147,9 +147,11 @@ document.querySelectorAll('button, .tag-toggle').forEach(btn => {
 const statsRef = doc(db, "site_stats", "global");
 onSnapshot(statsRef, (docSnapshot) => {
     if (docSnapshot.exists() && counterElement) {
-        counterElement.innerText = "VISITS: " + String(docSnapshot.data().views).padStart(5, '0');
+        // UPDATED: Just the number, padded with zeros
+        counterElement.innerText = String(docSnapshot.data().views).padStart(5, '0');
     }
 });
+
 async function trackVisit() {
     try { await updateDoc(statsRef, { views: increment(1) }); } 
     catch (e) { await setDoc(statsRef, { views: 1 }); }

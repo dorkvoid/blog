@@ -388,18 +388,42 @@ iframe[src*="spotify"] { aspect-ratio: auto; height: 152px; }
 }
 
 #view-count {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    color: white;
+    /* Layout: Sit nicely in the bar */
+    position: static; 
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between eye and number */
+    
+    margin-right: 15px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    
+    color: #666; 
     font-family: inherit;
-    font-size: 0.8em;
-    background: black;
-    border: 1px solid white;
-    padding: 10px;
-    z-index: 100;
 }
-#view-count::after { content: " █"; animation: blink 1s step-end infinite; color: white; }
+
+/* NEW: The Eye Icon Style */
+.stat-icon {
+    width: 24px;  /* Adjust size to match your text */
+    height: auto;
+    image-rendering: pixelated; /* Keeps it crisp */
+    opacity: 0.7;
+}
+
+/* Optional: Keep the blinking cursor after the number */
+#view-number::after { 
+    content: " █"; 
+    animation: blink 1s step-end infinite; 
+    color: #444; 
+    font-size: 0.8em;
+}
+
+/* Mobile Tweak */
+@media (max-width: 500px) {
+    #view-count { margin-right: 5px; }
+    .stat-icon { width: 20px; }
+}
 
 .hidden { display: none !important; }
 
