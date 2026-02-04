@@ -275,12 +275,12 @@ function reloadFeed() {
             // We have posts, but the search hid them all
             feed.innerHTML = `
                 <div class="no-signal">
-                    [ NO DATA FOUND IN CURRENT BUFFER ]
-                    <span>TRY LOADING MORE SECTORS...</span>
+                    [ NO DATA FOUND ]
+                    <span>TRY A DIFFERENT SEARCH TERM...</span>
                 </div>`;
         } else {
             // The database is actually empty
-            feed.innerHTML = `<div class="no-signal">[ VOID IS EMPTY ]</div>`;
+            feed.innerHTML = `<div class="no-signal">[ BLOG IS EMPTY ]</div>`;
         }
         
         // Hide/Show "Load More" based on search state
@@ -720,6 +720,8 @@ let dragHTML = "";
         metaContent += `<span class="edited-ts">(edited ${timeAgo(editDate)})</span>`;
     }
 
+    metaContent += `<span class="link-icon" title="Copy Link">[ # ]</span>`;
+
     // Text Formatting
     let safeText = post.text
         .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') 
@@ -774,6 +776,20 @@ let dragHTML = "";
                 }
                 tsWrapper.innerHTML = relHTML;
             }
+        });
+    }
+
+    // Permalink Click Logic
+    const linkBtn = postDiv.querySelector('.link-icon');
+    if (linkBtn) {
+        linkBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Don't trigger the timestamp toggle
+            playSound('click');
+            
+            const url = `${window.location.origin}${window.location.pathname}?id=${id}`;
+            navigator.clipboard.writeText(url).then(() => {
+                showToast("LINK COPIED TO CLIPBOARD");
+            });
         });
     }
 

@@ -300,6 +300,26 @@ button:active { transform: translateY(2px); }
     background: #111;
 }
 
+/* PERMALINK BUTTON */
+.link-icon {
+    font-size: 0.8em;
+    color: #444;
+    margin-left: 10px;
+    cursor: pointer;
+    opacity: 0; /* Hidden by default */
+    transition: opacity 0.2s;
+    user-select: none;
+}
+
+/* Only show it when hovering over the timestamp area */
+.timestamp-wrapper:hover .link-icon {
+    opacity: 1;
+}
+
+.link-icon:hover {
+    color: white;
+}
+
 /* RETURN BUTTON (For Permalink Mode) */
 .return-btn {
     width: 100%;
