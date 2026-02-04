@@ -300,24 +300,25 @@ button:active { transform: translateY(2px); }
     background: #111;
 }
 
-/* PERMALINK BUTTON */
-.link-icon {
+/* POST FOOTER (Holds the Permalink) */
+.post-footer {
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px dashed #333; /* A subtle separation line */
     font-size: 0.8em;
-    color: #444;
-    margin-left: 10px;
+    text-align: left; /* Ensures it stays in the bottom-left */
+}
+
+.permalink-btn {
+    color: #444; /* Dim/Visible by default */
     cursor: pointer;
-    opacity: 0; /* Hidden by default */
-    transition: opacity 0.2s;
     user-select: none;
+    transition: color 0.2s;
+    font-family: 'Nope8', sans-serif;
 }
 
-/* Only show it when hovering over the timestamp area */
-.timestamp-wrapper:hover .link-icon {
-    opacity: 1;
-}
-
-.link-icon:hover {
-    color: white;
+.permalink-btn:hover {
+    color: white; /* Bright White on hover */
 }
 
 /* RETURN BUTTON (For Permalink Mode) */

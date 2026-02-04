@@ -653,6 +653,7 @@ async function handleDrop(e) {
 }
 
 // --- 11. DISPLAY FUNCTION ---
+// --- 11. DISPLAY FUNCTION ---
 function addPostToDOM(post) {
     const id = post.id;
     const postDiv = document.createElement('div');
@@ -671,8 +672,7 @@ function addPostToDOM(post) {
         pinHTML = `<img src="images/pin.png" class="${pinClass}" data-id="${id}" draggable="false">`;
     }
 
-let dragHTML = "";
-    // UPDATED: Only show drag handle if the post is NOT pinned
+    let dragHTML = "";
     if (isAdmin && !post.pinned) {
         dragHTML = `<img src="images/drag-handle.png" class="drag-handle" draggable="true">`;
     }
@@ -707,20 +707,16 @@ let dragHTML = "";
         }
     }
 
-// --- UPDATED DATE LOGIC ---
-    // Prefer actualTimestamp (Real History), fall back to timestamp (Sort Order)
+    // --- DATE LOGIC ---
     const rawDate = post.actualTimestamp || post.timestamp;
     const postDate = rawDate ? rawDate.toDate() : new Date();
-    
     const editDate = post.editedTimestamp ? post.editedTimestamp.toDate() : null;
 
-    // Build initial HTML
+    // Build Timestamp HTML (Clean - No Button Here anymore)
     let metaContent = `<span class="main-ts">${timeAgo(postDate)}</span>`;
     if (editDate) {
         metaContent += `<span class="edited-ts">(edited ${timeAgo(editDate)})</span>`;
     }
-
-    metaContent += `<span class="link-icon" title="Copy Link">[ # ]</span>`;
 
     // Text Formatting
     let safeText = post.text
@@ -746,46 +742,41 @@ let dragHTML = "";
             </div>
         </div>
         ${mediaHTML}
+
+        <div class="post-footer">
+            <span class="permalink-btn" title="Copy Link">[ LINK ]</span>
+        </div>
+
         <div class="admin-buttons"></div>
     `;
 
     feed.appendChild(postDiv);
 
-    // --- NEW TIMESTAMP TOGGLE LISTENER ---
+    // Timestamp Toggle Listener
     const tsWrapper = postDiv.querySelector('.timestamp-wrapper');
     if (tsWrapper) {
         tsWrapper.addEventListener('click', () => {
             playSound('click');
-            
-            // Check if we are currently showing relative time by looking at the text
             const currentText = tsWrapper.innerText;
             const isRelative = currentText.includes("ago") || currentText.includes("Just now");
 
             if (isRelative) {
-                // Switch to Exact
                 let exactHTML = `<span class="main-ts">${postDate.toLocaleString()}</span>`;
-                if (editDate) {
-                    exactHTML += `<span class="edited-ts">(edited ${editDate.toLocaleString()})</span>`;
-                }
+                if (editDate) exactHTML += `<span class="edited-ts">(edited ${editDate.toLocaleString()})</span>`;
                 tsWrapper.innerHTML = exactHTML;
             } else {
-                // Switch back to Relative
                 let relHTML = `<span class="main-ts">${timeAgo(postDate)}</span>`;
-                if (editDate) {
-                    relHTML += `<span class="edited-ts">(edited ${timeAgo(editDate)})</span>`;
-                }
+                if (editDate) relHTML += `<span class="edited-ts">(edited ${timeAgo(editDate)})</span>`;
                 tsWrapper.innerHTML = relHTML;
             }
         });
     }
 
-    // Permalink Click Logic
-    const linkBtn = postDiv.querySelector('.link-icon');
+    // UPDATED: Permalink Click Logic (Now targets the footer button)
+    const linkBtn = postDiv.querySelector('.permalink-btn');
     if (linkBtn) {
         linkBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Don't trigger the timestamp toggle
             playSound('click');
-            
             const url = `${window.location.origin}${window.location.pathname}?id=${id}`;
             navigator.clipboard.writeText(url).then(() => {
                 showToast("LINK COPIED TO CLIPBOARD");
@@ -793,47 +784,39 @@ let dragHTML = "";
         });
     }
 
-    // Add hover sounds to dynamic tags immediately after creation
-    postDiv.querySelectorAll('.post-tag').forEach(tag => {
-        tag.addEventListener('mouseenter', () => playSound('hover'));
+    // Add hover sounds
+    postDiv.querySelectorAll('.post-tag, .permalink-btn').forEach(el => {
+        el.addEventListener('mouseenter', () => playSound('hover'));
     });
 
     // Truncation Logic
     const textContainer = postDiv.querySelector('.post-text-container');
     if (textContainer.scrollHeight > 150) {
         textContainer.classList.add('truncated');
-        
         const expandBtn = document.createElement('button');
         expandBtn.className = 'expand-btn';
         expandBtn.innerText = "[ EXPAND ]";
-        
         expandBtn.onmouseenter = () => playSound('hover');
-
         expandBtn.onclick = () => {
             playSound('click');
             textContainer.classList.toggle('truncated');
             expandBtn.innerText = textContainer.classList.contains('truncated') ? "[ EXPAND ]" : "[ COLLAPSE ]";
         };
-        
         postDiv.insertBefore(expandBtn, postDiv.querySelector('.post-content').nextSibling);
     }
 
-// Pin Button Logic (Updated for Single-Pin)
+    // Pin Button Logic
     const pinBtn = postDiv.querySelector('.pin-icon');
     if (pinBtn && isAdmin) {
         pinBtn.addEventListener('click', async () => {
             playSound('pin');
             const newStatus = !post.pinned;
-
-            // NEW: If we are pinning this post, unpin everyone else first
             if (newStatus) {
                 const existingPin = allPosts.find(p => p.pinned && p.id !== id);
                 if (existingPin) {
-                    // Silently unpin the old one
                     await updateDoc(doc(db, "posts", existingPin.id), { pinned: false });
                 }
             }
-
             await updateDoc(doc(db, "posts", id), { pinned: newStatus });
             showToast(newStatus ? "POST PINNED" : "POST UNPINNED");
         });
@@ -844,12 +827,9 @@ let dragHTML = "";
         if (handle) handle.addEventListener('dragstart', handleDragStart);
         
         const btnContainer = postDiv.querySelector('.admin-buttons');
-        
         const editBtn = document.createElement('button');
         editBtn.innerText = "EDIT";
-        editBtn.onclick = () => {
-            startEdit(id, post.text, post.image, post.tags);
-        };
+        editBtn.onclick = () => startEdit(id, post.text, post.image, post.tags);
         btnContainer.appendChild(editBtn);
 
         const deleteBtn = document.createElement('button');
