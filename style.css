@@ -55,15 +55,19 @@ body:active {
 }
 
 /* --- INTERACTIVE CURSOR LOGIC --- */
+/* UPDATED: Added .permalink-btn, .tag-toggle, .post-tag, .return-btn to the list */
 a, button, .timestamp, .spoiler, .expand-btn, .pin-icon,
 #back-to-top, #sound-toggle, #lightbox-close, .click-to-zoom,
-#viewListBtn, #viewTileBtn, #logoutBtn {
+#viewListBtn, #viewTileBtn, #logoutBtn, 
+.permalink-btn, .tag-toggle, .post-tag, .return-btn {
     cursor: url('images/link-select.png'), pointer;
 }
 
+/* UPDATED: Added active states for the new selectors */
 a:active, button:active, .timestamp:active, .spoiler:active, .expand-btn:active, .pin-icon:active,
 #back-to-top:active, #sound-toggle:active, #lightbox-close:active, .click-to-zoom:active,
-#viewListBtn:active, #viewTileBtn:active, #logoutBtn:active {
+#viewListBtn:active, #viewTileBtn:active, #logoutBtn:active,
+.permalink-btn:active, .tag-toggle:active, .post-tag:active, .return-btn:active {
     cursor: url('images/link-select-click.png'), pointer;
 }
 
@@ -218,9 +222,9 @@ button:active { transform: translateY(2px); }
     color: #666;
     padding: 2px 6px;
     font-size: 0.8em;
-    cursor: pointer;
     user-select: none;
     font-family: 'Nope8', sans-serif;
+    /* REMOVED: cursor: pointer so it uses the global custom cursor */
 }
 
 .tag-toggle:hover {
@@ -247,8 +251,8 @@ button:active { transform: translateY(2px); }
     color: #ccc;
     font-size: 0.7em;
     padding: 2px 6px;
-    cursor: pointer;
     font-family: 'Nope8', sans-serif;
+    /* REMOVED: cursor: pointer so it uses the global custom cursor */
 }
 
 .post-tag:hover {
@@ -311,10 +315,10 @@ button:active { transform: translateY(2px); }
 
 .permalink-btn {
     color: #444; /* Dim/Visible by default */
-    cursor: pointer;
     user-select: none;
     transition: color 0.2s;
     font-family: 'Nope8', sans-serif;
+    /* REMOVED: cursor: pointer so it uses the global custom cursor */
 }
 
 .permalink-btn:hover {
@@ -330,8 +334,8 @@ button:active { transform: translateY(2px); }
     border: 1px dashed #444;
     font-family: 'Nope8', sans-serif;
     padding: 10px;
-    cursor: pointer;
     text-align: left; /* Aligns text to the left like a command */
+    /* REMOVED: cursor: pointer so it uses the global custom cursor */
 }
 
 .return-btn:hover {
