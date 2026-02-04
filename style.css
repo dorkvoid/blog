@@ -47,8 +47,6 @@ body {
     padding-bottom: 100px;
     cursor: url('images/cursor.png'), auto;
     background-image: none;
-
-    /* REMOVED: Text Shadow (Glow) */
 }
 
 body:active {
@@ -71,19 +69,28 @@ a:active, button:active, .timestamp:active, .spoiler:active, .expand-btn:active,
 }
 
 /* GHOST MOUSE TRAIL STYLING */
+/* UPDATED: Made more robust so it's actually visible */
 .cursor-trail {
     position: fixed;
     pointer-events: none; /* Click through it */
     z-index: 99999;
     width: 32px; 
     height: 32px;
+    
+    /* Ensure the image scales correctly */
     background-image: url('images/cursor.png'); 
+    background-size: contain; 
     background-repeat: no-repeat;
-    opacity: 0.5;
-    transition: opacity 0.3s ease-out; /* Slower fade out */
+    
+    /* Start fully visible */
+    opacity: 1; 
+    
+    /* Smooth fade out */
+    transition: opacity 0.5s ease-out; 
+    will-change: opacity, top, left;
 }
 
-/* SCANLINES ONLY (Removed Vignette) */
+/* SCANLINES ONLY */
 body::before {
     content: " ";
     display: block;
@@ -92,12 +99,9 @@ body::before {
     left: 0;
     bottom: 0;
     right: 0;
-    
-    /* REVERTED: Just the linear scanlines and RGB noise, no dark corners */
     background: 
         linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
         linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-    
     z-index: 9999;
     background-size: 100% 3px, 3px 100%; 
     pointer-events: none; 
