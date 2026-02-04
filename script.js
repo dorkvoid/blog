@@ -241,7 +241,7 @@ viewTileBtn.addEventListener('click', () => {
 });
 
 
-// --- 7. LOAD POSTS (PAGINATION + TAGS) ---
+// --- 7. LOAD POSTS (PAGINATION + PERMALINKS) ---
 let allPosts = []; 
 let feedLimit = 10; 
 let unsubscribe = null;
@@ -250,80 +250,72 @@ let isFeedHidden = false;
 function setupSubscription() {
     if (unsubscribe) unsubscribe();
 
-    // Query with LIMIT
-    const q = query(collection(db, "posts"), orderBy("timestamp", "desc"), limit(feedLimit));
+    // 1. CHECK FOR DIRECT LINK (?id=...)
+    const urlParams = new URLSearchParams(window.location.search);
+    const permalinkId = urlParams.get('id');
 
-    unsubscribe = onSnapshot(q, (snapshot) => {
-        allPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        reloadFeed();
+    if (permalinkId) {
+        // --- SINGLE POST MODE ---
         
-        // Show Load More only if we hit the limit
-        if (allPosts.length >= feedLimit) {
-            loadMoreBtn.classList.remove('hidden');
-        } else {
-            loadMoreBtn.classList.add('hidden');
-        }
-    });
-}
-
-loadMoreBtn.addEventListener('click', () => {
-    feedLimit += 10; 
-    playSound('click');
-    loadMoreBtn.innerText = "LOADING...";
-    setupSubscription(); 
-    setTimeout(() => { loadMoreBtn.innerText = "[ LOAD MORE... ]"; }, 500);
-});
-
-function reloadFeed() {
-    feed.innerHTML = "";
-    
-    // 1. SORT LOGIC (Restored)
-    allPosts.sort((a, b) => {
-        if (a.pinned === b.pinned) {
-            return (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0);
-        }
-        return a.pinned ? -1 : 1;
-    });
-
-    // 2. FILTER LOGIC (Restored)
-    const term = searchInput.value.toLowerCase();
-    
-    const visiblePosts = allPosts.filter(p => {
-        // Tag Filter
-        if (term.startsWith('#')) {
-            const tagQuery = term.substring(1).toUpperCase();
-            if (!p.tags) return false;
-            return p.tags.includes(tagQuery);
-        }
-        // Text Filter
-        else if (term && !term.startsWith('/')) {
-            return p.text.toLowerCase().includes(term);
-        }
-        return true; // Show everything if no search term
-    });
-
-    // 3. EMPTY STATE CHECK (The new part)
-    if (visiblePosts.length === 0) {
-        if (allPosts.length > 0) {
-            feed.innerHTML = `
-                <div class="no-signal">
-                    [ NO DATA FOUND ]
-                    <span>TRY A DIFFERENT SEARCH TERM.</span>
-                </div>`;
-        } else {
-            feed.innerHTML = `<div class="no-signal">[ VOID IS EMPTY ]</div>`;
-        }
+        // Hide pagination since we only have one post
+        loadMoreBtn.classList.add('hidden'); 
         
-        if(term) loadMoreBtn.classList.add('hidden');
-        else loadMoreBtn.classList.remove('hidden');
+        // Create the "Return" button
+        // Check if it already exists to avoid duplicates
+        if (!document.querySelector('.return-btn')) {
+            const returnBtn = document.createElement('button');
+            returnBtn.innerText = "< RETURN TO FEED";
+            returnBtn.className = "return-btn"; // Uses the new CSS class
+            
+            returnBtn.onclick = () => {
+                playSound('click');
+                // Remove the ID from the URL without reloading yet
+                window.history.pushState({}, document.title, window.location.pathname); 
+                // Reload the page to reset to the main feed
+                location.reload(); 
+            };
+            
+            // Insert it right before the feed container
+            feed.parentNode.insertBefore(returnBtn, feed);
+        }
+
+        // Fetch just the one post
+        const docRef = doc(db, "posts", permalinkId);
+        onSnapshot(docRef, (docSnap) => {
+            if (docSnap.exists()) {
+                allPosts = [{ id: docSnap.id, ...docSnap.data() }];
+                reloadFeed(); // Renders just this one post
+            } else {
+                showToast("POST NOT FOUND");
+                // If post doesn't exist, auto-redirect back to feed after 2 seconds
+                setTimeout(() => { 
+                    window.history.pushState({}, document.title, window.location.pathname);
+                    location.reload(); 
+                }, 2000);
+            }
+        });
+
+    } else {
+        // --- NORMAL FEED MODE ---
         
-        return; 
+        // Remove return button if it exists (cleanup)
+        const existingBtn = document.querySelector('.return-btn');
+        if (existingBtn) existingBtn.remove();
+
+        const q = query(collection(db, "posts"), orderBy("timestamp", "desc"), limit(feedLimit));
+
+        unsubscribe = onSnapshot(q, (snapshot) => {
+            allPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            reloadFeed();
+            
+            // Show Load More only if we hit the limit
+            if (allPosts.length >= feedLimit) {
+                loadMoreBtn.classList.remove('hidden');
+            } else {
+                loadMoreBtn.classList.add('hidden');
+            }
+        });
     }
-
-    // 4. RENDER
-    visiblePosts.forEach(post => {
-        addPostToDOM(post);
-    });
 }
 
 // --- 8. POST & COMMAND LOGIC ---

@@ -300,6 +300,25 @@ button:active { transform: translateY(2px); }
     background: #111;
 }
 
+/* RETURN BUTTON (For Permalink Mode) */
+.return-btn {
+    width: 100%;
+    margin-bottom: 20px;
+    background: black;
+    color: #666;
+    border: 1px dashed #444;
+    font-family: 'Nope8', sans-serif;
+    padding: 10px;
+    cursor: pointer;
+    text-align: left; /* Aligns text to the left like a command */
+}
+
+.return-btn:hover {
+    background: white;
+    color: black;
+    border-color: white;
+}
+
 /* UPDATED: Timestamp Wrapper (Holds both posted and edited times) */
 .timestamp-wrapper {
     display: inline-block; /* Keeps them side-by-side */
