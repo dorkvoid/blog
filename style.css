@@ -40,6 +40,7 @@ body {
     color: white;
     font-family: 'Nope8', sans-serif; 
     
+    /* UPDATED: Set to 18px */
     font-size: 18px;
     
     image-rendering: pixelated; 
@@ -54,6 +55,7 @@ body:active {
 }
 
 /* --- INTERACTIVE CURSOR LOGIC --- */
+/* UPDATED: Added .permalink-btn, .tag-toggle, .post-tag, .return-btn to the list */
 a, button, .timestamp, .spoiler, .expand-btn, .pin-icon,
 #back-to-top, #sound-toggle, #lightbox-close, .click-to-zoom,
 #viewListBtn, #viewTileBtn, #logoutBtn, 
@@ -61,6 +63,7 @@ a, button, .timestamp, .spoiler, .expand-btn, .pin-icon,
     cursor: url('images/link-select.png'), pointer;
 }
 
+/* UPDATED: Added active states for the new selectors */
 a:active, button:active, .timestamp:active, .spoiler:active, .expand-btn:active, .pin-icon:active,
 #back-to-top:active, #sound-toggle:active, #lightbox-close:active, .click-to-zoom:active,
 #viewListBtn:active, #viewTileBtn:active, #logoutBtn:active,
@@ -68,29 +71,7 @@ a:active, button:active, .timestamp:active, .spoiler:active, .expand-btn:active,
     cursor: url('images/link-select-click.png'), pointer;
 }
 
-/* GHOST MOUSE TRAIL STYLING */
-/* UPDATED: Made more robust so it's actually visible */
-.cursor-trail {
-    position: fixed;
-    pointer-events: none; /* Click through it */
-    z-index: 99999;
-    width: 32px; 
-    height: 32px;
-    
-    /* Ensure the image scales correctly */
-    background-image: url('images/cursor.png'); 
-    background-size: contain; 
-    background-repeat: no-repeat;
-    
-    /* Start fully visible */
-    opacity: 1; 
-    
-    /* Smooth fade out */
-    transition: opacity 0.5s ease-out; 
-    will-change: opacity, top, left;
-}
-
-/* SCANLINES ONLY */
+/* SCANLINES */
 body::before {
     content: " ";
     display: block;
@@ -99,11 +80,9 @@ body::before {
     left: 0;
     bottom: 0;
     right: 0;
-    background: 
-        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
-        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
     z-index: 9999;
-    background-size: 100% 3px, 3px 100%; 
+    background-size: 100% 3px, 3px 100%;
     pointer-events: none; 
 }
 
@@ -135,7 +114,10 @@ body::before {
     color: white;
     border: none;
     padding: 10px;
+    
+    /* UPDATED: Search Bar now uses Nope8 */
     font-family: 'Nope8', sans-serif;
+    
     font-size: 1.1em;
     outline: none;
     margin-bottom: 0; 
@@ -242,6 +224,7 @@ button:active { transform: translateY(2px); }
     font-size: 0.8em;
     user-select: none;
     font-family: 'Nope8', sans-serif;
+    /* REMOVED: cursor: pointer so it uses the global custom cursor */
 }
 
 .tag-toggle:hover {
@@ -269,6 +252,7 @@ button:active { transform: translateY(2px); }
     font-size: 0.7em;
     padding: 2px 6px;
     font-family: 'Nope8', sans-serif;
+    /* REMOVED: cursor: pointer so it uses the global custom cursor */
 }
 
 .post-tag:hover {
@@ -334,6 +318,7 @@ button:active { transform: translateY(2px); }
     user-select: none;
     transition: color 0.2s;
     font-family: 'Nope8', sans-serif;
+    /* REMOVED: cursor: pointer so it uses the global custom cursor */
 }
 
 .permalink-btn:hover {
@@ -350,6 +335,7 @@ button:active { transform: translateY(2px); }
     font-family: 'Nope8', sans-serif;
     padding: 10px;
     text-align: left; /* Aligns text to the left like a command */
+    /* REMOVED: cursor: pointer so it uses the global custom cursor */
 }
 
 .return-btn:hover {
@@ -459,21 +445,26 @@ iframe[src*="spotify"] { aspect-ratio: auto; height: 152px; }
     
     color: #666; 
     font-family: inherit;
+    
+    /* FIX 1: Prevent the cursor from wrapping to the next line */
     white-space: nowrap; 
 }
 
 /* The Eye Icon */
 .stat-icon {
-    display: block; 
-    width: 20px; 
+    display: block; /* Removes weird image spacing */
+    width: 20px;    /* Force a clean width */
     height: auto;
     image-rendering: pixelated;
     opacity: 0.7;
+    
+    /* FIX 2: Nudge the eye up/down to match the text perfectly */
     transform: translateY(1px); 
 }
 
 /* The Number Text */
 #view-number {
+    /* FIX 3: Reset line-height to kill invisible vertical space */
     line-height: 1; 
     display: inline-block;
 }
@@ -484,6 +475,8 @@ iframe[src*="spotify"] { aspect-ratio: auto; height: 152px; }
     animation: blink 1s step-end infinite; 
     color: #444; 
     font-size: 0.8em;
+    
+    /* FIX 4: Ensure cursor aligns with the bottom of the numbers */
     vertical-align: baseline;
 }
 
@@ -622,7 +615,10 @@ body.admin-mode .admin-buttons { display: block !important; }
 .toast {
     background: black; border: 2px solid white; color: white;
     padding: 15px 25px; 
+    
+    /* FIX: Changed from 'Determination' to 'Nope8' */
     font-family: 'Nope8', sans-serif;
+    
     min-width: 200px; box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
     animation: slideIn 0.3s ease-out forwards;
 }
@@ -657,11 +653,13 @@ body.admin-mode .admin-buttons { display: block !important; }
     border: none;
 }
 
+/* NEW: Specific hover rule to kill the white bar */
 .expand-btn:hover {
-    background: transparent !important; 
-    color: white !important;           
+    background: transparent !important; /* Force transparent background */
+    color: white !important;            /* Force white text */
 }
 
+/* OPTIONAL: Remove the brackets [ ] on hover if you want it cleaner */
 .expand-btn:hover::before, .expand-btn:hover::after {
     content: none !important;
 }
@@ -684,16 +682,23 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
     border: 1px dashed #444;
     padding: 20px;
     animation: blink 2s infinite;
+
+    /* FIX 1: Spans across both columns in Tile View */
     column-span: all;
-    -webkit-column-span: all; 
+    -webkit-column-span: all; /* For Safari/Chrome compatibility */
+    
+    /* Safety: Never let the box split in half */
     break-inside: avoid;
     page-break-inside: avoid;
+    
     width: 100%;
     box-sizing: border-box;
 }
 
 .no-signal span {
+    /* FIX 2: Forces it to a new line */
     display: block !important; 
+    
     font-size: 0.8em;
     margin-top: 10px;
     color: #444;
