@@ -240,6 +240,61 @@ viewTileBtn.addEventListener('click', () => {
     setView('tile');
 });
 
+// --- 6.5 RENDER FEED (The Missing Engine) ---
+function reloadFeed() {
+    feed.innerHTML = "";
+    
+    // 1. SORT LOGIC
+    allPosts.sort((a, b) => {
+        // Pinned posts always first
+        if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+        // Then sort by timestamp (newest first)
+        return (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0);
+    });
+
+    // 2. FILTER LOGIC
+    const term = searchInput.value.toLowerCase();
+    
+    const visiblePosts = allPosts.filter(p => {
+        // Tag Filter (e.g. #ART)
+        if (term.startsWith('#')) {
+            const tagQuery = term.substring(1).toUpperCase();
+            if (!p.tags) return false;
+            return p.tags.includes(tagQuery);
+        }
+        // Text Filter (standard search)
+        else if (term && !term.startsWith('/')) {
+            return p.text.toLowerCase().includes(term);
+        }
+        return true; // Show everything if no search term
+    });
+
+    // 3. EMPTY STATE CHECK
+    if (visiblePosts.length === 0) {
+        if (allPosts.length > 0) {
+            // We have posts, but the search hid them all
+            feed.innerHTML = `
+                <div class="no-signal">
+                    [ NO DATA FOUND IN CURRENT BUFFER ]
+                    <span>TRY LOADING MORE SECTORS...</span>
+                </div>`;
+        } else {
+            // The database is actually empty
+            feed.innerHTML = `<div class="no-signal">[ VOID IS EMPTY ]</div>`;
+        }
+        
+        // Hide/Show "Load More" based on search state
+        if(term) loadMoreBtn.classList.add('hidden');
+        else loadMoreBtn.classList.remove('hidden');
+        
+        return; 
+    }
+
+    // 4. RENDER LOOP
+    visiblePosts.forEach(post => {
+        addPostToDOM(post);
+    });
+}
 
 // --- 7. LOAD POSTS (PAGINATION + PERMALINKS) ---
 let allPosts = []; 
