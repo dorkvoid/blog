@@ -31,9 +31,16 @@ const adminLoginBar = document.getElementById('admin-login-bar');
 const container = document.querySelector('.container');
 const loadMoreBtn = document.getElementById('loadMoreBtn'); 
 
+// New Tool Elements
+const toggleToolsBtn = document.getElementById('toggleTools');
+const extraToolsDiv = document.getElementById('extraTools');
+const addMediaBtn = document.getElementById('addMediaBtn');
+const mediaStackDiv = document.getElementById('media-stack-display');
+
 // Tag Elements
 const tagToggles = document.querySelectorAll('.tag-toggle');
 let selectedTags = [];
+let mediaStack = []; // Stores queued images
 
 // View Toggles
 const viewListBtn = document.getElementById('viewListBtn');
@@ -462,6 +469,7 @@ function insertTag(tagStart, tagEnd) {
     textInput.selectionEnd = end + tagStart.length;
 }
 
+// --- NEW TOOLBAR LOGIC ---
 const fmtHeader = document.getElementById('fmtHeader');
 const fmtQuote = document.getElementById('fmtQuote');
 const fmtLink = document.getElementById('fmtLink');
@@ -473,28 +481,71 @@ fmtBold.onclick = () => insertTag("**", "**");
 fmtItalic.onclick = () => insertTag("*", "*");
 fmtSpoiler.onclick = () => insertTag("||", "||");
 
-// NEW MARKDOWN LOGIC
-fmtHeader.onclick = () => insertTag("### ", ""); // Adds a header
-fmtQuote.onclick = () => insertTag("> ", "");     // Adds a blockquote
-fmtCode.onclick = () => insertTag("`", "`");      // Adds code block
-fmtList.onclick = () => insertTag("- ", "");      // Adds a list item
+// Drawer Toggle
+toggleToolsBtn.addEventListener('click', () => {
+    playSound('click');
+    extraToolsDiv.classList.toggle('hidden');
+    // Change button text based on state
+    toggleToolsBtn.innerText = extraToolsDiv.classList.contains('hidden') ? "..." : "<";
+});
+
+// New Markdown Logic
+fmtHeader.onclick = () => insertTag("### ", ""); 
+fmtQuote.onclick = () => insertTag("> ", "");     
+fmtCode.onclick = () => insertTag("`", "`");      
+fmtList.onclick = () => insertTag("- ", "");      
 fmtLink.onclick = () => {
-    // Links are special: [Title](URL)
     const url = prompt("Enter URL:");
     if (url) insertTag("[", `](${url})`);
 };
+
+// --- MEDIA STACK LOGIC ---
+function updateMediaStackUI() {
+    mediaStackDiv.innerHTML = "";
+    mediaStack.forEach((url, index) => {
+        const chip = document.createElement('div');
+        chip.className = 'media-chip';
+        chip.innerHTML = `
+            <span class="chip-text">${url}</span>
+            <span class="chip-remove" onclick="window.removeMedia(${index})">X</span>
+        `;
+        mediaStackDiv.appendChild(chip);
+    });
+}
+
+// Make global for onclick access
+window.removeMedia = function(index) {
+    playSound('delete');
+    mediaStack.splice(index, 1);
+    updateMediaStackUI();
+};
+
+addMediaBtn.addEventListener('click', () => {
+    const url = imageInput.value.trim();
+    if (!url) return;
+    
+    playSound('confirm');
+    mediaStack.push(url);
+    imageInput.value = ""; 
+    updateMediaStackUI();
+});
+
 
 postBtn.addEventListener('click', async function() {
     if (!auth.currentUser) return showToast("LOGIN REQUIRED");
 
     const text = textInput.value;
-    const rawImgInput = imageInput.value;
     
-    // SPLIT STRING BY COMMA TO MAKE ARRAY
-    // Removes empty spaces and empty entries
-    const imageArray = rawImgInput.split(',').map(s => s.trim()).filter(s => s);
+    // 1. Check if there's a URL sitting in the input box that user forgot to "Add"
+    const currentInput = imageInput.value.trim();
+    if (currentInput) {
+        mediaStack.push(currentInput);
+    }
 
-    if (text === "" && imageArray.length === 0) return;
+    // 2. Use the stack as our image source
+    const finalImages = [...mediaStack]; 
+
+    if (text === "" && finalImages.length === 0) return;
 
     postBtn.disabled = true;
     postBtn.innerText = "SENDING...";
@@ -503,7 +554,7 @@ postBtn.addEventListener('click', async function() {
         if (editingPostId) {
             await updateDoc(doc(db, "posts", editingPostId), { 
                 text: text, 
-                images: imageArray, // SAVING AS ARRAY NOW
+                images: finalImages, 
                 tags: selectedTags, 
                 editedTimestamp: serverTimestamp()
             });
@@ -513,7 +564,7 @@ postBtn.addEventListener('click', async function() {
         } else {
             await addDoc(collection(db, "posts"), {
                 text: text,
-                images: imageArray, // SAVING AS ARRAY NOW
+                images: finalImages,
                 tags: selectedTags, 
                 timestamp: serverTimestamp(),
                 actualTimestamp: serverTimestamp(),
@@ -538,15 +589,16 @@ if (cancelBtn) cancelBtn.addEventListener('click', resetForm);
 function resetForm() {
     textInput.value = ''; 
     imageInput.value = '';
-    
-    // NEW: Reset height
     textInput.style.height = 'auto';
+    
+    // CLEAR STACK
+    mediaStack = [];
+    updateMediaStackUI();
     
     editingPostId = null;
     postBtn.innerText = "POST";
     if(cancelBtn) cancelBtn.classList.add('hidden');
     
-    // Reset Tags
     selectedTags = [];
     tagToggles.forEach(t => t.classList.remove('selected'));
 }
@@ -732,7 +784,7 @@ function addPostToDOM(post) {
             if (ytMatch) {
                 mediaHTML += `<div class="media-item"><iframe class="media-embed" src="https://www.youtube.com/embed/${ytMatch[1]}" frameborder="0" allowfullscreen></iframe></div>`;
             } else if (spMatch) {
-                // FIXED: Now uses correct ${} syntax and the official open.spotify.com embed URL
+                // FIXED: USES ${} AND CORRECT URL
                 mediaHTML += `<div class="media-item"><iframe class="media-embed" src="https://open.spotify.com/embed/${spMatch[1]}/${spMatch[2]}" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe></div>`;
             } else {
                 const isVideo = url.match(/\.(mp4|webm|ogg|mov)/i);
@@ -891,13 +943,16 @@ function addPostToDOM(post) {
 function startEdit(id, text, image, tags, images) {
     textInput.value = text;
     
-    // HANDLE OLD VS NEW DATA
-    // If it has an 'images' array, join it. If it has old 'image' string, use that.
+    // LOAD EXISTING IMAGES INTO STACK
     if (images && images.length > 0) {
-        imageInput.value = images.join(', ');
+        mediaStack = images;
+    } else if (image) {
+        mediaStack = [image];
     } else {
-        imageInput.value = image || '';
+        mediaStack = [];
     }
+    updateMediaStackUI();
+    imageInput.value = ""; // Keep the input clean
     
     textInput.style.height = 'auto'; 
     textInput.style.height = (textInput.scrollHeight) + 'px';

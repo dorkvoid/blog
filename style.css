@@ -20,9 +20,9 @@
 }
 
 ::selection {
-    background: white; /* Solid block */
-    color: black;      /* Black text */
-    text-shadow: none; /* No glow */
+    background: white;
+    color: black;
+    text-shadow: none;
 }
 
 ::-moz-selection {
@@ -39,10 +39,7 @@ body {
     background-color: black;
     color: white;
     font-family: 'Nope8', sans-serif; 
-    
-    /* UPDATED: Set to 18px */
     font-size: 18px;
-    
     image-rendering: pixelated; 
     -webkit-font-smoothing: none;
     padding-bottom: 100px;
@@ -55,19 +52,17 @@ body:active {
 }
 
 /* --- INTERACTIVE CURSOR LOGIC --- */
-/* UPDATED: Added .permalink-btn, .tag-toggle, .post-tag, .return-btn to the list */
 a, button, .timestamp, .spoiler, .expand-btn, .pin-icon,
 #back-to-top, #sound-toggle, #lightbox-close, .click-to-zoom,
 #viewListBtn, #viewTileBtn, #logoutBtn, 
-.permalink-btn, .tag-toggle, .post-tag, .return-btn {
+.permalink-btn, .tag-toggle, .post-tag, .return-btn, .chip-remove {
     cursor: url('images/link-select.png'), pointer;
 }
 
-/* UPDATED: Added active states for the new selectors */
 a:active, button:active, .timestamp:active, .spoiler:active, .expand-btn:active, .pin-icon:active,
 #back-to-top:active, #sound-toggle:active, #lightbox-close:active, .click-to-zoom:active,
 #viewListBtn:active, #viewTileBtn:active, #logoutBtn:active,
-.permalink-btn:active, .tag-toggle:active, .post-tag:active, .return-btn:active {
+.permalink-btn:active, .tag-toggle:active, .post-tag:active, .return-btn:active, .chip-remove:active {
     cursor: url('images/link-select-click.png'), pointer;
 }
 
@@ -114,10 +109,7 @@ body::before {
     color: white;
     border: none;
     padding: 10px;
-    
-    /* UPDATED: Search Bar now uses Nope8 */
     font-family: 'Nope8', sans-serif;
-    
     font-size: 1.1em;
     outline: none;
     margin-bottom: 0; 
@@ -214,7 +206,7 @@ button:active { transform: translateY(2px); }
 .tag-selector {
     display: flex;
     gap: 5px;
-    margin-left: auto; /* Pushes tags to the right of the formatting bar */
+    margin-left: auto;
 }
 
 .tag-toggle {
@@ -224,7 +216,6 @@ button:active { transform: translateY(2px); }
     font-size: 0.8em;
     user-select: none;
     font-family: 'Nope8', sans-serif;
-    /* REMOVED: cursor: pointer so it uses the global custom cursor */
 }
 
 .tag-toggle:hover {
@@ -252,7 +243,6 @@ button:active { transform: translateY(2px); }
     font-size: 0.7em;
     padding: 2px 6px;
     font-family: 'Nope8', sans-serif;
-    /* REMOVED: cursor: pointer so it uses the global custom cursor */
 }
 
 .post-tag:hover {
@@ -304,28 +294,27 @@ button:active { transform: translateY(2px); }
     background: #111;
 }
 
-/* POST FOOTER (Holds the Permalink) */
+/* POST FOOTER */
 .post-footer {
     margin-top: 15px;
     padding-top: 10px;
-    border-top: 1px dashed #333; /* A subtle separation line */
+    border-top: 1px dashed #333;
     font-size: 0.8em;
-    text-align: left; /* Ensures it stays in the bottom-left */
+    text-align: left;
 }
 
 .permalink-btn {
-    color: #444; /* Dim/Visible by default */
+    color: #444;
     user-select: none;
     transition: color 0.2s;
     font-family: 'Nope8', sans-serif;
-    /* REMOVED: cursor: pointer so it uses the global custom cursor */
 }
 
 .permalink-btn:hover {
-    color: white; /* Bright White on hover */
+    color: white;
 }
 
-/* RETURN BUTTON (For Permalink Mode) */
+/* RETURN BUTTON */
 .return-btn {
     width: 100%;
     margin-bottom: 20px;
@@ -334,8 +323,7 @@ button:active { transform: translateY(2px); }
     border: 1px dashed #444;
     font-family: 'Nope8', sans-serif;
     padding: 10px;
-    text-align: left; /* Aligns text to the left like a command */
-    /* REMOVED: cursor: pointer so it uses the global custom cursor */
+    text-align: left;
 }
 
 .return-btn:hover {
@@ -344,27 +332,18 @@ button:active { transform: translateY(2px); }
     border-color: white;
 }
 
-/* UPDATED: Timestamp Wrapper (Holds both posted and edited times) */
+/* TIMESTAMP */
 .timestamp-wrapper {
-    display: inline-block; /* Keeps them side-by-side */
+    display: inline-block;
     font-size: 0.8em;
     border-bottom: 1px solid white;
     padding-bottom: 5px;
     margin-bottom: 10px;
     user-select: none;
     transition: color 0.2s;
-    cursor: url('images/link-select.png'), pointer;
 }
+.timestamp-wrapper:hover { color: #ccc; }
 
-.timestamp-wrapper:hover { 
-    color: #ccc; 
-}
-
-.timestamp-wrapper:active {
-    cursor: url('images/link-select-click.png'), pointer;
-}
-
-/* Individual text spans inside */
 .main-ts { font-weight: normal; }
 .edited-ts { color: #888; margin-left: 5px; font-style: italic; }
 
@@ -416,71 +395,44 @@ iframe[src*="spotify"] { aspect-ratio: auto; height: 152px; }
     z-index: 10;
     cursor: url('images/grab-hand.png') 18 18, auto; 
 }
-
-.drag-handle:hover {
-    opacity: 1;
-}
-
-.drag-handle:active {
-    cursor: url('images/closed-grab-hand.png') 18 18, auto;
-}
+.drag-handle:hover { opacity: 1; }
+.drag-handle:active { cursor: url('images/closed-grab-hand.png') 18 18, auto; }
 
 /* --- 7. ADMIN UI --- */
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
-}
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
 #view-count {
-    /* Layout */
     position: static; 
     display: flex;
-    align-items: center; /* Vertically center the eye and text */
+    align-items: center;
     gap: 8px; 
-    
     margin-right: 15px;
     background: transparent;
     border: none;
     padding: 0;
-    
     color: #666; 
     font-family: inherit;
-    
-    /* FIX 1: Prevent the cursor from wrapping to the next line */
     white-space: nowrap; 
 }
 
-/* The Eye Icon */
 .stat-icon {
-    display: block; /* Removes weird image spacing */
-    width: 20px;    /* Force a clean width */
+    display: block;
+    width: 20px;
     height: auto;
     image-rendering: pixelated;
     opacity: 0.7;
-    
-    /* FIX 2: Nudge the eye up/down to match the text perfectly */
     transform: translateY(1px); 
 }
 
-/* The Number Text */
-#view-number {
-    /* FIX 3: Reset line-height to kill invisible vertical space */
-    line-height: 1; 
-    display: inline-block;
-}
-
-/* The Cursor */
+#view-number { line-height: 1; display: inline-block; }
 #view-number::after { 
     content: " █"; 
     animation: blink 1s step-end infinite; 
     color: #444; 
     font-size: 0.8em;
-    
-    /* FIX 4: Ensure cursor aligns with the bottom of the numbers */
     vertical-align: baseline;
 }
 
-/* Mobile Tweak */
 @media (max-width: 500px) {
     #view-count { margin-right: 5px; }
     .stat-icon { width: 20px; }
@@ -488,7 +440,6 @@ iframe[src*="spotify"] { aspect-ratio: auto; height: 152px; }
 
 .hidden { display: none !important; }
 
-/* Compact Admin Bar */
 #admin-login-bar {
     position: fixed;
     bottom: 20px;
@@ -543,26 +494,10 @@ body.admin-mode .admin-buttons { display: block !important; }
     text-align: right;
 }
 
-/* Compact Admin Menu */
-#admin-menu {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px; 
-}
-.login-status { 
-    color: rgb(251, 255, 0); 
-    font-size: 0.7em; 
-    letter-spacing: 1px;
-    margin-bottom: 2px;
-}
+#admin-menu { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.login-status { color: rgb(251, 255, 0); font-size: 0.7em; letter-spacing: 1px; margin-bottom: 2px; }
 
-#logoutBtn {
-    width: 32px;
-    height: 32px;
-    border: none;
-    transition: transform 0.1s;
-}
+#logoutBtn { width: 32px; height: 32px; border: none; transition: transform 0.1s; }
 #logoutBtn:active { transform: scale(0.9); }
 
 /* --- 8. UI FEATURES --- */
@@ -615,29 +550,56 @@ body.admin-mode .admin-buttons { display: block !important; }
 .toast {
     background: black; border: 2px solid white; color: white;
     padding: 15px 25px; 
-    
-    /* FIX: Changed from 'Determination' to 'Nope8' */
     font-family: 'Nope8', sans-serif;
-    
     min-width: 200px; box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
     animation: slideIn 0.3s ease-out forwards;
 }
 @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-.formatting-bar { display: flex; gap: 5px; margin-bottom: 5px; }
+/* Formatting Bar + Tool Drawer */
+.formatting-bar { display: flex; gap: 5px; margin-bottom: 5px; align-items: center; }
 .formatting-bar button { 
-    width: 35px; /* Slightly wider to fit icons */
-    height: 30px; 
-    padding: 0; 
-    font-size: 0.9em; 
-    border: 1px solid white; 
-    background: black; 
-    color: white; 
-    cursor: pointer;
-    margin-right: 2px; /* Adds tiny gap between buttons */
+    width: 35px; height: 30px; 
+    padding: 0; font-size: 0.9em; 
+    border: 1px solid white; background: black; color: white; 
+    cursor: pointer; margin-right: 2px;
 }
 .formatting-bar button:hover { background: white; color: black; }
 .formatting-bar button:hover::before, .formatting-bar button:hover::after { content: none; }
+
+/* DRAWER ANIMATION */
+.tools-drawer {
+    display: inline-flex;
+    gap: 2px;
+    animation: fadeIn 0.3s ease;
+}
+.tools-drawer button { margin-left: 2px; }
+@keyframes fadeIn { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
+
+/* --- NEW MEDIA STACK --- */
+.media-row { display: flex; gap: 10px; margin-bottom: 10px; }
+#imageUrl { margin-bottom: 0; flex-grow: 1; }
+#addMediaBtn { width: 50px; background: #333; color: white; border: 1px solid white; font-weight: bold; cursor: pointer; }
+#addMediaBtn:hover { background: white; color: black; }
+
+#media-stack-display {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin-bottom: 15px; min-height: 0;
+}
+.media-chip {
+    background: #222; border: 1px dashed #666;
+    padding: 5px 10px; font-size: 0.8em;
+    display: flex; align-items: center; gap: 8px; max-width: 100%;
+}
+.chip-text {
+    max-width: 200px; white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis; color: #ccc;
+}
+.chip-remove {
+    color: red; font-weight: bold; cursor: pointer;
+    border-left: 1px solid #444; padding-left: 8px;
+}
+.chip-remove:hover { color: white; }
 
 .spoiler { background: white; color: white; cursor: help; padding: 0 4px; transition: all 0.2s; }
 .spoiler:hover, .spoiler.revealed { background: #333; color: white; text-decoration: none; }
@@ -651,28 +613,12 @@ body.admin-mode .admin-buttons { display: block !important; }
 }
 
 .expand-btn {
-    display: block; 
-    width: 100%; 
-    text-align: center; 
-    background: transparent; 
-    color: #888; 
-    margin-top: 5px; 
-    padding: 10px;
-    font-size: 0.9em; 
-    font-weight: bold; 
-    border: none;
+    display: block; width: 100%; text-align: center; background: transparent; 
+    color: #888; margin-top: 5px; padding: 10px; font-size: 0.9em; 
+    font-weight: bold; border: none;
 }
-
-/* NEW: Specific hover rule to kill the white bar */
-.expand-btn:hover {
-    background: transparent !important; /* Force transparent background */
-    color: white !important;            /* Force white text */
-}
-
-/* OPTIONAL: Remove the brackets [ ] on hover if you want it cleaner */
-.expand-btn:hover::before, .expand-btn:hover::after {
-    content: none !important;
-}
+.expand-btn:hover { background: transparent !important; color: white !important; }
+.expand-btn:hover::before, .expand-btn:hover::after { content: none !important; }
 
 .pin-icon {
     position: absolute; top: 10px; right: 10px; width: 16px; height: 16px;
@@ -683,121 +629,48 @@ body.admin-mode .admin-buttons { display: block !important; }
 body:not(.admin-mode) .pin-icon:not(.active) { display: none !important; }
 body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; }
 
-/* NO SIGNAL MESSAGE */
 .no-signal {
-    text-align: center;
-    color: #666;
-    margin-top: 50px;
-    font-family: 'Nope8', sans-serif;
-    border: 1px dashed #444;
-    padding: 20px;
-    animation: blink 2s infinite;
-
-    /* FIX 1: Spans across both columns in Tile View */
-    column-span: all;
-    -webkit-column-span: all; /* For Safari/Chrome compatibility */
-    
-    /* Safety: Never let the box split in half */
-    break-inside: avoid;
-    page-break-inside: avoid;
-    
-    width: 100%;
-    box-sizing: border-box;
+    text-align: center; color: #666; margin-top: 50px;
+    font-family: 'Nope8', sans-serif; border: 1px dashed #444; padding: 20px;
+    animation: blink 2s infinite; column-span: all; -webkit-column-span: all;
+    break-inside: avoid; page-break-inside: avoid; width: 100%; box-sizing: border-box;
 }
-
-.no-signal span {
-    /* FIX 2: Forces it to a new line */
-    display: block !important; 
-    
-    font-size: 0.8em;
-    margin-top: 10px;
-    color: #444;
-}
+.no-signal span { display: block !important; font-size: 0.8em; margin-top: 10px; color: #444; }
 
 /* --- MULTI-IMAGE GALLERY --- */
 .media-gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 10px;
-    margin-top: 15px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px; margin-top: 15px;
 }
-
 .media-item {
-    border: 1px solid white;
-    background: #111;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    aspect-ratio: 1 / 1;  /* MOVED HERE: Forces the cell to be square */
+    border: 1px solid white; background: #111; overflow: hidden;
+    display: flex; justify-content: center; align-items: center;
+    aspect-ratio: 1 / 1; 
 }
-
 .media-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    /* aspect-ratio: 1 / 1;  <-- REMOVE THIS from here */
-    transition: transform 0.2s;
-    border: none;
-    margin-top: 0;
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.2s; border: none; margin-top: 0;
 }
-
-/* Ensure videos fill the square too */
-.media-item iframe, 
-.media-item video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    margin-top: 0; /* Important: Removes the default gap so it fits the square perfectly */
+.media-item iframe, .media-item video {
+    width: 100%; height: 100%; object-fit: cover; margin-top: 0;
 }
+.media-item img:hover { transform: scale(1.05); }
+.media-single img { max-width: 100%; border: 1px solid white; }
 
-.media-item img:hover {
-    transform: scale(1.05);
-}
-
-/* Single image view styling fallback */
-.media-single img {
-    max-width: 100%;
-    border: 1px solid white;
-}
-
-/* --- MARKDOWN STYLES (Overrides) --- */
+/* --- MARKDOWN STYLES --- */
 .markdown-body h1, .markdown-body h2, .markdown-body h3 {
-    margin-top: 10px;
-    margin-bottom: 5px;
-    border-bottom: 1px dashed #444;
-    padding-bottom: 2px;
+    margin-top: 10px; margin-bottom: 5px; border-bottom: 1px dashed #444; padding-bottom: 2px;
 }
-
-.markdown-body ul, .markdown-body ol {
-    padding-left: 20px;
-    margin: 5px 0;
-}
-
+.markdown-body ul, .markdown-body ol { padding-left: 20px; margin: 5px 0; }
 .markdown-body blockquote {
-    border-left: 3px solid white;
-    margin: 5px 0;
-    padding-left: 10px;
-    color: #aaa;
-    background: #111;
+    border-left: 3px solid white; margin: 5px 0; padding-left: 10px;
+    color: #aaa; background: #111;
 }
-
 .markdown-body code {
-    background: #222;
-    padding: 2px 4px;
-    font-family: monospace;
-    font-size: 0.9em;
-    border: 1px solid #444;
+    background: #222; padding: 2px 4px; font-family: monospace;
+    font-size: 0.9em; border: 1px solid #444;
 }
-
 .markdown-body pre {
-    background: #111;
-    padding: 10px;
-    border: 1px solid #444;
-    overflow-x: auto;
+    background: #111; padding: 10px; border: 1px solid #444; overflow-x: auto;
 }
-.markdown-body pre code {
-    background: transparent;
-    border: none;
-    padding: 0;
-}
+.markdown-body pre code { background: transparent; border: none; padding: 0; }
