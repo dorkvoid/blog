@@ -809,12 +809,10 @@ function addPostToDOM(post) {
         metaContent += `<span class="edited-ts">(edited ${timeAgo(editDate)})</span>`;
     }
 
-    // --- MARKDOWN & TEXT PROCESSING ---
-    // 1. Configure Marked to treat line breaks as <br>
-    marked.setOptions({ breaks: true, gfm: true });
-
-    // 2. Parse Markdown -> HTML
-    let rawHTML = marked.parse(post.text);
+  // --- MARKDOWN & TEXT PROCESSING ---
+    
+    // FIXED: We pass { breaks: true } directly here to force newlines to work
+    let rawHTML = marked.parse(post.text, { breaks: true, gfm: true });
 
     // 3. Sanitize (Security)
     let safeHTML = DOMPurify.sanitize(rawHTML);
