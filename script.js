@@ -462,9 +462,27 @@ function insertTag(tagStart, tagEnd) {
     textInput.selectionEnd = end + tagStart.length;
 }
 
+const fmtHeader = document.getElementById('fmtHeader');
+const fmtQuote = document.getElementById('fmtQuote');
+const fmtLink = document.getElementById('fmtLink');
+const fmtCode = document.getElementById('fmtCode');
+const fmtList = document.getElementById('fmtList');
+
+// Existing logic
 fmtBold.onclick = () => insertTag("**", "**");
 fmtItalic.onclick = () => insertTag("*", "*");
 fmtSpoiler.onclick = () => insertTag("||", "||");
+
+// NEW MARKDOWN LOGIC
+fmtHeader.onclick = () => insertTag("### ", ""); // Adds a header
+fmtQuote.onclick = () => insertTag("> ", "");     // Adds a blockquote
+fmtCode.onclick = () => insertTag("`", "`");      // Adds code block
+fmtList.onclick = () => insertTag("- ", "");      // Adds a list item
+fmtLink.onclick = () => {
+    // Links are special: [Title](URL)
+    const url = prompt("Enter URL:");
+    if (url) insertTag("[", `](${url})`);
+};
 
 postBtn.addEventListener('click', async function() {
     if (!auth.currentUser) return showToast("LOGIN REQUIRED");

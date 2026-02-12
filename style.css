@@ -625,7 +625,17 @@ body.admin-mode .admin-buttons { display: block !important; }
 @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
 .formatting-bar { display: flex; gap: 5px; margin-bottom: 5px; }
-.formatting-bar button { width: 30px; height: 30px; padding: 0; font-size: 0.9em; border: 1px solid white; background: black; color: white; }
+.formatting-bar button { 
+    width: 35px; /* Slightly wider to fit icons */
+    height: 30px; 
+    padding: 0; 
+    font-size: 0.9em; 
+    border: 1px solid white; 
+    background: black; 
+    color: white; 
+    cursor: pointer;
+    margin-right: 2px; /* Adds tiny gap between buttons */
+}
 .formatting-bar button:hover { background: white; color: black; }
 .formatting-bar button:hover::before, .formatting-bar button:hover::after { content: none; }
 

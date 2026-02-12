@@ -23,19 +23,25 @@
 
     <div class="container">
         <div class="input-area">
-            <div class="formatting-bar">
-                <button id="fmtBold" title="Bold">B</button>
-                <button id="fmtItalic" title="Italic">I</button>
-                <button id="fmtSpoiler" title="Spoiler">||</button>
-                
-                <div class="tag-selector">
-                    <span class="tag-toggle" data-tag="ART">ART</span>
-                    <span class="tag-toggle" data-tag="DEV">DEV</span>
-                    <span class="tag-toggle" data-tag="LOG">LOG</span>
-                    <span class="tag-toggle" data-tag="CLASS">CLASS</span>
-                    <span class="tag-toggle" data-tag="MUSIC">MUSIC</span>
-                </div>
-            </div>
+<div class="formatting-bar">
+    <button id="fmtBold" title="Bold">B</button>
+    <button id="fmtItalic" title="Italic">I</button>
+    <button id="fmtSpoiler" title="Spoiler">||</button>
+    
+    <button id="fmtHeader" title="Header">H1</button>
+    <button id="fmtQuote" title="Quote">“</button>
+    <button id="fmtLink" title="Link">🔗</button>
+    <button id="fmtCode" title="Code">&lt;/&gt;</button>
+    <button id="fmtList" title="List">☰</button>
+    
+    <div class="tag-selector">
+        <span class="tag-toggle" data-tag="ART">ART</span>
+        <span class="tag-toggle" data-tag="DEV">DEV</span>
+        <span class="tag-toggle" data-tag="LOG">LOG</span>
+        <span class="tag-toggle" data-tag="CLASS">CLASS</span>
+        <span class="tag-toggle" data-tag="MUSIC">MUSIC</span>
+    </div>
+</div>
 
             <textarea id="postText" placeholder="Write something..."></textarea>
             <input type="text" id="imageUrl" placeholder="Media URL (YouTube, Spotify, Image)...">
