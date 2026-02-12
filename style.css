@@ -362,11 +362,15 @@ button:active { transform: translateY(2px); }
 }
 
 .post-content p {
-    margin: 0;
+    margin-bottom: 15px; /* Adds breathing room between paragraphs */
     line-height: 1.4;
     white-space: pre-wrap; 
     word-break: break-word; 
     overflow-wrap: break-word;
+}
+/* Remove margin from the very last paragraph so it fits the box */
+.post-content p:last-child {
+    margin-bottom: 0;
 }
 
 .post-text b, .post-text strong { color: #fff; font-weight: bold; text-shadow: 0 0 2px white; }
@@ -580,26 +584,32 @@ body.admin-mode .admin-buttons { display: block !important; }
 .media-row { display: flex; gap: 10px; margin-bottom: 10px; }
 #imageUrl { margin-bottom: 0; flex-grow: 1; }
 #addMediaBtn { 
-    width: 60px;
-    font-size: 3rem;      /* Much bigger */
-    font-weight: normal;  /* Removes bold */
-    line-height: 0.9;     /* Centers the large + vertically */
-    padding-bottom: 5px;  /* Slight nudge to make it perfect */
-    background: #333; 
-    color: white; 
-    border: 1px solid white; 
-    cursor: pointer; 
+    width: 32px;
+    height: 32px;
+    
+    /* Default Image */
+    background: url('images/plusBtn.png') no-repeat center center;
+    background-size: contain;
+    
+    border: none;
+    cursor: pointer;
+    
+    /* Ensure no text or padding messes up the image */
+    font-size: 0; 
+    padding: 0;
+    margin-left: 5px; /* Optional: adds a tiny gap from the input box */
 }
 
+/* Hover Image */
 #addMediaBtn:hover { 
-    background: white; 
-    color: black; 
+    background-image: url('images/plusBtnHover.png');
 }
 
-/* Kill the brackets on hover */
-#addMediaBtn:hover::before, 
-#addMediaBtn:hover::after { 
-    content: none !important; 
+/* Safety: Ensures no global button styles (brackets/bold) interfere */
+#addMediaBtn::before, 
+#addMediaBtn::after { 
+    display: none !important; 
+    content: none !important;
 }
 
 #media-stack-display {
