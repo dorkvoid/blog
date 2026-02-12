@@ -579,8 +579,27 @@ body.admin-mode .admin-buttons { display: block !important; }
 /* --- NEW MEDIA STACK --- */
 .media-row { display: flex; gap: 10px; margin-bottom: 10px; }
 #imageUrl { margin-bottom: 0; flex-grow: 1; }
-#addMediaBtn { width: 50px; background: #333; color: white; border: 1px solid white; font-weight: bold; cursor: pointer; }
-#addMediaBtn:hover { background: white; color: black; }
+#addMediaBtn { 
+    width: 60px;          /* Wider */
+    font-size: 1.5em;     /* Bigger Plus Sign */
+    line-height: 1;       /* Centers the plus sign vertically */
+    background: #333; 
+    color: white; 
+    border: 1px solid white; 
+    font-weight: bold; 
+    cursor: pointer; 
+}
+
+#addMediaBtn:hover { 
+    background: white; 
+    color: black; 
+}
+
+/* KILL THE BRACKETS for this button */
+#addMediaBtn:hover::before, 
+#addMediaBtn:hover::after { 
+    content: none !important; 
+}
 
 #media-stack-display {
     display: flex; flex-wrap: wrap; gap: 10px;
