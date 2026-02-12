@@ -537,7 +537,16 @@ body.admin-mode .admin-buttons { display: block !important; }
 .modal-buttons button:hover { background: white; color: black; }
 
 #lightbox-img { max-width: 90%; max-height: 90%; border: 2px solid white; }
-#lightbox-close { position: absolute; top: 20px; right: 30px; color: white; font-size: 1.5em; font-weight: bold; }
+#lightbox-close { 
+    position: absolute; 
+    top: 20px; 
+    right: 30px; 
+    color: white; 
+    font-size: 1.5em; 
+    font-weight: bold; 
+    z-index: 10005; /* FORCE ON TOP OF IMAGE */
+    cursor: pointer;
+}
 #lightbox-close:hover { color: red; }
 
 #sound-toggle {

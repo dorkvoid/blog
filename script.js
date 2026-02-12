@@ -967,32 +967,34 @@ function startEdit(id, text, image, tags, images) {
     });
 }
 
-// Lightbox Logic
+// --- LIGHTBOX LOGIC ---
+
+// 1. Close on Escape Key
 document.addEventListener('keydown', (e) => {
-    if (e.key === "Escape") lightboxModal.classList.add('hidden');
+    if (e.key === "Escape") {
+        lightboxModal.classList.add('hidden');
+    }
 });
 
-// Close Button
-lightboxClose.addEventListener('click', () => {
-    playSound('click');
-    lightboxModal.classList.add('hidden');
-});
+// 2. Close Button (Click)
+if (lightboxClose) {
+    lightboxClose.addEventListener('click', (e) => {
+        e.stopPropagation(); // Don't trigger background click
+        lightboxModal.classList.add('hidden'); // Hide FIRST
+        playSound('click'); // Sound SECOND
+    });
+}
 
-lightboxModal.addEventListener('click', (e) => {
-    if(e.target === lightboxModal) lightboxModal.classList.add('hidden');
-});
-
-// Back to Top
-window.addEventListener('scroll', () => {
-    if (window.scrollY > 300) backToTopBtn.classList.remove('hidden');
-    else backToTopBtn.classList.add('hidden');
-});
-
-// RESTORED: Back to Top Click Sound
-backToTopBtn.addEventListener('click', () => {
-    playSound('click'); // Added Sound
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-});
+// 3. Background Click
+if (lightboxModal) {
+    lightboxModal.addEventListener('click', (e) => {
+        // Only close if clicking the black background, not the image
+        if(e.target === lightboxModal) {
+            lightboxModal.classList.add('hidden');
+            // No sound needed for background click, usually feels cleaner
+        }
+    });
+}
 
 // --- 12. GLOBAL HELPERS ---
 window.toggleSearchTag = function(tag) {
