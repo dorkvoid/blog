@@ -470,9 +470,13 @@ postBtn.addEventListener('click', async function() {
     if (!auth.currentUser) return showToast("LOGIN REQUIRED");
 
     const text = textInput.value;
-    const img = imageInput.value;
+    const rawImgInput = imageInput.value;
     
-    if (text === "" && img === "") return;
+    // SPLIT STRING BY COMMA TO MAKE ARRAY
+    // Removes empty spaces and empty entries
+    const imageArray = rawImgInput.split(',').map(s => s.trim()).filter(s => s);
+
+    if (text === "" && imageArray.length === 0) return;
 
     postBtn.disabled = true;
     postBtn.innerText = "SENDING...";
@@ -481,7 +485,7 @@ postBtn.addEventListener('click', async function() {
         if (editingPostId) {
             await updateDoc(doc(db, "posts", editingPostId), { 
                 text: text, 
-                image: img,
+                images: imageArray, // SAVING AS ARRAY NOW
                 tags: selectedTags, 
                 editedTimestamp: serverTimestamp()
             });
@@ -491,10 +495,10 @@ postBtn.addEventListener('click', async function() {
         } else {
             await addDoc(collection(db, "posts"), {
                 text: text,
-                image: img,
+                images: imageArray, // SAVING AS ARRAY NOW
                 tags: selectedTags, 
-                timestamp: serverTimestamp(),       // Used for Sorting
-                actualTimestamp: serverTimestamp(), // NEW: Used for Display
+                timestamp: serverTimestamp(),
+                actualTimestamp: serverTimestamp(),
                 pinned: false 
             });
             showToast("POST SUCCESSFUL");
@@ -653,7 +657,6 @@ async function handleDrop(e) {
 }
 
 // --- 11. DISPLAY FUNCTION ---
-// --- 11. DISPLAY FUNCTION ---
 function addPostToDOM(post) {
     const id = post.id;
     const postDiv = document.createElement('div');
@@ -687,24 +690,43 @@ function addPostToDOM(post) {
         tagsHTML += `</div>`;
     }
 
-    // Media HTML
+    // --- MULTI-MEDIA LOGIC ---
     let mediaHTML = "";
-    if (post.image) {
-        const url = post.image;
-        const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
-        const spMatch = url.match(/open\.spotify\.com\/(track|album|playlist)\/([a-zA-Z0-9]+)/);
+    
+    // COMBINE OLD 'image' STRING AND NEW 'images' ARRAY
+    let contentList = [];
+    if (post.images && Array.isArray(post.images)) {
+        contentList = post.images;
+    } else if (post.image) {
+        contentList = [post.image];
+    }
+
+    if (contentList.length > 0) {
+        // If more than 1 image, use a grid layout, otherwise single view
+        const gridClass = contentList.length > 1 ? "media-gallery" : "media-single";
         
-        if (ytMatch) {
-            mediaHTML = `<iframe class="media-embed" src="https://www.youtube.com/embed/${ytMatch[1]}" frameborder="0" allowfullscreen></iframe>`;
-        } else if (spMatch) {
-            mediaHTML = `<iframe class="media-embed" src="https://open.spotify.com/embed/${spMatch[1]}/${spMatch[2]}" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>`;
-        } else {
-            const isVideo = url.match(/\.(mp4|webm|ogg|mov)/i);
-            const isAudio = url.match(/\.(mp3|wav)/i);
-            if (isVideo) mediaHTML = `<video src="${url}" controls loop playsinline class="post-media"></video>`;
-            else if (isAudio) mediaHTML = `<audio src="${url}" controls class="post-media"></audio>`;
-            else mediaHTML = `<img src="${url}" class="post-image click-to-zoom">`;
-        }
+        mediaHTML = `<div class="${gridClass}">`;
+        
+        contentList.forEach(url => {
+            const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+            const spMatch = url.match(/open\.spotify\.com\/(track|album|playlist)\/([a-zA-Z0-9]+)/);
+            
+            if (ytMatch) {
+                mediaHTML += `<div class="media-item"><iframe class="media-embed" src="https://www.youtube.com/embed/${ytMatch[1]}" frameborder="0" allowfullscreen></iframe></div>`;
+            } else if (spMatch) {
+                // FIXED: Now uses correct ${} syntax and the official open.spotify.com embed URL
+                mediaHTML += `<div class="media-item"><iframe class="media-embed" src="https://open.spotify.com/embed/${spMatch[1]}/${spMatch[2]}" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe></div>`;
+            } else {
+                const isVideo = url.match(/\.(mp4|webm|ogg|mov)/i);
+                const isAudio = url.match(/\.(mp3|wav)/i);
+                
+                if (isVideo) mediaHTML += `<div class="media-item"><video src="${url}" controls loop playsinline class="post-media"></video></div>`;
+                else if (isAudio) mediaHTML += `<div class="media-item"><audio src="${url}" controls class="post-media"></audio></div>`;
+                else mediaHTML += `<div class="media-item"><img src="${url}" class="post-image click-to-zoom"></div>`;
+            }
+        });
+        
+        mediaHTML += `</div>`;
     }
 
     // --- DATE LOGIC ---
@@ -712,19 +734,24 @@ function addPostToDOM(post) {
     const postDate = rawDate ? rawDate.toDate() : new Date();
     const editDate = post.editedTimestamp ? post.editedTimestamp.toDate() : null;
 
-    // Build Timestamp HTML (Clean - No Button Here anymore)
     let metaContent = `<span class="main-ts">${timeAgo(postDate)}</span>`;
     if (editDate) {
         metaContent += `<span class="edited-ts">(edited ${timeAgo(editDate)})</span>`;
     }
 
-    // Text Formatting
-    let safeText = post.text
-        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') 
-        .replace(/\*(.*?)\*/g, '<i>$1</i>')   
-        .replace(/\|\|(.*?)\|\|/g, '<span class="spoiler" onclick="this.classList.toggle(\'revealed\')">$1</span>'); 
-    
-    safeText = safeText.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+    // --- MARKDOWN & TEXT PROCESSING ---
+    // 1. Configure Marked to treat line breaks as <br>
+    marked.setOptions({ breaks: true, gfm: true });
+
+    // 2. Parse Markdown -> HTML
+    let rawHTML = marked.parse(post.text);
+
+    // 3. Sanitize (Security)
+    let safeHTML = DOMPurify.sanitize(rawHTML);
+
+    // 4. Custom Spoiler Tag Logic (Markdown doesn't usually support ||spoiler||)
+    // We run this regex AFTER markdown conversion on the HTML.
+    safeHTML = safeHTML.replace(/\|\|(.*?)\|\|/g, '<span class="spoiler" onclick="this.classList.toggle(\'revealed\')">$1</span>');
 
     postDiv.innerHTML = `
         ${dragHTML}
@@ -738,7 +765,7 @@ function addPostToDOM(post) {
         <div class="post-content">
             <img src="images/plxeyes.png" class="avatar-icon">
             <div class="post-text-container">
-                <p class="post-text">${safeText}</p>
+                <div class="post-text markdown-body">${safeHTML}</div>
             </div>
         </div>
         ${mediaHTML}
@@ -752,14 +779,15 @@ function addPostToDOM(post) {
 
     feed.appendChild(postDiv);
 
-    // Timestamp Toggle Listener
+    // --- RE-ATTACH LISTENERS ---
+    
+    // Timestamp Toggle
     const tsWrapper = postDiv.querySelector('.timestamp-wrapper');
     if (tsWrapper) {
         tsWrapper.addEventListener('click', () => {
             playSound('click');
             const currentText = tsWrapper.innerText;
             const isRelative = currentText.includes("ago") || currentText.includes("Just now");
-
             if (isRelative) {
                 let exactHTML = `<span class="main-ts">${postDate.toLocaleString()}</span>`;
                 if (editDate) exactHTML += `<span class="edited-ts">(edited ${editDate.toLocaleString()})</span>`;
@@ -772,24 +800,17 @@ function addPostToDOM(post) {
         });
     }
 
-    // UPDATED: Permalink Click Logic (Now targets the footer button)
+    // Permalink
     const linkBtn = postDiv.querySelector('.permalink-btn');
     if (linkBtn) {
-        linkBtn.addEventListener('click', (e) => {
+        linkBtn.addEventListener('click', () => {
             playSound('click');
             const url = `${window.location.origin}${window.location.pathname}?id=${id}`;
-            navigator.clipboard.writeText(url).then(() => {
-                showToast("LINK COPIED TO CLIPBOARD");
-            });
+            navigator.clipboard.writeText(url).then(() => showToast("LINK COPIED"));
         });
     }
 
-    // Add hover sounds
-    postDiv.querySelectorAll('.post-tag, .permalink-btn').forEach(el => {
-        el.addEventListener('mouseenter', () => playSound('hover'));
-    });
-
-    // Truncation Logic
+    // Truncate logic needs to check the markdown container
     const textContainer = postDiv.querySelector('.post-text-container');
     if (textContainer.scrollHeight > 150) {
         textContainer.classList.add('truncated');
@@ -805,7 +826,7 @@ function addPostToDOM(post) {
         postDiv.insertBefore(expandBtn, postDiv.querySelector('.post-content').nextSibling);
     }
 
-    // Pin Button Logic
+    // Pin logic
     const pinBtn = postDiv.querySelector('.pin-icon');
     if (pinBtn && isAdmin) {
         pinBtn.addEventListener('click', async () => {
@@ -813,15 +834,14 @@ function addPostToDOM(post) {
             const newStatus = !post.pinned;
             if (newStatus) {
                 const existingPin = allPosts.find(p => p.pinned && p.id !== id);
-                if (existingPin) {
-                    await updateDoc(doc(db, "posts", existingPin.id), { pinned: false });
-                }
+                if (existingPin) await updateDoc(doc(db, "posts", existingPin.id), { pinned: false });
             }
             await updateDoc(doc(db, "posts", id), { pinned: newStatus });
             showToast(newStatus ? "POST PINNED" : "POST UNPINNED");
         });
     }
 
+    // Edit/Delete
     if (isAdmin) {
         const handle = postDiv.querySelector('.drag-handle');
         if (handle) handle.addEventListener('dragstart', handleDragStart);
@@ -829,7 +849,8 @@ function addPostToDOM(post) {
         const btnContainer = postDiv.querySelector('.admin-buttons');
         const editBtn = document.createElement('button');
         editBtn.innerText = "EDIT";
-        editBtn.onclick = () => startEdit(id, post.text, post.image, post.tags);
+        // NOTE: We pass the NEW images array to startEdit here
+        editBtn.onclick = () => startEdit(id, post.text, post.image, post.tags, post.images);
         btnContainer.appendChild(editBtn);
 
         const deleteBtn = document.createElement('button');
@@ -838,22 +859,28 @@ function addPostToDOM(post) {
         btnContainer.appendChild(deleteBtn);
     }
     
-    // Lightbox
-    const imgElement = postDiv.querySelector('.click-to-zoom');
-    if(imgElement) {
-        imgElement.addEventListener('click', () => {
+    // Lightbox (Loop through all images in the gallery)
+    const imgElements = postDiv.querySelectorAll('.click-to-zoom');
+    imgElements.forEach(img => {
+        img.addEventListener('click', () => {
             playSound('click');
-            lightboxImg.src = post.image;
+            lightboxImg.src = img.src;
             lightboxModal.classList.remove('hidden');
         });
-    }
+    });
 }
 
-function startEdit(id, text, image, tags) {
+function startEdit(id, text, image, tags, images) {
     textInput.value = text;
-    imageInput.value = image;
     
-    // NEW: Force resize immediately to fit the existing text
+    // HANDLE OLD VS NEW DATA
+    // If it has an 'images' array, join it. If it has old 'image' string, use that.
+    if (images && images.length > 0) {
+        imageInput.value = images.join(', ');
+    } else {
+        imageInput.value = image || '';
+    }
+    
     textInput.style.height = 'auto'; 
     textInput.style.height = (textInput.scrollHeight) + 'px';
     
@@ -862,7 +889,6 @@ function startEdit(id, text, image, tags) {
     if(cancelBtn) cancelBtn.classList.remove('hidden');
     window.scrollTo(0, 0);
     
-    // Load Tags... (rest of the function is fine)
     selectedTags = tags || [];
     tagToggles.forEach(t => {
         if(selectedTags.includes(t.dataset.tag)) t.classList.add('selected');
