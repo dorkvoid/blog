@@ -760,7 +760,7 @@ function addPostToDOM(post) {
         tagsHTML += `</div>`;
     }
 
-    // --- MULTI-MEDIA LOGIC ---
+    // --- MULTI-MEDIA LOGIC (UPDATED FOR WINDOWS 98 PLAYER) ---
     let mediaHTML = "";
     
     // COMBINE OLD 'image' STRING AND NEW 'images' ARRAY
@@ -780,19 +780,38 @@ function addPostToDOM(post) {
         contentList.forEach(url => {
             const ytMatch = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
             const spMatch = url.match(/open\.spotify\.com\/(track|album|playlist)\/([a-zA-Z0-9]+)/);
-            
+            const isVideo = url.match(/\.(mp4|webm|ogg|mov)/i);
+            const isAudio = url.match(/\.(mp3|wav)/i);
+
+            // 1. YOUTUBE -> Button
             if (ytMatch) {
-                mediaHTML += `<div class="media-item"><iframe class="media-embed" src="https://www.youtube.com/embed/${ytMatch[1]}" frameborder="0" allowfullscreen></iframe></div>`;
-            } else if (spMatch) {
-                // FIXED: USES ${} AND CORRECT URL
-                mediaHTML += `<div class="media-item"><iframe class="media-embed" src="https://open.spotify.com/embed/${spMatch[1]}/${spMatch[2]}" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe></div>`;
-            } else {
-                const isVideo = url.match(/\.(mp4|webm|ogg|mov)/i);
-                const isAudio = url.match(/\.(mp3|wav)/i);
-                
-                if (isVideo) mediaHTML += `<div class="media-item"><video src="${url}" controls loop playsinline class="post-media"></video></div>`;
-                else if (isAudio) mediaHTML += `<div class="media-item"><audio src="${url}" controls class="post-media"></audio></div>`;
-                else mediaHTML += `<div class="media-item"><img src="${url}" class="post-image click-to-zoom"></div>`;
+                mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
+                    <button onclick="window.launchWin98('https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1', 'video')" class="retro-btn">[ ▶ WATCH VIDEO ]</button>
+                </div>`;
+            } 
+            // 2. SPOTIFY -> Button
+            else if (spMatch) {
+                // Construct the Proxy URL correctly using backticks
+                const spUrl = `https://open.spotify.com/embed/$${spMatch[1]}/${spMatch[2]}`;
+                mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
+                    <button onclick="window.launchWin98('${spUrl}', 'audio')" class="retro-btn">[ ♫ PLAY TRACK ]</button>
+                </div>`;
+            } 
+            // 3. MP4 -> Button
+            else if (isVideo) {
+                mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
+                    <button onclick="window.launchWin98('${url}', 'video-file')" class="retro-btn">[ ▶ WATCH CLIP ]</button>
+                </div>`;
+            } 
+            // 4. MP3 -> Button
+            else if (isAudio) {
+                mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
+                    <button onclick="window.launchWin98('${url}', 'audio-file')" class="retro-btn">[ ♫ PLAY AUDIO ]</button>
+                </div>`;
+            } 
+            // 5. IMAGES -> Standard Display (Still in feed)
+            else {
+                mediaHTML += `<div class="media-item"><img src="${url}" class="post-image click-to-zoom"></div>`;
             }
         });
         
@@ -1010,3 +1029,78 @@ window.toggleSearchTag = function(tag) {
     // Trigger the search logic immediately
     searchInput.dispatchEvent(new Event('input'));
 };
+
+// --- WINDOWS 98 PLAYER LOGIC ---
+const win98Box = document.getElementById('win98-box');
+const win98Content = document.getElementById('win98-content');
+const win98Close = document.getElementById('win98-close');
+const win98Title = document.querySelector('.win98-title-text');
+
+// Global launcher function
+window.launchWin98 = function(url, type) {
+    playSound('click');
+    win98Box.classList.remove('hidden');
+    
+    // Reset Mode
+    win98Box.classList.remove('video-mode');
+    win98Content.innerHTML = ""; // Clear previous
+
+    if (type === 'video') {
+        // YouTube
+        win98Box.classList.add('video-mode');
+        win98Title.innerText = "Video Player";
+        win98Content.innerHTML = `<iframe src="${url}" height="300" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+    } 
+    else if (type === 'video-file') {
+        // MP4
+        win98Box.classList.add('video-mode');
+        win98Title.innerText = "Movie Player";
+        win98Content.innerHTML = `<video src="${url}" controls autoplay height="300" style="background:black;"></video>`;
+    }
+    else if (type === 'audio') {
+        // Spotify
+        win98Title.innerText = "Winamp";
+        // Spotify embed needs height 80 or 152
+        win98Content.innerHTML = `<iframe src="${url}" height="80" allowtransparency="true" allow="encrypted-media"></iframe>`;
+    }
+    else if (type === 'audio-file') {
+        // MP3
+        win98Title.innerText = "Audio Player";
+        // Standard HTML5 Audio
+        win98Content.innerHTML = `<audio src="${url}" controls autoplay style="width:100%; margin:0;"></audio>`;
+    }
+}
+
+// Close Button
+if(win98Close) {
+    win98Close.addEventListener('click', () => {
+        playSound('click');
+        win98Box.classList.add('hidden');
+        win98Content.innerHTML = ""; // Kills the audio/video instantly
+    });
+}
+
+// DRAG LOGIC
+const dragHandle = document.getElementById('win98-drag-handle');
+let isDragging = false;
+let offsetX, offsetY;
+
+if(dragHandle) {
+    dragHandle.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        // Calculate where inside the bar we clicked
+        offsetX = e.clientX - win98Box.offsetLeft;
+        offsetY = e.clientY - win98Box.offsetTop;
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            win98Box.style.left = `${e.clientX - offsetX}px`;
+            win98Box.style.top = `${e.clientY - offsetY}px`;
+        }
+    });
+
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
+}

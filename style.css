@@ -729,3 +729,107 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
     background: #111; padding: 10px; border: 1px solid #444; overflow-x: auto;
 }
 .markdown-body pre code { background: transparent; border: none; padding: 0; }
+
+
+/* --- WINDOWS 98 MEDIA PLAYER --- */
+#win98-box {
+    position: fixed;
+    top: 100px;
+    left: 20px;
+    background-color: #c0c0c0; /* Classic Grey */
+    border-top: 2px solid #fff;
+    border-left: 2px solid #fff;
+    border-right: 2px solid #000;
+    border-bottom: 2px solid #000;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+    z-index: 10010; /* Above everything */
+    width: 300px; /* Default Audio Width */
+    display: flex;
+    flex-direction: column;
+    padding: 2px;
+}
+
+/* Video Mode is wider */
+#win98-box.video-mode {
+    width: 400px;
+    resize: both; 
+    overflow: auto;
+}
+
+.win98-title-bar {
+    background: linear-gradient(90deg, #000080, #1084d0); /* Classic Navy Blue */
+    color: white;
+    font-family: 'Nope8', sans-serif;
+    padding: 2px 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: move; /* Shows the grab hand */
+    margin-bottom: 2px;
+}
+
+.win98-title-text {
+    font-weight: bold;
+    font-size: 0.8em;
+    pointer-events: none; 
+}
+
+#win98-close {
+    width: 16px;
+    height: 14px;
+    background: #c0c0c0;
+    border-top: 1px solid #fff;
+    border-left: 1px solid #fff;
+    border-right: 1px solid #000;
+    border-bottom: 1px solid #000;
+    font-size: 10px;
+    line-height: 10px;
+    padding: 0;
+    color: black;
+    font-family: sans-serif; 
+    font-weight: bold;
+    cursor: pointer;
+}
+#win98-close:active {
+    border-top: 1px solid #000;
+    border-left: 1px solid #000;
+    border-right: 1px solid #fff;
+    border-bottom: 1px solid #fff;
+}
+
+#win98-content {
+    background: black;
+    border-top: 2px solid #000;
+    border-left: 2px solid #000;
+    border-right: 2px solid #fff;
+    border-bottom: 2px solid #fff;
+    min-height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Make iframes and videos fill the content box */
+#win98-content iframe, 
+#win98-content video,
+#win98-content audio {
+    width: 100%;
+    border: none;
+    display: block;
+}
+
+/* Style for the buttons that appear in the feed */
+.retro-btn {
+    background: black;
+    color: white;
+    border: 1px dashed white;
+    font-family: 'Nope8', sans-serif;
+    cursor: pointer;
+    padding: 10px;
+    width: 100%;
+    text-align: center;
+}
+.retro-btn:hover {
+    background: white;
+    color: black;
+}
