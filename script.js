@@ -760,7 +760,7 @@ function addPostToDOM(post) {
         tagsHTML += `</div>`;
     }
 
-    // --- MULTI-MEDIA LOGIC (UPDATED FOR WINDOWS 98 PLAYER) ---
+    // --- MULTI-MEDIA LOGIC (UPDATED FOR HOVER PREVIEWS) ---
     let mediaHTML = "";
     
     // COMBINE OLD 'image' STRING AND NEW 'images' ARRAY
@@ -783,30 +783,48 @@ function addPostToDOM(post) {
             const isVideo = url.match(/\.(mp4|webm|ogg|mov)/i);
             const isAudio = url.match(/\.(mp3|wav)/i);
 
-            // 1. YOUTUBE -> Button
+            // 1. YOUTUBE (With Thumbnail!)
             if (ytMatch) {
+                const thumb = `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg`;
                 mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
-                    <button onclick="window.launchWin98('https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1', 'video')" class="retro-btn">[ ▶ WATCH VIDEO ]</button>
+                    <button onclick="window.launchWin98('https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1', 'video')" 
+                            class="retro-btn" 
+                            data-thumb="${thumb}" 
+                            data-info="YouTube Video">
+                        [ ▶ WATCH VIDEO ]
+                    </button>
                 </div>`;
             } 
-            // 2. SPOTIFY -> Button
+            // 2. SPOTIFY
             else if (spMatch) {
                 // FIXED: Uses the official Spotify Embed URL and correct ${} syntax
                 const spUrl = `https://open.spotify.com/embed/${spMatch[1]}/${spMatch[2]}`;
                 mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
-                    <button onclick="window.launchWin98('${spUrl}', 'audio')" class="retro-btn">[ ♫ PLAY TRACK ]</button>
-                </div>`;
-            }
-            // 3. MP4 -> Button
-            else if (isVideo) {
-                mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
-                    <button onclick="window.launchWin98('${url}', 'video-file')" class="retro-btn">[ ▶ WATCH CLIP ]</button>
+                    <button onclick="window.launchWin98('${spUrl}', 'audio')" 
+                            class="retro-btn" 
+                            data-info="Spotify Track">
+                        [ ♫ PLAY TRACK ]
+                    </button>
                 </div>`;
             } 
-            // 4. MP3 -> Button
+            // 3. MP4
+            else if (isVideo) {
+                mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
+                    <button onclick="window.launchWin98('${url}', 'video-file')" 
+                            class="retro-btn" 
+                            data-info="Video File">
+                        [ ▶ WATCH CLIP ]
+                    </button>
+                </div>`;
+            } 
+            // 4. MP3
             else if (isAudio) {
                 mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
-                    <button onclick="window.launchWin98('${url}', 'audio-file')" class="retro-btn">[ ♫ PLAY AUDIO ]</button>
+                    <button onclick="window.launchWin98('${url}', 'audio-file')" 
+                            class="retro-btn" 
+                            data-info="Audio File">
+                        [ ♫ PLAY AUDIO ]
+                    </button>
                 </div>`;
             } 
             // 5. IMAGES -> Standard Display (Still in feed)
@@ -1102,5 +1120,49 @@ if(dragHandle) {
 
     document.addEventListener('mouseup', () => {
         isDragging = false;
+    });
+}
+
+// --- HOVER PREVIEW LOGIC ---
+const previewBox = document.getElementById('media-preview');
+const previewImg = document.getElementById('preview-img');
+const previewText = document.getElementById('preview-text');
+
+if (previewBox) {
+    // 1. Mouse Enter: Show the box
+    document.addEventListener('mouseover', (e) => {
+        if (e.target.classList.contains('retro-btn')) {
+            const thumb = e.target.dataset.thumb;
+            const info = e.target.dataset.info;
+
+            // Setup Image
+            if (thumb) {
+                previewImg.src = thumb;
+                previewImg.classList.remove('hidden');
+            } else {
+                previewImg.classList.add('hidden');
+            }
+
+            // Setup Text
+            previewText.innerText = info || "Media Link";
+            
+            previewBox.classList.remove('hidden');
+        }
+    });
+
+    // 2. Mouse Move: Follow the cursor
+    document.addEventListener('mousemove', (e) => {
+        if (!previewBox.classList.contains('hidden')) {
+            // Offset slightly so it's not under the cursor
+            previewBox.style.left = (e.clientX + 15) + 'px';
+            previewBox.style.top = (e.clientY + 15) + 'px';
+        }
+    });
+
+    // 3. Mouse Leave: Hide the box
+    document.addEventListener('mouseout', (e) => {
+        if (e.target.classList.contains('retro-btn')) {
+            previewBox.classList.add('hidden');
+        }
     });
 }

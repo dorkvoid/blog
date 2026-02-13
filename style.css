@@ -847,3 +847,39 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
 #win98-close:hover::after { 
     content: none !important; 
 }
+
+/* --- HOVER PREVIEW TOOLTIP --- */
+#media-preview {
+    position: fixed;
+    pointer-events: none; /* Let clicks pass through it */
+    z-index: 10020; /* Top of the stack */
+    background: black;
+    border: 1px solid white;
+    padding: 4px;
+    max-width: 200px;
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.5); /* Retro drop shadow */
+}
+
+#preview-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border: 1px solid #333;
+    margin-bottom: 4px;
+}
+
+#preview-text {
+    font-size: 0.7em;
+    color: #ccc;
+    font-family: 'Nope8', sans-serif;
+    word-break: break-all;
+    text-align: center;
+}
+
+/* Hide helper */
+#media-preview.hidden {
+    display: none;
+}
+#preview-img.hidden {
+    display: none;
+}
