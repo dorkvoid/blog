@@ -590,31 +590,43 @@ body.admin-mode .admin-buttons { display: block !important; }
 @keyframes fadeIn { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
 
 /* --- NEW MEDIA STACK --- */
-.media-row { display: flex; gap: 10px; margin-bottom: 10px; }
+.media-row { 
+    display: flex; 
+    gap: 0; /* REMOVED GAP so they touch */
+    margin-bottom: 10px; 
+}
+
+/* Specific Rule for the URL Input to merge with button */
+#imageUrl { 
+    margin-bottom: 0; 
+    flex-grow: 1; 
+    border-right: none; /* Removes double border */
+}
+
 #addMediaBtn { 
-    width: 32px;
-    height: 32px;
+    /* SIZE & LAYOUT */
+    width: 50px;           /* Wide enough to hold the 32px icon comfortably */
+    height: auto;          /* STRETCH: Forces it to match the input box height exactly */
+    margin-left: -1px;     /* Merges the borders */
     
-    /* FALLBACK: Dark Grey background so you can see it if image fails */
-    background-color: #333; 
-    
-    /* The Image Layer */
-    background-image: url('images/postBtn.png');
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: contain;
-    
-    /* ADD BORDER BACK: This guarantees you can see the box */
+    /* APPEARANCE */
+    background-color: #000; 
     border: 1px solid white;
-    
     cursor: pointer;
+    
+    /* IMAGE HANDLING */
+    background-image: url('images/postBtn.png'); 
+    background-repeat: no-repeat;
+    background-position: center center; /* Centers the 32x32 image */
+    background-size: 32px; /* Forces the image to stay 32px */
+    
+    /* RESET */
     font-size: 0; 
     padding: 0;
-    margin-left: 5px; 
 }
 
 #addMediaBtn:hover { 
-    background-color: white; /* Light up on hover */
+    background-color: #222; 
     background-image: url('images/postBtnHover.png');
 }
 
