@@ -795,24 +795,26 @@ function addPostToDOM(post) {
                     </button>
                 </div>`;
             } 
-            // 2. SPOTIFY
+            // 2. SPOTIFY (Smart Label)
             else if (spMatch) {
-                // FIXED: Uses the official Spotify Embed URL and correct ${} syntax
+                // spMatch[1] contains "track", "album", or "playlist"
+                const type = spMatch[1].toUpperCase(); 
                 const spUrl = `https://open.spotify.com/embed/${spMatch[1]}/${spMatch[2]}`;
+                
                 mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
                     <button onclick="window.launchWin98('${spUrl}', 'audio')" 
                             class="retro-btn" 
-                            data-info="Spotify Track">
-                        [ ♫ PLAY TRACK ]
+                            data-info="SPOTIFY [ ${type} ]">
+                        [ ♫ PLAY ${type} ]
                     </button>
                 </div>`;
-            } 
+            }
             // 3. MP4
             else if (isVideo) {
                 mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
                     <button onclick="window.launchWin98('${url}', 'video-file')" 
                             class="retro-btn" 
-                            data-info="Video File">
+                            data-info="${url.split('/').pop()}"
                         [ ▶ WATCH CLIP ]
                     </button>
                 </div>`;
@@ -822,7 +824,7 @@ function addPostToDOM(post) {
                 mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
                     <button onclick="window.launchWin98('${url}', 'audio-file')" 
                             class="retro-btn" 
-                            data-info="Audio File">
+                            data-info="${url.split('/').pop()}"
                         [ ♫ PLAY AUDIO ]
                     </button>
                 </div>`;
