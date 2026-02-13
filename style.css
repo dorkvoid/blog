@@ -544,7 +544,7 @@ body.admin-mode .admin-buttons { display: block !important; }
     color: white; 
     font-size: 1.5em; 
     font-weight: bold; 
-    z-index: 10005; /* FORCE ON TOP OF IMAGE */
+    z-index: 10005; /* <--- THIS IS CRITICAL */
     cursor: pointer;
 }
 #lightbox-close:hover { color: red; }
@@ -596,22 +596,21 @@ body.admin-mode .admin-buttons { display: block !important; }
     width: 32px;
     height: 32px;
     
-    /* Default Image */
-    background: url('images/plusBtn.png') no-repeat center center;
+    /* FIXED: Changed 'plusBtn.png' to 'postBtn.png' to match your files */
+    background: url('images/postBtn.png') no-repeat center center;
     background-size: contain;
     
     border: none;
     cursor: pointer;
-    
-    /* Ensure no text or padding messes up the image */
     font-size: 0; 
     padding: 0;
-    margin-left: 5px; /* Optional: adds a tiny gap from the input box */
+    margin-left: 5px; 
 }
 
-/* Hover Image */
 #addMediaBtn:hover { 
-    background-image: url('images/plusBtnHover.png');
+    /* FIXED: Changed 'plusBtnHover.png' to 'postBtnHover.png' */
+    background-image: url('images/postBtnHover.png');
+    background-color: transparent;
 }
 
 /* Safety: Ensures no global button styles (brackets/bold) interfere */

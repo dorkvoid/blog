@@ -980,18 +980,17 @@ document.addEventListener('keydown', (e) => {
 if (lightboxClose) {
     lightboxClose.addEventListener('click', (e) => {
         e.stopPropagation(); // Don't trigger background click
-        lightboxModal.classList.add('hidden'); // Hide FIRST
-        playSound('click'); // Sound SECOND
+        lightboxModal.classList.add('hidden'); // ACTION 1: Hide immediately
+        playSound('click'); // ACTION 2: Play sound after
     });
 }
 
 // 3. Background Click
 if (lightboxModal) {
     lightboxModal.addEventListener('click', (e) => {
-        // Only close if clicking the black background, not the image
+        // Only close if clicking the black background (not the image)
         if(e.target === lightboxModal) {
             lightboxModal.classList.add('hidden');
-            // No sound needed for background click, usually feels cleaner
         }
     });
 }
