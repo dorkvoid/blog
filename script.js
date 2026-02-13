@@ -771,7 +771,7 @@ function addPostToDOM(post) {
         contentList = [post.image];
     }
 
-    if (contentList.length > 0) {
+if (contentList.length > 0) {
         // If more than 1 image, use a grid layout, otherwise single view
         const gridClass = contentList.length > 1 ? "media-gallery" : "media-single";
         
@@ -797,8 +797,9 @@ function addPostToDOM(post) {
             } 
             // 2. SPOTIFY (Smart Label)
             else if (spMatch) {
-                // spMatch[1] contains "track", "album", or "playlist"
-                const type = spMatch[1].toUpperCase(); 
+                // Determine type: TRACK, ALBUM, or PLAYLIST
+                const type = spMatch[1].toUpperCase();
+                // Construct the Proxy URL correctly using backticks
                 const spUrl = `https://open.spotify.com/embed/${spMatch[1]}/${spMatch[2]}`;
                 
                 mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
@@ -808,28 +809,30 @@ function addPostToDOM(post) {
                         [ ♫ PLAY ${type} ]
                     </button>
                 </div>`;
-            }
-            // 3. MP4
+            } 
+            // 3. MP4 (Smart Filename)
             else if (isVideo) {
+                const filename = url.split('/').pop(); // Grabs "video.mp4" from the end
                 mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
                     <button onclick="window.launchWin98('${url}', 'video-file')" 
                             class="retro-btn" 
-                            data-info="${url.split('/').pop()}"
+                            data-info="${filename}">
                         [ ▶ WATCH CLIP ]
                     </button>
                 </div>`;
             } 
-            // 4. MP3
+            // 4. MP3 (Smart Filename)
             else if (isAudio) {
+                const filename = url.split('/').pop(); // Grabs "song.mp3" from the end
                 mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
                     <button onclick="window.launchWin98('${url}', 'audio-file')" 
                             class="retro-btn" 
-                            data-info="${url.split('/').pop()}"
+                            data-info="${filename}">
                         [ ♫ PLAY AUDIO ]
                     </button>
                 </div>`;
             } 
-            // 5. IMAGES -> Standard Display (Still in feed)
+            // 5. IMAGES -> Standard Display
             else {
                 mediaHTML += `<div class="media-item"><img src="${url}" class="post-image click-to-zoom"></div>`;
             }

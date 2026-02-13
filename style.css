@@ -612,7 +612,7 @@ body.admin-mode .admin-buttons { display: block !important; }
     /* APPEARANCE */
     background-color: #000; 
     border: 1px solid white;
-    cursor: pointer;
+    cursor: url('images/link-select.png'), pointer; /* <--- ADDED THIS */
     
     /* IMAGE HANDLING */
     background-image: url('images/postBtn.png'); 
@@ -651,7 +651,7 @@ body.admin-mode .admin-buttons { display: block !important; }
     text-overflow: ellipsis; color: #ccc;
 }
 .chip-remove {
-    color: red; font-weight: bold; cursor: pointer;
+    color: red; font-weight: bold; cursor: url('images/link-select.png'), pointer;
     border-left: 1px solid #444; padding-left: 8px;
 }
 .chip-remove:hover { color: white; }
@@ -788,7 +788,7 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
     color: black;
     font-family: sans-serif; 
     font-weight: bold;
-    cursor: pointer;
+    cursor: url('images/link-select.png'), pointer;
 }
 #win98-close:active {
     border-top: 1px solid #000;
@@ -824,7 +824,7 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
     color: white;
     border: 1px dashed white;
     font-family: 'Nope8', sans-serif;
-    cursor: pointer;
+    cursor: url('images/link-select.png'), pointer;
     padding: 10px;
     width: 100%;
     text-align: center;
