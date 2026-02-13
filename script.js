@@ -791,12 +791,12 @@ function addPostToDOM(post) {
             } 
             // 2. SPOTIFY -> Button
             else if (spMatch) {
-                // Construct the Proxy URL correctly using backticks
-                const spUrl = `https://open.spotify.com/embed/$${spMatch[1]}/${spMatch[2]}`;
+                // FIXED: Uses the official Spotify Embed URL and correct ${} syntax
+                const spUrl = `https://open.spotify.com/embed/${spMatch[1]}/${spMatch[2]}`;
                 mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
                     <button onclick="window.launchWin98('${spUrl}', 'audio')" class="retro-btn">[ ♫ PLAY TRACK ]</button>
                 </div>`;
-            } 
+            }
             // 3. MP4 -> Button
             else if (isVideo) {
                 mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">

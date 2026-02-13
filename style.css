@@ -833,3 +833,17 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
     background: white;
     color: black;
 }
+
+/* --- FIX: REMOVE EXTRA BRACKETS ON HOVER --- */
+
+/* 1. For the [ ▶ WATCH VIDEO ] buttons */
+.retro-btn:hover::before, 
+.retro-btn:hover::after { 
+    content: none !important; 
+}
+
+/* 2. For the Win98 [X] Close button */
+#win98-close:hover::before, 
+#win98-close:hover::after { 
+    content: none !important; 
+}
