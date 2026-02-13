@@ -591,16 +591,22 @@ body.admin-mode .admin-buttons { display: block !important; }
 
 /* --- NEW MEDIA STACK --- */
 .media-row { display: flex; gap: 10px; margin-bottom: 10px; }
-#imageUrl { margin-bottom: 0; flex-grow: 1; }
 #addMediaBtn { 
     width: 32px;
     height: 32px;
     
-    /* FIXED: Changed 'plusBtn.png' to 'postBtn.png' to match your files */
-    background: url('images/postBtn.png') no-repeat center center;
+    /* FALLBACK: Dark Grey background so you can see it if image fails */
+    background-color: #333; 
+    
+    /* The Image Layer */
+    background-image: url('images/postBtn.png');
+    background-repeat: no-repeat;
+    background-position: center center;
     background-size: contain;
     
-    border: none;
+    /* ADD BORDER BACK: This guarantees you can see the box */
+    border: 1px solid white;
+    
     cursor: pointer;
     font-size: 0; 
     padding: 0;
@@ -608,9 +614,8 @@ body.admin-mode .admin-buttons { display: block !important; }
 }
 
 #addMediaBtn:hover { 
-    /* FIXED: Changed 'plusBtnHover.png' to 'postBtnHover.png' */
+    background-color: white; /* Light up on hover */
     background-image: url('images/postBtnHover.png');
-    background-color: transparent;
 }
 
 /* Safety: Ensures no global button styles (brackets/bold) interfere */
