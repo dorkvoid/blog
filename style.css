@@ -421,11 +421,11 @@ iframe[src*="spotify"] { aspect-ratio: auto; height: 152px; }
 
 .stat-icon {
     display: block;
-    width: 20px;
-    height: auto;
+    width: 32px;  /* Let it use its full native width */
+    height: 32px; /* Keep the height locked to 32px */
     image-rendering: pixelated;
     opacity: 0.7;
-    transform: translateY(1px); 
+    /* Removed the translateY because Flexbox automatically centers 32px icons perfectly */
 }
 
 #view-number { line-height: 1; display: inline-block; }
@@ -439,7 +439,7 @@ iframe[src*="spotify"] { aspect-ratio: auto; height: 152px; }
 
 @media (max-width: 500px) {
     #view-count { margin-right: 5px; }
-    .stat-icon { width: 20px; }
+    .stat-icon { width: 24px; height: 24px; } /* Scales down cleanly for phones */
 }
 
 .hidden { display: none !important; }
