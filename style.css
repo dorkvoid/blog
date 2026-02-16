@@ -39,7 +39,7 @@ body {
     background-color: black;
     color: white;
     font-family: 'DePixel', sans-serif; 
-    font-size: 18px;
+    font-size: 12px;
     image-rendering: pixelated; 
     -webkit-font-smoothing: none;
     padding-bottom: 100px;
@@ -882,4 +882,5 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
 }
 #preview-img.hidden {
     display: none;
+
 }
