@@ -8,11 +8,11 @@
     font-style: normal;
 }
 
-/* BOLD FONT */
+/* BOLD FONT - Treated as its own family to stop browser smearing */
 @font-face {
-    font-family: 'Pixelmix';
+    font-family: 'PixelmixBold';
     src: url('pixelmix_bold.ttf'); 
-    font-weight: bold;
+    font-weight: normal; /* CRITICAL: Set to normal */
     font-style: normal;
 }
 
@@ -50,8 +50,6 @@ html, body {
 body {
     background-color: black;
     color: white;
-    
-    /* UPDATED FAMILY */
     font-family: 'Pixelmix', sans-serif; 
     
     /* THE GOLDEN RULE: Multiples of 6 only (6, 12, 18, 24) */
@@ -132,9 +130,9 @@ body::before {
     border: none;
     padding: 10px;
     
-    /* UPDATED FAMILY */
     font-family: 'Pixelmix', sans-serif;
-    font-size: 12px; /* Consistent size */
+    font-size: 12px;
+    font-weight: normal;
     letter-spacing: 1px;
     
     outline: none;
@@ -187,9 +185,9 @@ textarea, input {
     margin-bottom: 10px;
     box-sizing: border-box;
     
-    /* UPDATED FAMILY */
     font-family: 'Pixelmix', sans-serif; 
-    font-size: 12px; /* Consistent size */
+    font-size: 12px; 
+    font-weight: normal;
     letter-spacing: 1px;
     
     cursor: text;
@@ -214,12 +212,13 @@ button {
     color: black;
     border: none;
     padding: 10px 20px;
-    font-weight: bold; /* Triggers Bold font */
+    
+    /* BOLD FIX: Use explicit bold family and normal weight */
+    font-family: 'PixelmixBold', sans-serif;
+    font-weight: normal; 
+    
     width: 100%;
     transition: all 0.2s ease;
-    
-    /* UPDATED FAMILY */
-    font-family: 'Pixelmix', sans-serif;
     font-size: 12px;
     letter-spacing: 1px;
 }
@@ -250,9 +249,8 @@ button:active { transform: translateY(2px); }
     padding: 2px 6px;
     font-size: 0.8em;
     user-select: none;
-    
-    /* UPDATED FAMILY */
     font-family: 'Pixelmix', sans-serif;
+    font-weight: normal;
 }
 
 .tag-toggle:hover {
@@ -279,9 +277,8 @@ button:active { transform: translateY(2px); }
     color: #ccc;
     font-size: 0.7em;
     padding: 2px 6px;
-    
-    /* UPDATED FAMILY */
     font-family: 'Pixelmix', sans-serif;
+    font-weight: normal;
 }
 
 .post-tag:hover {
@@ -346,9 +343,8 @@ button:active { transform: translateY(2px); }
     color: #444;
     user-select: none;
     transition: color 0.2s;
-    
-    /* UPDATED FAMILY */
     font-family: 'Pixelmix', sans-serif;
+    font-weight: normal;
 }
 
 .permalink-btn:hover {
@@ -363,8 +359,9 @@ button:active { transform: translateY(2px); }
     color: #666;
     border: 1px dashed #444;
     
-    /* UPDATED FAMILY */
+    /* OVERRIDE BUTTON BOLD */
     font-family: 'Pixelmix', sans-serif;
+    font-weight: normal;
     
     padding: 10px;
     text-align: left;
@@ -416,14 +413,28 @@ button:active { transform: translateY(2px); }
     margin-bottom: 0;
 }
 
+/* BOLD FIX: Explicitly target the bold family to kill the browser smear */
 .post-text b, .post-text strong { 
+    font-family: 'PixelmixBold', sans-serif;
+    font-weight: normal; 
     color: #fff; 
-    font-weight: bold; 
     text-shadow: 0 0 2px white; 
 }
-.post-text i, .post-text em { font-style: italic; color: #ccc; }
-.post-text a { color: #fff; text-decoration: underline; font-weight: bold; }
-.post-text a:hover { background: white; color: black; text-decoration: none; }
+.post-text i, .post-text em { 
+    font-style: italic; 
+    color: #ccc; 
+}
+.post-text a { 
+    font-family: 'PixelmixBold', sans-serif;
+    font-weight: normal; 
+    color: #fff; 
+    text-decoration: underline; 
+}
+.post-text a:hover { 
+    background: white; 
+    color: black; 
+    text-decoration: none; 
+}
 
 .post-media, .post-image {
     display: block;
@@ -536,7 +547,11 @@ body.admin-mode .admin-buttons { display: block !important; }
 #login-error {
     display: none;
     color: red;
-    font-weight: bold;
+    
+    /* BOLD FIX */
+    font-family: 'PixelmixBold', sans-serif;
+    font-weight: normal;
+    
     position: absolute;
     top: -30px;
     right: 0;
@@ -589,7 +604,11 @@ body.admin-mode .admin-buttons { display: block !important; }
     right: 30px; 
     color: white; 
     font-size: 1.5em; 
-    font-weight: bold; 
+    
+    /* BOLD FIX */
+    font-family: 'PixelmixBold', sans-serif;
+    font-weight: normal; 
+    
     z-index: 10005; 
     cursor: url('images/link-select.png'), pointer;
 }
@@ -609,10 +628,7 @@ body.admin-mode .admin-buttons { display: block !important; }
 .toast {
     background: black; border: 2px solid white; color: white;
     padding: 15px 25px; 
-    
-    /* UPDATED FAMILY */
     font-family: 'Pixelmix', sans-serif;
-    
     min-width: 200px; box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
     animation: slideIn 0.3s ease-out forwards;
 }
@@ -691,7 +707,13 @@ body.admin-mode .admin-buttons { display: block !important; }
     text-overflow: ellipsis; color: #ccc;
 }
 .chip-remove {
-    color: red; font-weight: bold; cursor: url('images/link-select.png'), pointer;
+    color: red; 
+    
+    /* BOLD FIX */
+    font-family: 'PixelmixBold', sans-serif;
+    font-weight: normal; 
+    
+    cursor: url('images/link-select.png'), pointer;
     border-left: 1px solid #444; padding-left: 8px;
 }
 .chip-remove:hover { color: white; }
@@ -710,7 +732,12 @@ body.admin-mode .admin-buttons { display: block !important; }
 .expand-btn {
     display: block; width: 100%; text-align: center; background: transparent; 
     color: #888; margin-top: 5px; padding: 10px; font-size: 0.9em; 
-    font-weight: bold; border: none;
+    
+    /* BOLD FIX */
+    font-family: 'PixelmixBold', sans-serif;
+    font-weight: normal; 
+    
+    border: none;
 }
 .expand-btn:hover { background: transparent !important; color: white !important; }
 .expand-btn:hover::before, .expand-btn:hover::after { content: none !important; }
@@ -726,11 +753,7 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
 
 .no-signal {
     text-align: center; color: #666; margin-top: 50px;
-    
-    /* UPDATED FAMILY */
-    font-family: 'Pixelmix', sans-serif;
-    
-    border: 1px dashed #444; padding: 20px;
+    font-family: 'Pixelmix', sans-serif; border: 1px dashed #444; padding: 20px;
     animation: blink 2s infinite; column-span: all; -webkit-column-span: all;
     break-inside: avoid; page-break-inside: avoid; width: 100%; box-sizing: border-box;
 }
@@ -757,9 +780,14 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
 .media-single img { max-width: 100%; border: 1px solid white; }
 
 /* --- MARKDOWN STYLES --- */
+
+/* BOLD FIX: Target headers to kill the browser smear */
 .markdown-body h1, .markdown-body h2, .markdown-body h3 {
+    font-family: 'PixelmixBold', sans-serif;
+    font-weight: normal; 
     margin-top: 10px; margin-bottom: 5px; border-bottom: 1px dashed #444; padding-bottom: 2px;
 }
+
 .markdown-body ul, .markdown-body ol { padding-left: 20px; margin: 5px 0; }
 .markdown-body blockquote {
     border-left: 3px solid white; margin: 5px 0; padding-left: 10px;
@@ -803,10 +831,7 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
 .win98-title-bar {
     background: linear-gradient(90deg, #000080, #1084d0); /* Classic Navy Blue */
     color: white;
-    
-    /* UPDATED FAMILY */
     font-family: 'Pixelmix', sans-serif;
-    
     padding: 2px 4px;
     display: flex;
     justify-content: space-between;
@@ -816,7 +841,10 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
 }
 
 .win98-title-text {
-    font-weight: bold;
+    /* BOLD FIX */
+    font-family: 'PixelmixBold', sans-serif;
+    font-weight: normal; 
+    
     font-size: 0.8em;
     pointer-events: none; 
 }
@@ -833,8 +861,11 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
     line-height: 10px;
     padding: 0;
     color: black;
-    font-family: sans-serif; 
-    font-weight: bold;
+    
+    /* BOLD FIX */
+    font-family: 'PixelmixBold', sans-serif; 
+    font-weight: normal;
+    
     cursor: url('images/link-select.png'), pointer;
 }
 #win98-close:active {
@@ -871,8 +902,9 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
     color: white;
     border: 1px dashed white;
     
-    /* UPDATED FAMILY */
+    /* OVERRIDE BUTTON BOLD */
     font-family: 'Pixelmix', sans-serif;
+    font-weight: normal; 
     
     cursor: url('images/link-select.png'), pointer;
     padding: 10px;
@@ -921,10 +953,7 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
 #preview-text {
     font-size: 0.7em;
     color: #ccc;
-    
-    /* UPDATED FAMILY */
     font-family: 'Pixelmix', sans-serif;
-    
     word-break: break-all;
     text-align: center;
 }
