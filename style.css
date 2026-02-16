@@ -1,14 +1,17 @@
 /* --- 1. GLOBAL & SCROLLBAR --- */
 
+/* REGULAR FONT */
 @font-face {
-    font-family: 'Pixe';
-    src: url('PIXEARG.TTF'), url('PIXEARG.ttf');
+    font-family: 'Pixelmix';
+    src: url('pixelmix.ttf'); 
     font-weight: normal;
     font-style: normal;
 }
+
+/* BOLD FONT */
 @font-face {
-    font-family: 'Pixe';
-    src: url('PIXEABOLD.TTF'), url('PIXEABOLD.ttf');
+    font-family: 'Pixelmix';
+    src: url('pixelmix_bold.ttf'); 
     font-weight: bold;
     font-style: normal;
 }
@@ -47,13 +50,15 @@ html, body {
 body {
     background-color: black;
     color: white;
-    font-family: 'Pixe', sans-serif; 
+    font-family: 'Pixelmix', sans-serif; /* NEW FAMILY */
     
-    /* THE FIX: Smaller size + Wider spacing */
-    font-size: 10px; 
-    letter-spacing: 1px; /* Separates the letters so they don't look like blocks */
+    /* THE GOLDEN RULE: Multiples of 6 only (6, 12, 18, 24) */
+    font-size: 12px; 
     
-    /* Keep these to prevent blurring */
+    line-height: 1.6;
+    letter-spacing: 1px; /* Pixelmix loves spacing */
+    
+    /* Force crisp edges */
     image-rendering: pixelated; 
     -webkit-font-smoothing: none;
     -moz-osx-font-smoothing: grayscale;
@@ -61,6 +66,13 @@ body {
     padding-bottom: 100px;
     cursor: url('images/cursor.png'), auto;
     background-image: none;
+}
+
+/* Update Inputs too */
+textarea, input, button, .retro-btn, #searchBar {
+    font-family: 'Pixelmix', sans-serif;
+    font-size: 12px; /* Keep it consistent */
+    letter-spacing: 1px;
 }
 
 /* --- INTERACTIVE CURSOR LOGIC --- */
@@ -199,7 +211,7 @@ button {
     color: black;
     border: none;
     padding: 10px 20px;
-    font-weight: bold; /* Now triggers PIXEABOLD.ttf automatically */
+    font-weight: bold;
     width: 100%;
     transition: all 0.2s ease;
     font-family: 'Pixe', sans-serif;
