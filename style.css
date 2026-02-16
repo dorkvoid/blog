@@ -50,15 +50,16 @@ html, body {
 body {
     background-color: black;
     color: white;
-    font-family: 'Pixelmix', sans-serif; /* NEW FAMILY */
+    
+    /* UPDATED FAMILY */
+    font-family: 'Pixelmix', sans-serif; 
     
     /* THE GOLDEN RULE: Multiples of 6 only (6, 12, 18, 24) */
     font-size: 12px; 
     
     line-height: 1.6;
-    letter-spacing: 1px; /* Pixelmix loves spacing */
+    letter-spacing: 1px; 
     
-    /* Force crisp edges */
     image-rendering: pixelated; 
     -webkit-font-smoothing: none;
     -moz-osx-font-smoothing: grayscale;
@@ -68,11 +69,8 @@ body {
     background-image: none;
 }
 
-/* Update Inputs too */
-textarea, input, button, .retro-btn, #searchBar {
-    font-family: 'Pixelmix', sans-serif;
-    font-size: 12px; /* Keep it consistent */
-    letter-spacing: 1px;
+body:active {
+    cursor: url('images/cursor-click.png'), auto;
 }
 
 /* --- INTERACTIVE CURSOR LOGIC --- */
@@ -133,8 +131,12 @@ body::before {
     color: white;
     border: none;
     padding: 10px;
-    font-family: 'Pixe', sans-serif;
-    font-size: 1.1em;
+    
+    /* UPDATED FAMILY */
+    font-family: 'Pixelmix', sans-serif;
+    font-size: 12px; /* Consistent size */
+    letter-spacing: 1px;
+    
     outline: none;
     margin-bottom: 0; 
 }
@@ -184,12 +186,13 @@ textarea, input {
     padding: 10px;
     margin-bottom: 10px;
     box-sizing: border-box;
-    font-family: 'Pixe', sans-serif; 
-    cursor: text;
     
-    /* THE FIX: Match the body size */
-    font-size: 10px; 
+    /* UPDATED FAMILY */
+    font-family: 'Pixelmix', sans-serif; 
+    font-size: 12px; /* Consistent size */
     letter-spacing: 1px;
+    
+    cursor: text;
 }
 
 textarea {
@@ -211,10 +214,14 @@ button {
     color: black;
     border: none;
     padding: 10px 20px;
-    font-weight: bold;
+    font-weight: bold; /* Triggers Bold font */
     width: 100%;
     transition: all 0.2s ease;
-    font-family: 'Pixe', sans-serif;
+    
+    /* UPDATED FAMILY */
+    font-family: 'Pixelmix', sans-serif;
+    font-size: 12px;
+    letter-spacing: 1px;
 }
 
 button:hover {
@@ -243,7 +250,9 @@ button:active { transform: translateY(2px); }
     padding: 2px 6px;
     font-size: 0.8em;
     user-select: none;
-    font-family: 'Pixe', sans-serif;
+    
+    /* UPDATED FAMILY */
+    font-family: 'Pixelmix', sans-serif;
 }
 
 .tag-toggle:hover {
@@ -270,7 +279,9 @@ button:active { transform: translateY(2px); }
     color: #ccc;
     font-size: 0.7em;
     padding: 2px 6px;
-    font-family: 'Pixe', sans-serif;
+    
+    /* UPDATED FAMILY */
+    font-family: 'Pixelmix', sans-serif;
 }
 
 .post-tag:hover {
@@ -335,7 +346,9 @@ button:active { transform: translateY(2px); }
     color: #444;
     user-select: none;
     transition: color 0.2s;
-    font-family: 'Pixe', sans-serif;
+    
+    /* UPDATED FAMILY */
+    font-family: 'Pixelmix', sans-serif;
 }
 
 .permalink-btn:hover {
@@ -349,7 +362,10 @@ button:active { transform: translateY(2px); }
     background: black;
     color: #666;
     border: 1px dashed #444;
-    font-family: 'Pixe', sans-serif;
+    
+    /* UPDATED FAMILY */
+    font-family: 'Pixelmix', sans-serif;
+    
     padding: 10px;
     text-align: left;
 }
@@ -391,10 +407,7 @@ button:active { transform: translateY(2px); }
 
 .post-content p {
     margin-bottom: 15px;
-    
-    /* THE FIX: More vertical room */
-    line-height: 2.0; 
-    
+    line-height: 1.6; 
     white-space: pre-wrap; 
     word-break: break-word; 
     overflow-wrap: break-word;
@@ -405,7 +418,7 @@ button:active { transform: translateY(2px); }
 
 .post-text b, .post-text strong { 
     color: #fff; 
-    font-weight: bold; /* Triggers the bold font file */
+    font-weight: bold; 
     text-shadow: 0 0 2px white; 
 }
 .post-text i, .post-text em { font-style: italic; color: #ccc; }
@@ -577,7 +590,7 @@ body.admin-mode .admin-buttons { display: block !important; }
     color: white; 
     font-size: 1.5em; 
     font-weight: bold; 
-    z-index: 10005; /* <--- THIS IS CRITICAL */
+    z-index: 10005; 
     cursor: url('images/link-select.png'), pointer;
 }
 #lightbox-close:hover { color: red; }
@@ -596,7 +609,10 @@ body.admin-mode .admin-buttons { display: block !important; }
 .toast {
     background: black; border: 2px solid white; color: white;
     padding: 15px 25px; 
-    font-family: 'Pixe', sans-serif;
+    
+    /* UPDATED FAMILY */
+    font-family: 'Pixelmix', sans-serif;
+    
     min-width: 200px; box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
     animation: slideIn 0.3s ease-out forwards;
 }
@@ -710,7 +726,11 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
 
 .no-signal {
     text-align: center; color: #666; margin-top: 50px;
-    font-family: 'Pixe', sans-serif; border: 1px dashed #444; padding: 20px;
+    
+    /* UPDATED FAMILY */
+    font-family: 'Pixelmix', sans-serif;
+    
+    border: 1px dashed #444; padding: 20px;
     animation: blink 2s infinite; column-span: all; -webkit-column-span: all;
     break-inside: avoid; page-break-inside: avoid; width: 100%; box-sizing: border-box;
 }
@@ -783,7 +803,10 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
 .win98-title-bar {
     background: linear-gradient(90deg, #000080, #1084d0); /* Classic Navy Blue */
     color: white;
-    font-family: 'Pixe', sans-serif;
+    
+    /* UPDATED FAMILY */
+    font-family: 'Pixelmix', sans-serif;
+    
     padding: 2px 4px;
     display: flex;
     justify-content: space-between;
@@ -847,7 +870,10 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
     background: black;
     color: white;
     border: 1px dashed white;
-    font-family: 'Pixe', sans-serif;
+    
+    /* UPDATED FAMILY */
+    font-family: 'Pixelmix', sans-serif;
+    
     cursor: url('images/link-select.png'), pointer;
     padding: 10px;
     width: 100%;
@@ -895,7 +921,10 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
 #preview-text {
     font-size: 0.7em;
     color: #ccc;
-    font-family: 'Pixe', sans-serif;
+    
+    /* UPDATED FAMILY */
+    font-family: 'Pixelmix', sans-serif;
+    
     word-break: break-all;
     text-align: center;
 }
