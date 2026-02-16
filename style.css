@@ -1,7 +1,19 @@
 /* --- 1. GLOBAL & SCROLLBAR --- */
+
+/* REGULAR FONT */
 @font-face {
-    font-family: 'DePixel';
-    src: url('DePixel.ttf'); 
+    font-family: 'Pixe';
+    src: url('PIXEARG.ttf'); 
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* BOLD FONT */
+@font-face {
+    font-family: 'Pixe';
+    src: url('PIXEABOLD.ttf'); 
+    font-weight: bold;
+    font-style: normal;
 }
 
 ::-webkit-scrollbar {
@@ -38,8 +50,13 @@ html, body {
 body {
     background-color: black;
     color: white;
-    font-family: 'DePixel', sans-serif; 
-    font-size: 12px;
+    font-family: 'Pixe', sans-serif; /* UPDATED FONT */
+    
+    /* RE-CALIBRATED SIZING */
+    font-size: 12px; 
+    line-height: 1.6; /* Prevents text from sticking together */
+    letter-spacing: 0.5px;
+    
     image-rendering: pixelated; 
     -webkit-font-smoothing: none;
     padding-bottom: 100px;
@@ -109,7 +126,7 @@ body::before {
     color: white;
     border: none;
     padding: 10px;
-    font-family: 'DePixel', sans-serif;
+    font-family: 'Pixe', sans-serif;
     font-size: 1.1em;
     outline: none;
     margin-bottom: 0; 
@@ -160,7 +177,7 @@ textarea, input {
     padding: 10px;
     margin-bottom: 10px;
     box-sizing: border-box;
-    font-family: 'DePixel', sans-serif; 
+    font-family: 'Pixe', sans-serif; 
     cursor: text;
 }
 
@@ -183,10 +200,10 @@ button {
     color: black;
     border: none;
     padding: 10px 20px;
-    font-weight: bold;
+    font-weight: bold; /* Now triggers PIXEABOLD.ttf automatically */
     width: 100%;
     transition: all 0.2s ease;
-    font-family: 'DePixel', sans-serif;
+    font-family: 'Pixe', sans-serif;
 }
 
 button:hover {
@@ -215,7 +232,7 @@ button:active { transform: translateY(2px); }
     padding: 2px 6px;
     font-size: 0.8em;
     user-select: none;
-    font-family: 'DePixel', sans-serif;
+    font-family: 'Pixe', sans-serif;
 }
 
 .tag-toggle:hover {
@@ -242,7 +259,7 @@ button:active { transform: translateY(2px); }
     color: #ccc;
     font-size: 0.7em;
     padding: 2px 6px;
-    font-family: 'DePixel', sans-serif;
+    font-family: 'Pixe', sans-serif;
 }
 
 .post-tag:hover {
@@ -307,7 +324,7 @@ button:active { transform: translateY(2px); }
     color: #444;
     user-select: none;
     transition: color 0.2s;
-    font-family: 'DePixel', sans-serif;
+    font-family: 'Pixe', sans-serif;
 }
 
 .permalink-btn:hover {
@@ -321,7 +338,7 @@ button:active { transform: translateY(2px); }
     background: black;
     color: #666;
     border: 1px dashed #444;
-    font-family: 'DePixel', sans-serif;
+    font-family: 'Pixe', sans-serif;
     padding: 10px;
     text-align: left;
 }
@@ -362,18 +379,21 @@ button:active { transform: translateY(2px); }
 }
 
 .post-content p {
-    margin-bottom: 15px; /* Adds breathing room between paragraphs */
-    line-height: 1.4;
+    margin-bottom: 15px;
+    line-height: 1.6; /* Breathing room for the new font */
     white-space: pre-wrap; 
     word-break: break-word; 
     overflow-wrap: break-word;
 }
-/* Remove margin from the very last paragraph so it fits the box */
 .post-content p:last-child {
     margin-bottom: 0;
 }
 
-.post-text b, .post-text strong { color: #fff; font-weight: bold; text-shadow: 0 0 2px white; }
+.post-text b, .post-text strong { 
+    color: #fff; 
+    font-weight: bold; /* Triggers the bold font file */
+    text-shadow: 0 0 2px white; 
+}
 .post-text i, .post-text em { font-style: italic; color: #ccc; }
 .post-text a { color: #fff; text-decoration: underline; font-weight: bold; }
 .post-text a:hover { background: white; color: black; text-decoration: none; }
@@ -421,11 +441,10 @@ iframe[src*="spotify"] { aspect-ratio: auto; height: 152px; }
 
 .stat-icon {
     display: block;
-    width: 32px;  /* Let it use its full native width */
-    height: 32px; /* Keep the height locked to 32px */
+    width: 32px;  
+    height: 32px; 
     image-rendering: pixelated;
     opacity: 0.7;
-    /* Removed the translateY because Flexbox automatically centers 32px icons perfectly */
 }
 
 #view-number { line-height: 1; display: inline-block; }
@@ -439,7 +458,7 @@ iframe[src*="spotify"] { aspect-ratio: auto; height: 152px; }
 
 @media (max-width: 500px) {
     #view-count { margin-right: 5px; }
-    .stat-icon { width: 24px; height: 24px; } /* Scales down cleanly for phones */
+    .stat-icon { width: 24px; height: 24px; } 
 }
 
 .hidden { display: none !important; }
@@ -563,7 +582,7 @@ body.admin-mode .admin-buttons { display: block !important; }
 .toast {
     background: black; border: 2px solid white; color: white;
     padding: 15px 25px; 
-    font-family: 'DePixel', sans-serif;
+    font-family: 'Pixe', sans-serif;
     min-width: 200px; box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
     animation: slideIn 0.3s ease-out forwards;
 }
@@ -592,35 +611,27 @@ body.admin-mode .admin-buttons { display: block !important; }
 /* --- NEW MEDIA STACK --- */
 .media-row { 
     display: flex; 
-    gap: 0; /* REMOVED GAP so they touch */
+    gap: 0; 
     margin-bottom: 10px; 
 }
 
-/* Specific Rule for the URL Input to merge with button */
 #imageUrl { 
     margin-bottom: 0; 
     flex-grow: 1; 
-    border-right: none; /* Removes double border */
+    border-right: none; 
 }
 
 #addMediaBtn { 
-    /* SIZE & LAYOUT */
-    width: 50px;           /* Wide enough to hold the 32px icon comfortably */
-    height: auto;          /* STRETCH: Forces it to match the input box height exactly */
-    margin-left: -1px;     /* Merges the borders */
-    
-    /* APPEARANCE */
+    width: 50px;           
+    height: auto;          
+    margin-left: -1px;     
     background-color: #000; 
     border: 1px solid white;
-    cursor: url('images/link-select.png'), pointer; /* <--- ADDED THIS */
-    
-    /* IMAGE HANDLING */
+    cursor: url('images/link-select.png'), pointer;
     background-image: url('images/postBtn.png'); 
     background-repeat: no-repeat;
-    background-position: center center; /* Centers the 32x32 image */
-    background-size: 32px; /* Forces the image to stay 32px */
-    
-    /* RESET */
+    background-position: center center; 
+    background-size: 32px; 
     font-size: 0; 
     padding: 0;
 }
@@ -630,7 +641,6 @@ body.admin-mode .admin-buttons { display: block !important; }
     background-image: url('images/postBtnHover.png');
 }
 
-/* Safety: Ensures no global button styles (brackets/bold) interfere */
 #addMediaBtn::before, 
 #addMediaBtn::after { 
     display: none !important; 
@@ -686,7 +696,7 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
 
 .no-signal {
     text-align: center; color: #666; margin-top: 50px;
-    font-family: 'DePixel', sans-serif; border: 1px dashed #444; padding: 20px;
+    font-family: 'Pixe', sans-serif; border: 1px dashed #444; padding: 20px;
     animation: blink 2s infinite; column-span: all; -webkit-column-span: all;
     break-inside: avoid; page-break-inside: avoid; width: 100%; box-sizing: border-box;
 }
@@ -759,7 +769,7 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
 .win98-title-bar {
     background: linear-gradient(90deg, #000080, #1084d0); /* Classic Navy Blue */
     color: white;
-    font-family: 'DePixel', sans-serif;
+    font-family: 'Pixe', sans-serif;
     padding: 2px 4px;
     display: flex;
     justify-content: space-between;
@@ -823,7 +833,7 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
     background: black;
     color: white;
     border: 1px dashed white;
-    font-family: 'DePixel', sans-serif;
+    font-family: 'Pixe', sans-serif;
     cursor: url('images/link-select.png'), pointer;
     padding: 10px;
     width: 100%;
@@ -871,7 +881,7 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
 #preview-text {
     font-size: 0.7em;
     color: #ccc;
-    font-family: 'DePixel', sans-serif;
+    font-family: 'Pixe', sans-serif;
     word-break: break-all;
     text-align: center;
 }
@@ -882,5 +892,4 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
 }
 #preview-img.hidden {
     display: none;
-
 }
