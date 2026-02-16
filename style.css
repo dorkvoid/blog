@@ -1,17 +1,14 @@
 /* --- 1. GLOBAL & SCROLLBAR --- */
 
-/* REGULAR FONT */
 @font-face {
     font-family: 'Pixe';
-    src: url('PIXEARG.ttf'); 
+    src: url('PIXEARG.TTF'), url('PIXEARG.ttf');
     font-weight: normal;
     font-style: normal;
 }
-
-/* BOLD FONT */
 @font-face {
     font-family: 'Pixe';
-    src: url('PIXEABOLD.ttf'); 
+    src: url('PIXEABOLD.TTF'), url('PIXEABOLD.ttf');
     font-weight: bold;
     font-style: normal;
 }
@@ -50,22 +47,22 @@ html, body {
 body {
     background-color: black;
     color: white;
-    font-family: 'Pixe', sans-serif; /* UPDATED FONT */
+    font-family: 'Pixe', sans-serif; 
     
-    /* RE-CALIBRATED SIZING */
+    /* PIXEL PERFECT SETTINGS */
     font-size: 12px; 
-    line-height: 1.6; /* Prevents text from sticking together */
+    line-height: 1.6;
     letter-spacing: 0.5px;
     
+    /* These lines FORCE the browser to stop blurring the font */
     image-rendering: pixelated; 
     -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: grayscale;
+    font-smooth: never;
+    
     padding-bottom: 100px;
     cursor: url('images/cursor.png'), auto;
     background-image: none;
-}
-
-body:active {
-    cursor: url('images/cursor-click.png'), auto;
 }
 
 /* --- INTERACTIVE CURSOR LOGIC --- */
