@@ -1,7 +1,7 @@
 /* --- 1. GLOBAL & SCROLLBAR --- */
 @font-face {
-    font-family: 'Nope8';
-    src: url('Nope8.ttf'); 
+    font-family: 'DePixel';
+    src: url('DePixel.ttf'); 
 }
 
 ::-webkit-scrollbar {
@@ -38,7 +38,7 @@ html, body {
 body {
     background-color: black;
     color: white;
-    font-family: 'Nope8', sans-serif; 
+    font-family: 'DePixel', sans-serif; 
     font-size: 18px;
     image-rendering: pixelated; 
     -webkit-font-smoothing: none;
@@ -109,7 +109,7 @@ body::before {
     color: white;
     border: none;
     padding: 10px;
-    font-family: 'Nope8', sans-serif;
+    font-family: 'DePixel', sans-serif;
     font-size: 1.1em;
     outline: none;
     margin-bottom: 0; 
@@ -160,7 +160,7 @@ textarea, input {
     padding: 10px;
     margin-bottom: 10px;
     box-sizing: border-box;
-    font-family: 'Nope8', sans-serif; 
+    font-family: 'DePixel', sans-serif; 
     cursor: text;
 }
 
@@ -186,7 +186,7 @@ button {
     font-weight: bold;
     width: 100%;
     transition: all 0.2s ease;
-    font-family: 'Nope8', sans-serif;
+    font-family: 'DePixel', sans-serif;
 }
 
 button:hover {
@@ -215,7 +215,7 @@ button:active { transform: translateY(2px); }
     padding: 2px 6px;
     font-size: 0.8em;
     user-select: none;
-    font-family: 'Nope8', sans-serif;
+    font-family: 'DePixel', sans-serif;
 }
 
 .tag-toggle:hover {
@@ -242,7 +242,7 @@ button:active { transform: translateY(2px); }
     color: #ccc;
     font-size: 0.7em;
     padding: 2px 6px;
-    font-family: 'Nope8', sans-serif;
+    font-family: 'DePixel', sans-serif;
 }
 
 .post-tag:hover {
@@ -307,7 +307,7 @@ button:active { transform: translateY(2px); }
     color: #444;
     user-select: none;
     transition: color 0.2s;
-    font-family: 'Nope8', sans-serif;
+    font-family: 'DePixel', sans-serif;
 }
 
 .permalink-btn:hover {
@@ -321,7 +321,7 @@ button:active { transform: translateY(2px); }
     background: black;
     color: #666;
     border: 1px dashed #444;
-    font-family: 'Nope8', sans-serif;
+    font-family: 'DePixel', sans-serif;
     padding: 10px;
     text-align: left;
 }
@@ -545,7 +545,7 @@ body.admin-mode .admin-buttons { display: block !important; }
     font-size: 1.5em; 
     font-weight: bold; 
     z-index: 10005; /* <--- THIS IS CRITICAL */
-    cursor: pointer;
+    cursor: url('images/link-select.png'), pointer;
 }
 #lightbox-close:hover { color: red; }
 
@@ -563,7 +563,7 @@ body.admin-mode .admin-buttons { display: block !important; }
 .toast {
     background: black; border: 2px solid white; color: white;
     padding: 15px 25px; 
-    font-family: 'Nope8', sans-serif;
+    font-family: 'DePixel', sans-serif;
     min-width: 200px; box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
     animation: slideIn 0.3s ease-out forwards;
 }
@@ -686,7 +686,7 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
 
 .no-signal {
     text-align: center; color: #666; margin-top: 50px;
-    font-family: 'Nope8', sans-serif; border: 1px dashed #444; padding: 20px;
+    font-family: 'DePixel', sans-serif; border: 1px dashed #444; padding: 20px;
     animation: blink 2s infinite; column-span: all; -webkit-column-span: all;
     break-inside: avoid; page-break-inside: avoid; width: 100%; box-sizing: border-box;
 }
@@ -759,7 +759,7 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
 .win98-title-bar {
     background: linear-gradient(90deg, #000080, #1084d0); /* Classic Navy Blue */
     color: white;
-    font-family: 'Nope8', sans-serif;
+    font-family: 'DePixel', sans-serif;
     padding: 2px 4px;
     display: flex;
     justify-content: space-between;
@@ -823,7 +823,7 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
     background: black;
     color: white;
     border: 1px dashed white;
-    font-family: 'Nope8', sans-serif;
+    font-family: 'DePixel', sans-serif;
     cursor: url('images/link-select.png'), pointer;
     padding: 10px;
     width: 100%;
@@ -871,7 +871,7 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
 #preview-text {
     font-size: 0.7em;
     color: #ccc;
-    font-family: 'Nope8', sans-serif;
+    font-family: 'DePixel', sans-serif;
     word-break: break-all;
     text-align: center;
 }
