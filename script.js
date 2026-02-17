@@ -64,6 +64,12 @@ const lightboxImg = document.getElementById('lightbox-img');
 const lightboxClose = document.getElementById('lightbox-close');
 const backToTopBtn = document.getElementById('back-to-top');
 
+// --- INIT UI TWEAKS ---
+// Set explicit placeholder for search tags
+if (searchInput) {
+    searchInput.placeholder = "Search (or #tags, /help)...";
+}
+
 // --- 3.5 AUDIO SYSTEM ---
 const sounds = {
     click: new Audio('sounds/buttonclick.mp3'),
@@ -382,6 +388,31 @@ function setupSubscription() {
 
 // --- 8. POST & COMMAND LOGIC ---
 
+// --- NEW FUNCTION: CHECK BUTTON STATE ---
+function updatePostButtonState() {
+    // We enable if ANY content exists (Text, URL in box, or Media in stack)
+    const hasText = textInput.value.trim().length > 0;
+    const hasUrlInput = imageInput.value.trim().length > 0;
+    const hasStack = mediaStack.length > 0;
+    
+    if (hasText || hasUrlInput || hasStack) {
+        postBtn.disabled = false;
+        postBtn.innerText = "POST"; // Reset text just in case
+    } else {
+        postBtn.disabled = true;
+        // Optional: Change text to show it's waiting
+        // postBtn.innerText = "WRITE SOMETHING..."; 
+    }
+}
+
+// Attach listeners to update state
+textInput.addEventListener('input', updatePostButtonState);
+imageInput.addEventListener('input', updatePostButtonState);
+
+// Call once on load
+updatePostButtonState();
+
+
 function handleTypingSound(e) {
     if (e.repeat) return; 
     playSound('type');
@@ -467,6 +498,9 @@ function insertTag(tagStart, tagEnd) {
     textInput.focus();
     textInput.selectionStart = start + tagStart.length;
     textInput.selectionEnd = end + tagStart.length;
+    
+    // Trigger update because we changed text programmatically
+    updatePostButtonState();
 }
 
 // --- NEW TOOLBAR LOGIC ---
@@ -511,6 +545,9 @@ function updateMediaStackUI() {
         `;
         mediaStackDiv.appendChild(chip);
     });
+    
+    // Check if button should be enabled
+    updatePostButtonState();
 }
 
 // Make global for onclick access
@@ -564,7 +601,7 @@ postBtn.addEventListener('click', async function() {
         } else {
             await addDoc(collection(db, "posts"), {
                 text: text,
-                images: finalImages,
+                images: finalImages, 
                 tags: selectedTags, 
                 timestamp: serverTimestamp(),
                 actualTimestamp: serverTimestamp(),
@@ -579,8 +616,10 @@ postBtn.addEventListener('click', async function() {
         showToast("ERROR");
         playSound('error');
     } finally {
-        postBtn.disabled = false;
-        postBtn.innerText = "POST";
+        // We don't just set disabled=false here, we check the state
+        // because the form is likely empty now
+        updatePostButtonState();
+        if(!postBtn.disabled) postBtn.innerText = "POST";
     }
 });
 
@@ -601,6 +640,9 @@ function resetForm() {
     
     selectedTags = [];
     tagToggles.forEach(t => t.classList.remove('selected'));
+    
+    // Ensure button goes back to disabled state
+    updatePostButtonState();
 }
 
 // --- 9. HELPERS (Delete, Toast, TimeAgo) ---
@@ -771,7 +813,7 @@ function addPostToDOM(post) {
         contentList = [post.image];
     }
 
-if (contentList.length > 0) {
+    if (contentList.length > 0) {
         // If more than 1 image, use a grid layout, otherwise single view
         const gridClass = contentList.length > 1 ? "media-gallery" : "media-single";
         
@@ -797,9 +839,8 @@ if (contentList.length > 0) {
             } 
             // 2. SPOTIFY (Smart Label)
             else if (spMatch) {
-                // Determine type: TRACK, ALBUM, or PLAYLIST
-                const type = spMatch[1].toUpperCase();
-                // Construct the Proxy URL correctly using backticks
+                // spMatch[1] contains "track", "album", or "playlist"
+                const type = spMatch[1].toUpperCase(); 
                 const spUrl = `https://open.spotify.com/embed/${spMatch[1]}/${spMatch[2]}`;
                 
                 mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
@@ -809,30 +850,28 @@ if (contentList.length > 0) {
                         [ ♫ PLAY ${type} ]
                     </button>
                 </div>`;
-            } 
-            // 3. MP4 (Smart Filename)
+            }
+            // 3. MP4
             else if (isVideo) {
-                const filename = url.split('/').pop(); // Grabs "video.mp4" from the end
                 mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
                     <button onclick="window.launchWin98('${url}', 'video-file')" 
                             class="retro-btn" 
-                            data-info="${filename}">
+                            data-info="${url.split('/').pop()}"
                         [ ▶ WATCH CLIP ]
                     </button>
                 </div>`;
             } 
-            // 4. MP3 (Smart Filename)
+            // 4. MP3
             else if (isAudio) {
-                const filename = url.split('/').pop(); // Grabs "song.mp3" from the end
                 mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
                     <button onclick="window.launchWin98('${url}', 'audio-file')" 
                             class="retro-btn" 
-                            data-info="${filename}">
+                            data-info="${url.split('/').pop()}"
                         [ ♫ PLAY AUDIO ]
                     </button>
                 </div>`;
             } 
-            // 5. IMAGES -> Standard Display
+            // 5. IMAGES -> Standard Display (Still in feed)
             else {
                 mediaHTML += `<div class="media-item"><img src="${url}" class="post-image click-to-zoom"></div>`;
             }

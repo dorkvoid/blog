@@ -8,11 +8,11 @@
     font-style: normal;
 }
 
-/* BOLD FONT - Separate family to prevent browser smearing */
+/* BOLD FONT */
 @font-face {
     font-family: 'PixeloidSansBold';
     src: url('PixeloidSans-Bold.ttf'); 
-    font-weight: normal; /* Critical: Kept normal to stop the smear */
+    font-weight: normal;
     font-style: normal;
 }
 
@@ -51,11 +51,8 @@ body {
     background-color: black;
     color: white;
     font-family: 'PixeloidSans', sans-serif; 
-    
-    /* UPDATED: Dropped from 18px to 14px */
     font-size: 14px; 
-    line-height: 1.5; /* Slightly tighter line height for smaller text */
-    
+    line-height: 1.5; 
     image-rendering: pixelated; 
     -webkit-font-smoothing: none;
     padding-bottom: 100px;
@@ -177,10 +174,7 @@ textarea, input {
     margin-bottom: 10px;
     box-sizing: border-box;
     font-family: 'PixeloidSans', sans-serif; 
-    
-    /* Ensure inputs match body size */
     font-size: 14px; 
-    
     cursor: text;
 }
 
@@ -203,15 +197,10 @@ button {
     color: black;
     border: none;
     padding: 10px 20px;
-    
-    /* BOLD FIX */
     font-family: 'PixeloidSansBold', sans-serif;
     font-weight: normal;
-    
     width: 100%;
     transition: all 0.2s ease;
-    
-    /* Ensure buttons match body size */
     font-size: 14px;
 }
 
@@ -221,6 +210,20 @@ button:hover {
 button:hover::before { content: "[ "; color: black; }
 button:hover::after { content: " ]"; color: black; }
 button:active { transform: translateY(2px); }
+
+/* --- DISABLED STATE (Greyed Out) --- */
+button:disabled {
+    background: #222;       /* Dark Grey Background */
+    color: #555;            /* Faded Text */
+    border: 1px solid #333; /* Faded Border */
+    cursor: not-allowed;    /* "No" symbol cursor */
+    pointer-events: none;   /* Disable clicks completely */
+}
+/* Ensure no brackets appear on disabled buttons */
+button:disabled::before, 
+button:disabled::after { 
+    content: none !important; 
+}
 
 .button-row { display: flex; gap: 10px; }
 
@@ -394,7 +397,6 @@ button:active { transform: translateY(2px); }
     word-break: break-word; 
     overflow-wrap: break-word;
 }
-/* Remove margin from the very last paragraph so it fits the box */
 .post-content p:last-child {
     margin-bottom: 0;
 }
@@ -530,11 +532,8 @@ body.admin-mode .admin-buttons { display: block !important; }
 #login-error {
     display: none;
     color: red;
-    
-    /* BOLD FIX */
     font-family: 'PixeloidSansBold', sans-serif;
     font-weight: normal;
-    
     position: absolute;
     top: -30px;
     right: 0;
@@ -587,11 +586,8 @@ body.admin-mode .admin-buttons { display: block !important; }
     right: 30px; 
     color: white; 
     font-size: 1.5em; 
-    
-    /* BOLD FIX */
     font-family: 'PixeloidSansBold', sans-serif;
     font-weight: normal;
-    
     z-index: 10005; 
     cursor: url('images/link-select.png'), pointer;
 }
@@ -691,11 +687,8 @@ body.admin-mode .admin-buttons { display: block !important; }
 }
 .chip-remove {
     color: red; 
-    
-    /* BOLD FIX */
     font-family: 'PixeloidSansBold', sans-serif;
     font-weight: normal;
-    
     cursor: url('images/link-select.png'), pointer;
     border-left: 1px solid #444; padding-left: 8px;
 }
@@ -715,11 +708,8 @@ body.admin-mode .admin-buttons { display: block !important; }
 .expand-btn {
     display: block; width: 100%; text-align: center; background: transparent; 
     color: #888; margin-top: 5px; padding: 10px; font-size: 0.9em; 
-    
-    /* BOLD FIX */
     font-family: 'PixeloidSansBold', sans-serif;
     font-weight: normal;
-    
     border: none;
 }
 .expand-btn:hover { background: transparent !important; color: white !important; }
@@ -823,10 +813,8 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
 }
 
 .win98-title-text {
-    /* BOLD FIX */
     font-family: 'PixeloidSansBold', sans-serif;
     font-weight: normal;
-    
     font-size: 0.8em;
     pointer-events: none; 
 }
@@ -843,11 +831,8 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
     line-height: 10px;
     padding: 0;
     color: black;
-    
-    /* BOLD FIX */
     font-family: 'PixeloidSansBold', sans-serif;
     font-weight: normal;
-    
     cursor: url('images/link-select.png'), pointer;
 }
 #win98-close:active {
