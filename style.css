@@ -2,17 +2,17 @@
 
 /* REGULAR FONT */
 @font-face {
-    font-family: 'Pixelmix';
-    src: url('pixelmix.ttf'); 
+    font-family: 'Nope8';
+    src: url('nope8.ttf'); /* Matches your lowercase filename */
     font-weight: normal;
     font-style: normal;
 }
 
-/* BOLD FONT - Treated as its own family to stop browser smearing */
+/* BOLD FONT - Separate family to prevent browser smearing */
 @font-face {
-    font-family: 'PixelmixBold';
-    src: url('pixelmix_bold.ttf'); 
-    font-weight: normal; /* CRITICAL: Set to normal */
+    font-family: 'Nope8Bold';
+    src: url('nope8bold.ttf'); /* Matches your lowercase filename */
+    font-weight: normal; /* Critical: Kept normal to stop the smear */
     font-style: normal;
 }
 
@@ -50,18 +50,10 @@ html, body {
 body {
     background-color: black;
     color: white;
-    font-family: 'Pixelmix', sans-serif; 
-    
-    /* THE GOLDEN RULE: Multiples of 6 only (6, 12, 18, 24) */
-    font-size: 12px; 
-    
-    line-height: 1.6;
-    letter-spacing: 1px; 
-    
+    font-family: 'Nope8', sans-serif; 
+    font-size: 18px; /* Back to your original baseline */
     image-rendering: pixelated; 
     -webkit-font-smoothing: none;
-    -moz-osx-font-smoothing: grayscale;
-    
     padding-bottom: 100px;
     cursor: url('images/cursor.png'), auto;
     background-image: none;
@@ -129,12 +121,8 @@ body::before {
     color: white;
     border: none;
     padding: 10px;
-    
-    font-family: 'Pixelmix', sans-serif;
-    font-size: 12px;
-    font-weight: normal;
-    letter-spacing: 1px;
-    
+    font-family: 'Nope8', sans-serif;
+    font-size: 1.1em;
     outline: none;
     margin-bottom: 0; 
 }
@@ -184,12 +172,7 @@ textarea, input {
     padding: 10px;
     margin-bottom: 10px;
     box-sizing: border-box;
-    
-    font-family: 'Pixelmix', sans-serif; 
-    font-size: 12px; 
-    font-weight: normal;
-    letter-spacing: 1px;
-    
+    font-family: 'Nope8', sans-serif; 
     cursor: text;
 }
 
@@ -213,14 +196,12 @@ button {
     border: none;
     padding: 10px 20px;
     
-    /* BOLD FIX: Use explicit bold family and normal weight */
-    font-family: 'PixelmixBold', sans-serif;
-    font-weight: normal; 
+    /* BOLD FIX */
+    font-family: 'Nope8Bold', sans-serif;
+    font-weight: normal;
     
     width: 100%;
     transition: all 0.2s ease;
-    font-size: 12px;
-    letter-spacing: 1px;
 }
 
 button:hover {
@@ -249,8 +230,7 @@ button:active { transform: translateY(2px); }
     padding: 2px 6px;
     font-size: 0.8em;
     user-select: none;
-    font-family: 'Pixelmix', sans-serif;
-    font-weight: normal;
+    font-family: 'Nope8', sans-serif;
 }
 
 .tag-toggle:hover {
@@ -277,8 +257,7 @@ button:active { transform: translateY(2px); }
     color: #ccc;
     font-size: 0.7em;
     padding: 2px 6px;
-    font-family: 'Pixelmix', sans-serif;
-    font-weight: normal;
+    font-family: 'Nope8', sans-serif;
 }
 
 .post-tag:hover {
@@ -343,8 +322,7 @@ button:active { transform: translateY(2px); }
     color: #444;
     user-select: none;
     transition: color 0.2s;
-    font-family: 'Pixelmix', sans-serif;
-    font-weight: normal;
+    font-family: 'Nope8', sans-serif;
 }
 
 .permalink-btn:hover {
@@ -358,11 +336,7 @@ button:active { transform: translateY(2px); }
     background: black;
     color: #666;
     border: 1px dashed #444;
-    
-    /* OVERRIDE BUTTON BOLD */
-    font-family: 'Pixelmix', sans-serif;
-    font-weight: normal;
-    
+    font-family: 'Nope8', sans-serif;
     padding: 10px;
     text-align: left;
 }
@@ -403,38 +377,36 @@ button:active { transform: translateY(2px); }
 }
 
 .post-content p {
-    margin-bottom: 15px;
-    line-height: 1.6; 
+    margin-bottom: 15px; 
+    line-height: 1.4;
     white-space: pre-wrap; 
     word-break: break-word; 
     overflow-wrap: break-word;
 }
+/* Remove margin from the very last paragraph so it fits the box */
 .post-content p:last-child {
     margin-bottom: 0;
 }
 
-/* BOLD FIX: Explicitly target the bold family to kill the browser smear */
+/* BOLD FIX: Target markdown bolding */
 .post-text b, .post-text strong { 
-    font-family: 'PixelmixBold', sans-serif;
-    font-weight: normal; 
+    font-family: 'Nope8Bold', sans-serif;
+    font-weight: normal;
     color: #fff; 
     text-shadow: 0 0 2px white; 
 }
 .post-text i, .post-text em { 
-    font-style: italic; 
-    color: #ccc; 
+    font-style: italic; color: #ccc; 
 }
+
+/* BOLD FIX: Links */
 .post-text a { 
-    font-family: 'PixelmixBold', sans-serif;
-    font-weight: normal; 
+    font-family: 'Nope8Bold', sans-serif;
+    font-weight: normal;
     color: #fff; 
     text-decoration: underline; 
 }
-.post-text a:hover { 
-    background: white; 
-    color: black; 
-    text-decoration: none; 
-}
+.post-text a:hover { background: white; color: black; text-decoration: none; }
 
 .post-media, .post-image {
     display: block;
@@ -549,7 +521,7 @@ body.admin-mode .admin-buttons { display: block !important; }
     color: red;
     
     /* BOLD FIX */
-    font-family: 'PixelmixBold', sans-serif;
+    font-family: 'Nope8Bold', sans-serif;
     font-weight: normal;
     
     position: absolute;
@@ -606,8 +578,8 @@ body.admin-mode .admin-buttons { display: block !important; }
     font-size: 1.5em; 
     
     /* BOLD FIX */
-    font-family: 'PixelmixBold', sans-serif;
-    font-weight: normal; 
+    font-family: 'Nope8Bold', sans-serif;
+    font-weight: normal;
     
     z-index: 10005; 
     cursor: url('images/link-select.png'), pointer;
@@ -628,7 +600,7 @@ body.admin-mode .admin-buttons { display: block !important; }
 .toast {
     background: black; border: 2px solid white; color: white;
     padding: 15px 25px; 
-    font-family: 'Pixelmix', sans-serif;
+    font-family: 'Nope8', sans-serif;
     min-width: 200px; box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
     animation: slideIn 0.3s ease-out forwards;
 }
@@ -673,7 +645,7 @@ body.admin-mode .admin-buttons { display: block !important; }
     margin-left: -1px;     
     background-color: #000; 
     border: 1px solid white;
-    cursor: url('images/link-select.png'), pointer;
+    cursor: url('images/link-select.png'), pointer; 
     background-image: url('images/postBtn.png'); 
     background-repeat: no-repeat;
     background-position: center center; 
@@ -710,8 +682,8 @@ body.admin-mode .admin-buttons { display: block !important; }
     color: red; 
     
     /* BOLD FIX */
-    font-family: 'PixelmixBold', sans-serif;
-    font-weight: normal; 
+    font-family: 'Nope8Bold', sans-serif;
+    font-weight: normal;
     
     cursor: url('images/link-select.png'), pointer;
     border-left: 1px solid #444; padding-left: 8px;
@@ -734,8 +706,8 @@ body.admin-mode .admin-buttons { display: block !important; }
     color: #888; margin-top: 5px; padding: 10px; font-size: 0.9em; 
     
     /* BOLD FIX */
-    font-family: 'PixelmixBold', sans-serif;
-    font-weight: normal; 
+    font-family: 'Nope8Bold', sans-serif;
+    font-weight: normal;
     
     border: none;
 }
@@ -753,7 +725,7 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
 
 .no-signal {
     text-align: center; color: #666; margin-top: 50px;
-    font-family: 'Pixelmix', sans-serif; border: 1px dashed #444; padding: 20px;
+    font-family: 'Nope8', sans-serif; border: 1px dashed #444; padding: 20px;
     animation: blink 2s infinite; column-span: all; -webkit-column-span: all;
     break-inside: avoid; page-break-inside: avoid; width: 100%; box-sizing: border-box;
 }
@@ -781,13 +753,12 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
 
 /* --- MARKDOWN STYLES --- */
 
-/* BOLD FIX: Target headers to kill the browser smear */
+/* BOLD FIX */
 .markdown-body h1, .markdown-body h2, .markdown-body h3 {
-    font-family: 'PixelmixBold', sans-serif;
-    font-weight: normal; 
+    font-family: 'Nope8Bold', sans-serif;
+    font-weight: normal;
     margin-top: 10px; margin-bottom: 5px; border-bottom: 1px dashed #444; padding-bottom: 2px;
 }
-
 .markdown-body ul, .markdown-body ol { padding-left: 20px; margin: 5px 0; }
 .markdown-body blockquote {
     border-left: 3px solid white; margin: 5px 0; padding-left: 10px;
@@ -831,7 +802,7 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
 .win98-title-bar {
     background: linear-gradient(90deg, #000080, #1084d0); /* Classic Navy Blue */
     color: white;
-    font-family: 'Pixelmix', sans-serif;
+    font-family: 'Nope8', sans-serif;
     padding: 2px 4px;
     display: flex;
     justify-content: space-between;
@@ -842,8 +813,8 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
 
 .win98-title-text {
     /* BOLD FIX */
-    font-family: 'PixelmixBold', sans-serif;
-    font-weight: normal; 
+    font-family: 'Nope8Bold', sans-serif;
+    font-weight: normal;
     
     font-size: 0.8em;
     pointer-events: none; 
@@ -863,7 +834,7 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
     color: black;
     
     /* BOLD FIX */
-    font-family: 'PixelmixBold', sans-serif; 
+    font-family: 'Nope8Bold', sans-serif;
     font-weight: normal;
     
     cursor: url('images/link-select.png'), pointer;
@@ -901,11 +872,7 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
     background: black;
     color: white;
     border: 1px dashed white;
-    
-    /* OVERRIDE BUTTON BOLD */
-    font-family: 'Pixelmix', sans-serif;
-    font-weight: normal; 
-    
+    font-family: 'Nope8', sans-serif;
     cursor: url('images/link-select.png'), pointer;
     padding: 10px;
     width: 100%;
@@ -953,7 +920,7 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
 #preview-text {
     font-size: 0.7em;
     color: #ccc;
-    font-family: 'Pixelmix', sans-serif;
+    font-family: 'Nope8', sans-serif;
     word-break: break-all;
     text-align: center;
 }
