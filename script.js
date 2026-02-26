@@ -1096,3 +1096,22 @@ if (previewBox) {
         }
     });
 }
+
+// --- BACK TO TOP LOGIC & SOUNDS ---
+if (backToTopBtn) {
+    // 1. Play sounds on hover and click
+    backToTopBtn.addEventListener('mouseenter', () => playSound('hover'));
+    backToTopBtn.addEventListener('click', () => {
+        playSound('click');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    // 2. Hide/Show based on scroll position
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+            backToTopBtn.classList.add('visible');
+        } else {
+            backToTopBtn.classList.remove('visible');
+        }
+    });
+}
