@@ -1031,6 +1031,10 @@ document.addEventListener('keydown', (e) => {
             playSound('click');
         }
     }
+
+    // THE FIX: If the key is being held down, ignore it completely
+    if (e.repeat) return;
+
     // Flip through images with keyboard
     if (lightboxModal && !lightboxModal.classList.contains('hidden')) {
         if (e.key === "ArrowLeft") window.navigateLightbox(-1);
@@ -1267,5 +1271,4 @@ if (backToTopBtn) {
             backToTopBtn.classList.remove('visible');
         }
     });
-
 }
