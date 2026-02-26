@@ -128,8 +128,20 @@
 
     <script type="module" src="script.js"></script>
     <script>
-        document.getElementById('back-to-top').addEventListener('click', () => {
+        const btt = document.getElementById('back-to-top');
+        
+        // Click to scroll up
+        btt.addEventListener('click', () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Hide/Show based on scroll position
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                btt.classList.add('visible');
+            } else {
+                btt.classList.remove('visible');
+            }
         });
     </script>
 </body>
