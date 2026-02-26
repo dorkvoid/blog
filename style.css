@@ -989,3 +989,27 @@ input[type=range].retro-scrub:hover::-webkit-slider-thumb {
 #preview-img.hidden {
     display: none;
 }
+
+/* --- LIGHTBOX GALLERY ARROWS --- */
+.lightbox-nav {
+    background: transparent;
+    color: white;
+    font-family: 'PixeloidSansBold', sans-serif;
+    font-weight: normal;
+    font-size: 2em;
+    border: none;
+    cursor: url('images/link-select.png'), pointer;
+    padding: 20px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100000; 
+    transition: color 0.2s, transform 0.2s;
+}
+.lightbox-nav:hover {
+    color: #aaa;
+    transform: translateY(-50%) scale(1.2);
+}
+.lightbox-nav:hover::before, .lightbox-nav:hover::after { content: none !important; }
+#lightbox-prev { left: 20px; }
+#lightbox-next { right: 20px; }

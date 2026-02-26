@@ -24,7 +24,7 @@ const feed = document.getElementById('feed');
 const textInput = document.getElementById('postText');
 const imageInput = document.getElementById('imageUrl');
 const passwordInput = document.getElementById('adminPassword');
-const emailInput = document.getElementById('adminEmail'); // ADDED EMAIL INPUT
+const emailInput = document.getElementById('adminEmail'); 
 const counterElement = document.getElementById('view-number');
 const searchInput = document.getElementById('searchBar');
 const toastContainer = document.getElementById('toast-container');
@@ -32,43 +32,51 @@ const adminLoginBar = document.getElementById('admin-login-bar');
 const container = document.querySelector('.container');
 const loadMoreBtn = document.getElementById('loadMoreBtn'); 
 
-// New Tool Elements
 const toggleToolsBtn = document.getElementById('toggleTools');
 const extraToolsDiv = document.getElementById('extraTools');
 const addMediaBtn = document.getElementById('addMediaBtn');
 const mediaStackDiv = document.getElementById('media-stack-display');
 
-// Tag Elements
 const tagToggles = document.querySelectorAll('.tag-toggle');
 let selectedTags = [];
-let mediaStack = []; // Stores queued images
+let mediaStack = []; 
 
-// View Toggles
 const viewListBtn = document.getElementById('viewListBtn');
 const viewTileBtn = document.getElementById('viewTileBtn');
 
-// Sound UI
 const soundToggle = document.getElementById('sound-toggle');
 const soundIcon = document.getElementById('sound-icon');
 
-// Toolbar Elements
 const fmtBold = document.getElementById('fmtBold');
 const fmtItalic = document.getElementById('fmtItalic');
 const fmtSpoiler = document.getElementById('fmtSpoiler');
 
-// UI Elements
 const confirmModal = document.getElementById('confirm-modal');
 const confirmYes = document.getElementById('confirmYes');
 const confirmNo = document.getElementById('confirmNo');
 const lightboxModal = document.getElementById('lightbox-modal');
 const lightboxImg = document.getElementById('lightbox-img');
 const lightboxClose = document.getElementById('lightbox-close');
+const lightboxPrev = document.getElementById('lightbox-prev'); // ADDED
+const lightboxNext = document.getElementById('lightbox-next'); // ADDED
 const backToTopBtn = document.getElementById('back-to-top');
 
 // --- INIT UI TWEAKS ---
 if (searchInput) {
     searchInput.placeholder = "Search (or #tags, /help)...";
 }
+
+// --- 3.1 DRAFT MEMORY ---
+window.addEventListener('DOMContentLoaded', () => {
+    const savedDraft = localStorage.getItem('draftPost');
+    if (savedDraft) {
+        textInput.value = savedDraft;
+        textInput.style.height = 'auto';
+        textInput.style.height = (textInput.scrollHeight) + 'px';
+        updatePostButtonState();
+    }
+});
+
 
 // --- 3.5 AUDIO SYSTEM ---
 const sounds = {
@@ -193,9 +201,7 @@ onAuthStateChanged(auth, (user) => {
     setupSubscription(); 
 });
 
-// LOGIN WITH DYNAMIC EMAIL
 if (passwordInput && emailInput) {
-    // Jump to password when pressing Enter in email box
     emailInput.addEventListener('keyup', (e) => {
         if (e.key === 'Enter') passwordInput.focus();
     });
@@ -238,13 +244,13 @@ function setView(mode) {
     
     if (mode === 'tile') {
         feed.classList.add('grid-view');
-        document.body.classList.add('grid-mode'); // <-- NEW: Tells CSS we are in grid
+        document.body.classList.add('grid-mode');
         container.style.maxWidth = '900px'; 
         viewTileBtn.classList.add('active-view');
         viewListBtn.classList.remove('active-view');
     } else {
         feed.classList.remove('grid-view');
-        document.body.classList.remove('grid-mode'); // <-- NEW: Removes it for list view
+        document.body.classList.remove('grid-mode');
         container.style.maxWidth = '600px'; 
         viewListBtn.classList.add('active-view');
         viewTileBtn.classList.remove('active-view');
@@ -265,13 +271,11 @@ viewTileBtn.addEventListener('click', () => {
 function reloadFeed() {
     feed.innerHTML = "";
     
-    // 1. SORT LOGIC
     allPosts.sort((a, b) => {
         if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
         return (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0);
     });
 
-    // 2. FILTER LOGIC
     const term = searchInput.value.toLowerCase();
     
     const visiblePosts = allPosts.filter(p => {
@@ -286,7 +290,6 @@ function reloadFeed() {
         return true; 
     });
 
-    // 3. EMPTY STATE CHECK (WITH SEIZURE FIX)
     if (visiblePosts.length === 0) {
         if (allPosts.length > 0) {
             feed.innerHTML = `
@@ -307,7 +310,6 @@ function reloadFeed() {
         return; 
     }
 
-    // 4. RENDER LOOP
     visiblePosts.forEach(post => {
         addPostToDOM(post);
     });
@@ -389,7 +391,10 @@ function updatePostButtonState() {
     }
 }
 
-textInput.addEventListener('input', updatePostButtonState);
+textInput.addEventListener('input', () => {
+    updatePostButtonState();
+    localStorage.setItem('draftPost', textInput.value); // UPDATED: Save to Draft
+});
 imageInput.addEventListener('input', updatePostButtonState);
 updatePostButtonState();
 
@@ -471,6 +476,7 @@ function insertTag(tagStart, tagEnd) {
     textInput.selectionStart = start + tagStart.length;
     textInput.selectionEnd = end + tagStart.length;
     updatePostButtonState();
+    localStorage.setItem('draftPost', textInput.value); 
 }
 
 const fmtHeader = document.getElementById('fmtHeader');
@@ -596,6 +602,7 @@ function resetForm() {
     tagToggles.forEach(t => t.classList.remove('selected'));
     
     updatePostButtonState();
+    localStorage.removeItem('draftPost'); // Clean memory on success
 }
 
 // --- 9. HELPERS ---
@@ -644,6 +651,20 @@ function timeAgo(date) {
     if (days > 30) return Math.floor(days/30) + " months ago";
     return days + " days ago";
 }
+
+// --- LIVE TIMESTAMP UPDATER ---
+setInterval(() => {
+    document.querySelectorAll('.timestamp-wrapper[data-mode="relative"]').forEach(wrapper => {
+        const mainSpan = wrapper.querySelector('.main-ts');
+        const editSpan = wrapper.querySelector('.edited-ts');
+        if (mainSpan && mainSpan.dataset.ts) {
+            mainSpan.innerText = timeAgo(new Date(parseInt(mainSpan.dataset.ts)));
+        }
+        if (editSpan && editSpan.dataset.editTs) {
+            editSpan.innerText = `(edited ${timeAgo(new Date(parseInt(editSpan.dataset.editTs)))})`;
+        }
+    });
+}, 60000); // Check every 60 seconds
 
 // --- 10. DRAG AND DROP ---
 let draggedItem = null;
@@ -772,7 +793,7 @@ function addPostToDOM(post) {
                             class="retro-btn" 
                             data-thumb="${thumb}" 
                             data-info="YouTube Video">
-                         ▶ WATCH VIDEO 
+                        [ ▶ WATCH VIDEO ]
                     </button>
                 </div>`;
             } else if (spMatch) {
@@ -783,7 +804,7 @@ function addPostToDOM(post) {
                     <button onclick="window.launchMedia('${spUrl}', 'audio')" 
                             class="retro-btn" 
                             data-info="SPOTIFY [ ${type} ]">
-                         ♫ PLAY ${type} 
+                        [ ♫ PLAY ${type} ]
                     </button>
                 </div>`;
             } else if (isVideo) {
@@ -791,7 +812,7 @@ function addPostToDOM(post) {
                     <button onclick="window.launchMedia('${url}', 'video-file')" 
                             class="retro-btn" 
                             data-info="${url.split('/').pop()}">
-                         ▶ WATCH CLIP 
+                        [ ▶ WATCH CLIP ]
                     </button>
                 </div>`;
             } else if (isAudio) {
@@ -799,12 +820,12 @@ function addPostToDOM(post) {
                     <button onclick="window.launchMedia('${url}', 'audio-file')" 
                             class="retro-btn" 
                             data-info="${url.split('/').pop()}">
-                         ♫ PLAY AUDIO 
+                        [ ♫ PLAY AUDIO ]
                     </button>
                 </div>`;
             } else {
                 mediaHTML += `<div class="media-item"><img src="${url}" class="post-image click-to-zoom"></div>`;
-            }       
+            }
         });
         
         mediaHTML += `</div>`;
@@ -814,9 +835,10 @@ function addPostToDOM(post) {
     const postDate = rawDate ? rawDate.toDate() : new Date();
     const editDate = post.editedTimestamp ? post.editedTimestamp.toDate() : null;
 
-    let metaContent = `<span class="main-ts">${timeAgo(postDate)}</span>`;
+    // ADDED data-ts for live updating
+    let metaContent = `<span class="main-ts" data-ts="${postDate.getTime()}">${timeAgo(postDate)}</span>`;
     if (editDate) {
-        metaContent += `<span class="edited-ts">(edited ${timeAgo(editDate)})</span>`;
+        metaContent += `<span class="edited-ts" data-edit-ts="${editDate.getTime()}">(edited ${timeAgo(editDate)})</span>`;
     }
 
     let rawHTML = marked.parse(post.text, { breaks: true, gfm: true });
@@ -827,7 +849,7 @@ function addPostToDOM(post) {
         ${dragHTML}
         ${pinHTML}
         
-        <div class="timestamp-wrapper" title="Toggle precise time">
+        <div class="timestamp-wrapper" data-mode="relative" title="Toggle precise time">
             ${metaContent}
         </div>
 
@@ -853,15 +875,16 @@ function addPostToDOM(post) {
     if (tsWrapper) {
         tsWrapper.addEventListener('click', () => {
             playSound('click');
-            const currentText = tsWrapper.innerText;
-            const isRelative = currentText.includes("ago") || currentText.includes("Just now");
+            const isRelative = tsWrapper.dataset.mode === "relative";
             if (isRelative) {
-                let exactHTML = `<span class="main-ts">${postDate.toLocaleString()}</span>`;
-                if (editDate) exactHTML += `<span class="edited-ts">(edited ${editDate.toLocaleString()})</span>`;
+                tsWrapper.dataset.mode = "exact";
+                let exactHTML = `<span class="main-ts" data-ts="${postDate.getTime()}">${postDate.toLocaleString()}</span>`;
+                if (editDate) exactHTML += `<span class="edited-ts" data-edit-ts="${editDate.getTime()}">(edited ${editDate.toLocaleString()})</span>`;
                 tsWrapper.innerHTML = exactHTML;
             } else {
-                let relHTML = `<span class="main-ts">${timeAgo(postDate)}</span>`;
-                if (editDate) relHTML += `<span class="edited-ts">(edited ${timeAgo(editDate)})</span>`;
+                tsWrapper.dataset.mode = "relative";
+                let relHTML = `<span class="main-ts" data-ts="${postDate.getTime()}">${timeAgo(postDate)}</span>`;
+                if (editDate) relHTML += `<span class="edited-ts" data-edit-ts="${editDate.getTime()}">(edited ${timeAgo(editDate)})</span>`;
                 tsWrapper.innerHTML = relHTML;
             }
         });
@@ -921,12 +944,14 @@ function addPostToDOM(post) {
         btnContainer.appendChild(deleteBtn);
     }
     
+    // MULTI-IMAGE LIGHTBOX UPGRADE
     const imgElements = postDiv.querySelectorAll('.click-to-zoom');
-    imgElements.forEach(img => {
+    const galleryUrls = Array.from(imgElements).map(img => img.src);
+    
+    imgElements.forEach((img, index) => {
         img.addEventListener('click', () => {
             playSound('click');
-            lightboxImg.src = img.src;
-            lightboxModal.classList.remove('hidden');
+            window.openLightbox(galleryUrls, index);
         });
     });
 }
@@ -959,10 +984,57 @@ function startEdit(id, text, image, tags, images) {
     });
 }
 
-// --- LIGHTBOX LOGIC ---
+// --- LIGHTBOX GALLERY LOGIC ---
+let currentGallery = [];
+let currentGalleryIndex = 0;
+
+window.openLightbox = function(urls, index) {
+    currentGallery = urls;
+    currentGalleryIndex = index;
+    lightboxImg.src = currentGallery[currentGalleryIndex];
+    
+    if (currentGallery.length > 1) {
+        lightboxPrev.classList.remove('hidden');
+        lightboxNext.classList.remove('hidden');
+    } else {
+        lightboxPrev.classList.add('hidden');
+        lightboxNext.classList.add('hidden');
+    }
+    
+    lightboxModal.classList.remove('hidden');
+};
+
+window.navigateLightbox = function(direction) {
+    if (currentGallery.length <= 1) return;
+    playSound('hover'); 
+    currentGalleryIndex += direction;
+    
+    if (currentGalleryIndex < 0) currentGalleryIndex = currentGallery.length - 1;
+    if (currentGalleryIndex >= currentGallery.length) currentGalleryIndex = 0;
+    
+    lightboxImg.src = currentGallery[currentGalleryIndex];
+};
+
+if (lightboxPrev) lightboxPrev.addEventListener('click', (e) => { e.stopPropagation(); window.navigateLightbox(-1); });
+if (lightboxNext) lightboxNext.addEventListener('click', (e) => { e.stopPropagation(); window.navigateLightbox(1); });
+
+// GLOBAL ESCAPE HATCH & KEYBOARD ARROWS
 document.addEventListener('keydown', (e) => {
     if (e.key === "Escape") {
-        lightboxModal.classList.add('hidden');
+        if (lightboxModal && !lightboxModal.classList.contains('hidden')) {
+            lightboxModal.classList.add('hidden');
+            playSound('click');
+        }
+        if (mediaBox && !mediaBox.classList.contains('hidden')) {
+            mediaBox.classList.add('hidden');
+            mediaContent.innerHTML = ""; // Cuts off audio instantly
+            playSound('click');
+        }
+    }
+    // Flip through images with keyboard
+    if (lightboxModal && !lightboxModal.classList.contains('hidden')) {
+        if (e.key === "ArrowLeft") window.navigateLightbox(-1);
+        if (e.key === "ArrowRight") window.navigateLightbox(1);
     }
 });
 
@@ -1003,7 +1075,6 @@ const mediaContent = document.getElementById('media-content');
 const mediaClose = document.getElementById('media-close');
 const mediaTitle = document.querySelector('.media-title-text');
 
-// Helper to format seconds into M:SS
 function formatTime(seconds) {
     if (isNaN(seconds)) return "0:00";
     const m = Math.floor(seconds / 60);
@@ -1034,23 +1105,32 @@ window.launchMedia = function(url, type) {
     else if (type === 'audio-file') {
         mediaTitle.innerText = "LOCAL AUDIO";
         
-        // Build Custom Player HTML
+        // Removed standard "autoplay" attribute to handle it manually
         mediaContent.innerHTML = `
             <div class="custom-audio-wrapper">
-                <audio id="raw-audio" src="${url}" autoplay></audio>
-                <button id="audio-btn" class="play-pause-btn">||</button>
+                <audio id="raw-audio" src="${url}"></audio>
+                <button id="audio-btn" class="play-pause-btn">></button>
                 <span id="audio-time">0:00</span>
                 <input type="range" id="audio-scrub" class="retro-scrub" value="0" min="0" max="100" step="0.1">
                 <span id="audio-duration">0:00</span>
             </div>
         `;
 
-        // Wire up custom controls
         const audioEl = document.getElementById('raw-audio');
         const playBtn = document.getElementById('audio-btn');
         const scrubBar = document.getElementById('audio-scrub');
         const timeDisp = document.getElementById('audio-time');
         const durDisp = document.getElementById('audio-duration');
+
+        // THE FIX: Catch the Autoplay Promise
+        const playPromise = audioEl.play();
+        if (playPromise !== undefined) {
+            playPromise.then(_ => {
+                playBtn.innerText = "||"; // It worked!
+            }).catch(error => {
+                playBtn.innerText = ">"; // Browser blocked it, wait for click
+            });
+        }
 
         playBtn.onclick = () => {
             playSound('click');
@@ -1090,7 +1170,7 @@ if(mediaClose) {
     mediaClose.addEventListener('click', () => {
         playSound('click');
         mediaBox.classList.add('hidden');
-        mediaContent.innerHTML = ""; // Cuts off audio instantly
+        mediaContent.innerHTML = ""; 
     });
 }
 
@@ -1101,7 +1181,7 @@ let offsetX, offsetY;
 
 if(dragHandle) {
     dragHandle.addEventListener('mousedown', (e) => {
-        if(e.target === mediaClose) return; // Don't drag if clicking the X
+        if(e.target === mediaClose) return; 
         isDragging = true;
         offsetX = e.clientX - mediaBox.offsetLeft;
         offsetY = e.clientY - mediaBox.offsetTop;
@@ -1153,12 +1233,9 @@ if (previewBox) {
             let tooltipX = e.clientX + 15;
             let tooltipY = e.clientY + 15;
 
-            // THE FIX: If the tooltip is going to hit the right side of the screen, flip it to the left!
             if (tooltipX + previewBox.offsetWidth > window.innerWidth) {
                 tooltipX = e.clientX - previewBox.offsetWidth - 15;
             }
-            
-            // Flip it up if it hits the bottom
             if (tooltipY + previewBox.offsetHeight > window.innerHeight) {
                 tooltipY = e.clientY - previewBox.offsetHeight - 15;
             }
@@ -1177,14 +1254,12 @@ if (previewBox) {
 
 // --- BACK TO TOP LOGIC & SOUNDS ---
 if (backToTopBtn) {
-    // 1. Play sounds on hover and click
     backToTopBtn.addEventListener('mouseenter', () => playSound('hover'));
     backToTopBtn.addEventListener('click', () => {
         playSound('click');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    // 2. Hide/Show based on scroll position
     window.addEventListener('scroll', () => {
         if (window.scrollY > 300) {
             backToTopBtn.classList.add('visible');

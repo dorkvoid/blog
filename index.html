@@ -7,12 +7,12 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://dorkvoid.github.io/blog/"> 
     <meta property="og:title" content="MIKEVOID">
-    <meta property="og:description" content="a personal archive of thoughts, art, and noise">
+    <meta property="og:description" content="A personal archive of thoughts, art, and noise.">
     <meta property="og:image" content="https://dorkvoid.github.io/blog/images/plxeyes.png"> 
     <meta name="theme-color" content="#000000">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="MIKEVOID">
-    <meta name="twitter:description" content="a personal archive of thoughts, art, and noise">
+    <meta name="twitter:description" content="A personal archive of thoughts, art, and noise.">
     <meta name="twitter:image" content="https://dorkvoid.github.io/blog/images/plxeyes.png">
     <link rel="icon" type="image/png" href="images/plxeyestiny.png">
     <link rel="stylesheet" href="style.css">
@@ -44,7 +44,7 @@
                 <div id="extraTools" class="tools-drawer hidden">
                     <button id="fmtHeader" title="Header">H</button>
                     <button id="fmtQuote" title="Quote">"</button>
-                    <button id="fmtCode" title="Code">&lt;&gt;</button>
+                    <button id="fmtCode" title="Code"><></button>
                     <button id="fmtList" title="Bullet List">•</button>
                     <button id="fmtLink" title="Link">@</button>
                 </div>
@@ -52,15 +52,15 @@
                 <div class="tag-selector">
                     <span class="tag-toggle" data-tag="ART">ART</span>
                     <span class="tag-toggle" data-tag="CODE">CODE</span>
-                    <span class="tag-toggle" data-tag="LIFE">CLASS</span>
-                    <span class="tag-toggle" data-tag="INSPO">LOG</span>
+                    <span class="tag-toggle" data-tag="CLASS">CLASS</span>
+                    <span class="tag-toggle" data-tag="LOG">LOG</span>
                 </div>
             </div>
 
             <textarea id="postText" placeholder="Start typing..."></textarea>
             
             <div class="media-row">
-                <input type="text" id="imageUrl" placeholder="Paste URL...">
+                <input type="text" id="imageUrl" placeholder="Image, YouTube, MP4, or Spotify URL...">
                 <button id="addMediaBtn" title="Add to Media Stack">+</button>
             </div>
             
@@ -106,8 +106,10 @@
     </div>
 
     <div id="lightbox-modal" class="modal-overlay hidden">
+        <button id="lightbox-prev" class="lightbox-nav hidden">&lt;</button>
         <span id="lightbox-close">[ X ]</span>
         <img id="lightbox-img" src="">
+        <button id="lightbox-next" class="lightbox-nav hidden">&gt;</button>
     </div>
 
     <div id="media-player-box" class="hidden">
@@ -124,7 +126,6 @@
     </div>
 
     <div id="toast-container"></div>
-    
     <img id="back-to-top" src="images/uparrow.png" title="Back to top" alt="^">
 
     <script type="module" src="script.js"></script>
