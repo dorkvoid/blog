@@ -18,36 +18,64 @@
     font-style: normal;
 }
 
-/* FIREFOX SCROLLBAR FIX */
+/* --- CLASSIC MACINTOSH SYSTEM 1 SCROLLBAR --- */
+
+/* 1. Set the global width and aesthetic (Chrome/Safari/Edge only) */
+::-webkit-scrollbar {
+    width: 20px; /* Chunky classic width */
+    background-color: white; /* Base color */
+}
+
+/* 2. Style the track with the iconic checkered dither pattern */
+::-webkit-scrollbar-track {
+    background-color: white;
+    /* This creates a 50% grey checkered pattern using linear gradients */
+    background-image: 
+        linear-gradient(45deg, #000 25%, transparent 25%),
+        linear-gradient(-45deg, #000 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #000 75%),
+        linear-gradient(-45deg, transparent 75%, #000 75%);
+    background-size: 4px 4px; /* Size of the dither pattern pixels */
+    background-position: 0 0, 0 2px, 2px 2px, 2px 0;
+    
+    /* We make the pattern very light so it feels like grey */
+    opacity: 0.15; 
+}
+
+/* 3. Style the white square "Thumb" (the draggable part) */
+::-webkit-scrollbar-thumb {
+    background-color: white;
+    border: 1px solid black; /* Sharp classic border */
+    border-radius: 0; /* No rounded corners, ever */
+    cursor: url('images/link-select.png'), pointer;
+}
+
+/* 4. Style the classic Mac OS arrow buttons */
+::-webkit-scrollbar-button:single-button {
+    background-color: white;
+    background-size: 10px; /* Sharp, pixelated arrow size */
+    background-position: center;
+    background-repeat: no-repeat;
+    border: 1px solid black;
+    height: 20px; /* Must match scrollbar width */
+    width: 20px;
+    display: block;
+}
+
+/* UP ARROW SVG (Classic solid triangle) */
+::-webkit-scrollbar-button:single-button:vertical:decrement {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' fill='black'%3E%3Cpath d='M5 1 L9 8 H1 Z'/%3E%3C/svg%3E");
+}
+
+/* DOWN ARROW SVG (Classic solid triangle) */
+::-webkit-scrollbar-button:single-button:vertical:increment {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' fill='black'%3E%3Cpath d='M1 2 H9 L5 9 Z'/%3E%3C/svg%3E");
+}
+
+/* 5. Firefox can't do the patterns/buttons, so we give them a simple themed fallback */
 html {
     scrollbar-width: thin;
     scrollbar-color: white black;
-}
-::-webkit-scrollbar {
-    width: 12px;
-}
-::-webkit-scrollbar-track {
-    background: black; 
-    border-left: 1px solid #333;
-}
-::-webkit-scrollbar-thumb {
-    background: white; 
-    border: 2px solid black;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: #ccc; 
-}
-
-::selection {
-    background: white;
-    color: black;
-    text-shadow: none;
-}
-
-::-moz-selection {
-    background: white;
-    color: black;
-    text-shadow: none;
 }
 
 html {
