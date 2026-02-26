@@ -24,6 +24,7 @@ const feed = document.getElementById('feed');
 const textInput = document.getElementById('postText');
 const imageInput = document.getElementById('imageUrl');
 const passwordInput = document.getElementById('adminPassword');
+const emailInput = document.getElementById('adminEmail'); // ADDED EMAIL INPUT
 const counterElement = document.getElementById('view-number');
 const searchInput = document.getElementById('searchBar');
 const toastContainer = document.getElementById('toast-container');
@@ -65,7 +66,6 @@ const lightboxClose = document.getElementById('lightbox-close');
 const backToTopBtn = document.getElementById('back-to-top');
 
 // --- INIT UI TWEAKS ---
-// Set explicit placeholder for search tags
 if (searchInput) {
     searchInput.placeholder = "Search (or #tags, /help)...";
 }
@@ -151,7 +151,6 @@ document.querySelectorAll('button, .tag-toggle').forEach(btn => {
     btn.addEventListener('click', () => playSound('click'));
 });
 
-// UPDATED: Add hover sounds to the View Toggle buttons specifically
 [viewListBtn, viewTileBtn].forEach(btn => {
     btn.addEventListener('mouseenter', () => playSound('hover'));
 });
@@ -160,7 +159,6 @@ document.querySelectorAll('button, .tag-toggle').forEach(btn => {
 const statsRef = doc(db, "site_stats", "global");
 onSnapshot(statsRef, (docSnapshot) => {
     if (docSnapshot.exists() && counterElement) {
-        // UPDATED: Just the number, padded with zeros
         counterElement.innerText = String(docSnapshot.data().views).padStart(5, '0');
     }
 });
@@ -195,12 +193,20 @@ onAuthStateChanged(auth, (user) => {
     setupSubscription(); 
 });
 
-if (passwordInput) {
+// LOGIN WITH DYNAMIC EMAIL
+if (passwordInput && emailInput) {
+    // Jump to password when pressing Enter in email box
+    emailInput.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') passwordInput.focus();
+    });
+
     passwordInput.addEventListener('keyup', async (e) => {
         if (e.key === 'Enter') {
             try {
-                await signInWithEmailAndPassword(auth, "kickside02@gmail.com", e.target.value);
+                await signInWithEmailAndPassword(auth, emailInput.value.trim(), e.target.value);
                 showToast("ACCESS GRANTED");
+                emailInput.value = "";
+                e.target.value = "";
             } catch (error) {
                 playSound('error');
                 if(errorMsg) {
@@ -253,15 +259,13 @@ viewTileBtn.addEventListener('click', () => {
     setView('tile');
 });
 
-// --- 6.5 RENDER FEED (The Missing Engine) ---
+// --- 6.5 RENDER FEED ---
 function reloadFeed() {
     feed.innerHTML = "";
     
     // 1. SORT LOGIC
     allPosts.sort((a, b) => {
-        // Pinned posts always first
         if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
-        // Then sort by timestamp (newest first)
         return (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0);
     });
 
@@ -269,34 +273,32 @@ function reloadFeed() {
     const term = searchInput.value.toLowerCase();
     
     const visiblePosts = allPosts.filter(p => {
-        // Tag Filter (e.g. #ART)
         if (term.startsWith('#')) {
             const tagQuery = term.substring(1).toUpperCase();
             if (!p.tags) return false;
             return p.tags.includes(tagQuery);
         }
-        // Text Filter (standard search)
         else if (term && !term.startsWith('/')) {
             return p.text.toLowerCase().includes(term);
         }
-        return true; // Show everything if no search term
+        return true; 
     });
 
-    // 3. EMPTY STATE CHECK
+    // 3. EMPTY STATE CHECK (WITH SEIZURE FIX)
     if (visiblePosts.length === 0) {
         if (allPosts.length > 0) {
-            // We have posts, but the search hid them all
             feed.innerHTML = `
                 <div class="no-signal">
-                    [ NO DATA FOUND ]
+                    <span class="blink-text">[ NO DATA FOUND ]</span>
                     <span>TRY A DIFFERENT SEARCH TERM...</span>
                 </div>`;
         } else {
-            // The database is actually empty
-            feed.innerHTML = `<div class="no-signal">[ BLOG IS EMPTY ]</div>`;
+            feed.innerHTML = `
+                <div class="no-signal">
+                    <span class="blink-text">[ BLOG IS EMPTY ]</span>
+                </div>`;
         }
         
-        // Hide/Show "Load More" based on search state
         if(term) loadMoreBtn.classList.add('hidden');
         else loadMoreBtn.classList.remove('hidden');
         
@@ -309,7 +311,7 @@ function reloadFeed() {
     });
 }
 
-// --- 7. LOAD POSTS (PAGINATION + PERMALINKS) ---
+// --- 7. LOAD POSTS ---
 let allPosts = []; 
 let feedLimit = 10; 
 let unsubscribe = null;
@@ -318,44 +320,33 @@ let isFeedHidden = false;
 function setupSubscription() {
     if (unsubscribe) unsubscribe();
 
-    // 1. CHECK FOR DIRECT LINK (?id=...)
     const urlParams = new URLSearchParams(window.location.search);
     const permalinkId = urlParams.get('id');
 
     if (permalinkId) {
-        // --- SINGLE POST MODE ---
-        
-        // Hide pagination since we only have one post
         loadMoreBtn.classList.add('hidden'); 
         
-        // Create the "Return" button
-        // Check if it already exists to avoid duplicates
         if (!document.querySelector('.return-btn')) {
             const returnBtn = document.createElement('button');
             returnBtn.innerText = "< RETURN TO FEED";
-            returnBtn.className = "return-btn"; // Uses the new CSS class
+            returnBtn.className = "return-btn"; 
             
             returnBtn.onclick = () => {
                 playSound('click');
-                // Remove the ID from the URL without reloading yet
                 window.history.pushState({}, document.title, window.location.pathname); 
-                // Reload the page to reset to the main feed
                 location.reload(); 
             };
             
-            // Insert it right before the feed container
             feed.parentNode.insertBefore(returnBtn, feed);
         }
 
-        // Fetch just the one post
         const docRef = doc(db, "posts", permalinkId);
         onSnapshot(docRef, (docSnap) => {
             if (docSnap.exists()) {
                 allPosts = [{ id: docSnap.id, ...docSnap.data() }];
-                reloadFeed(); // Renders just this one post
+                reloadFeed(); 
             } else {
                 showToast("POST NOT FOUND");
-                // If post doesn't exist, auto-redirect back to feed after 2 seconds
                 setTimeout(() => { 
                     window.history.pushState({}, document.title, window.location.pathname);
                     location.reload(); 
@@ -364,9 +355,6 @@ function setupSubscription() {
         });
 
     } else {
-        // --- NORMAL FEED MODE ---
-        
-        // Remove return button if it exists (cleanup)
         const existingBtn = document.querySelector('.return-btn');
         if (existingBtn) existingBtn.remove();
 
@@ -376,7 +364,6 @@ function setupSubscription() {
             allPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             reloadFeed();
             
-            // Show Load More only if we hit the limit
             if (allPosts.length >= feedLimit) {
                 loadMoreBtn.classList.remove('hidden');
             } else {
@@ -387,38 +374,28 @@ function setupSubscription() {
 }
 
 // --- 8. POST & COMMAND LOGIC ---
-
-// --- NEW FUNCTION: CHECK BUTTON STATE ---
 function updatePostButtonState() {
-    // We enable if ANY content exists (Text, URL in box, or Media in stack)
     const hasText = textInput.value.trim().length > 0;
     const hasUrlInput = imageInput.value.trim().length > 0;
     const hasStack = mediaStack.length > 0;
     
     if (hasText || hasUrlInput || hasStack) {
         postBtn.disabled = false;
-        postBtn.innerText = "POST"; // Reset text just in case
+        postBtn.innerText = "POST"; 
     } else {
         postBtn.disabled = true;
-        // Optional: Change text to show it's waiting
-        // postBtn.innerText = "WRITE SOMETHING..."; 
     }
 }
 
-// Attach listeners to update state
 textInput.addEventListener('input', updatePostButtonState);
 imageInput.addEventListener('input', updatePostButtonState);
-
-// Call once on load
 updatePostButtonState();
-
 
 function handleTypingSound(e) {
     if (e.repeat) return; 
     playSound('type');
 }
 
-// Auto-Expand Text Area
 textInput.addEventListener('input', function() {
     this.style.height = 'auto';
     this.style.height = (this.scrollHeight) + 'px';
@@ -428,8 +405,8 @@ searchInput.addEventListener('keydown', handleTypingSound);
 textInput.addEventListener('keydown', handleTypingSound);
 imageInput.addEventListener('keydown', handleTypingSound);
 if (passwordInput) passwordInput.addEventListener('keydown', handleTypingSound);
+if (emailInput) emailInput.addEventListener('keydown', handleTypingSound);
 
-// Tag Toggle Logic
 tagToggles.forEach(toggle => {
     toggle.addEventListener('click', () => {
         const tag = toggle.dataset.tag;
@@ -446,13 +423,11 @@ tagToggles.forEach(toggle => {
 searchInput.addEventListener('input', (e) => {
     const val = e.target.value;
     
-    // 1. COMMAND MODE
     if (val.startsWith('/')) {
         if (val === '/login') {
-            // Toggle Login Bar
             if (adminLoginBar.classList.contains('hidden')) {
                 adminLoginBar.classList.remove('hidden');
-                passwordInput.focus();
+                emailInput.focus();
                 showToast("LOGIN TERMINAL OPEN");
             } else {
                 adminLoginBar.classList.add('hidden');
@@ -461,12 +436,10 @@ searchInput.addEventListener('input', (e) => {
             searchInput.value = ''; 
             
         } else if (val === '/help') {
-            // Show Help
             showToast("CMDS: /login, /clear");
             searchInput.value = '';
             
         } else if (val === '/clear') {
-            // Toggle Feed Visibility
             if (isFeedHidden) {
                 isFeedHidden = false;
                 reloadFeed(); 
@@ -478,12 +451,9 @@ searchInput.addEventListener('input', (e) => {
             }
             searchInput.value = '';
         }
-        return; // Stop here so we don't trigger a search
+        return; 
     }
     
-    // 2. SEARCH MODE
-    // If we start typing normally, we assume the user wants to see results,
-    // so we disable the "Hidden" state and reload.
     if (isFeedHidden) isFeedHidden = false;
     reloadFeed(); 
 });
@@ -498,32 +468,25 @@ function insertTag(tagStart, tagEnd) {
     textInput.focus();
     textInput.selectionStart = start + tagStart.length;
     textInput.selectionEnd = end + tagStart.length;
-    
-    // Trigger update because we changed text programmatically
     updatePostButtonState();
 }
 
-// --- NEW TOOLBAR LOGIC ---
 const fmtHeader = document.getElementById('fmtHeader');
 const fmtQuote = document.getElementById('fmtQuote');
 const fmtLink = document.getElementById('fmtLink');
 const fmtCode = document.getElementById('fmtCode');
 const fmtList = document.getElementById('fmtList');
 
-// Existing logic
 fmtBold.onclick = () => insertTag("**", "**");
 fmtItalic.onclick = () => insertTag("*", "*");
 fmtSpoiler.onclick = () => insertTag("||", "||");
 
-// Drawer Toggle
 toggleToolsBtn.addEventListener('click', () => {
     playSound('click');
     extraToolsDiv.classList.toggle('hidden');
-    // Change button text based on state
     toggleToolsBtn.innerText = extraToolsDiv.classList.contains('hidden') ? "..." : "<";
 });
 
-// New Markdown Logic
 fmtHeader.onclick = () => insertTag("### ", ""); 
 fmtQuote.onclick = () => insertTag("> ", "");     
 fmtCode.onclick = () => insertTag("`", "`");      
@@ -533,7 +496,6 @@ fmtLink.onclick = () => {
     if (url) insertTag("[", `](${url})`);
 };
 
-// --- MEDIA STACK LOGIC ---
 function updateMediaStackUI() {
     mediaStackDiv.innerHTML = "";
     mediaStack.forEach((url, index) => {
@@ -545,12 +507,9 @@ function updateMediaStackUI() {
         `;
         mediaStackDiv.appendChild(chip);
     });
-    
-    // Check if button should be enabled
     updatePostButtonState();
 }
 
-// Make global for onclick access
 window.removeMedia = function(index) {
     playSound('delete');
     mediaStack.splice(index, 1);
@@ -567,19 +526,15 @@ addMediaBtn.addEventListener('click', () => {
     updateMediaStackUI();
 });
 
-
 postBtn.addEventListener('click', async function() {
     if (!auth.currentUser) return showToast("LOGIN REQUIRED");
 
     const text = textInput.value;
-    
-    // 1. Check if there's a URL sitting in the input box that user forgot to "Add"
     const currentInput = imageInput.value.trim();
     if (currentInput) {
         mediaStack.push(currentInput);
     }
 
-    // 2. Use the stack as our image source
     const finalImages = [...mediaStack]; 
 
     if (text === "" && finalImages.length === 0) return;
@@ -616,8 +571,6 @@ postBtn.addEventListener('click', async function() {
         showToast("ERROR");
         playSound('error');
     } finally {
-        // We don't just set disabled=false here, we check the state
-        // because the form is likely empty now
         updatePostButtonState();
         if(!postBtn.disabled) postBtn.innerText = "POST";
     }
@@ -630,7 +583,6 @@ function resetForm() {
     imageInput.value = '';
     textInput.style.height = 'auto';
     
-    // CLEAR STACK
     mediaStack = [];
     updateMediaStackUI();
     
@@ -641,11 +593,10 @@ function resetForm() {
     selectedTags = [];
     tagToggles.forEach(t => t.classList.remove('selected'));
     
-    // Ensure button goes back to disabled state
     updatePostButtonState();
 }
 
-// --- 9. HELPERS (Delete, Toast, TimeAgo) ---
+// --- 9. HELPERS ---
 let idToDelete = null;
 
 function triggerDelete(id) {
@@ -692,7 +643,7 @@ function timeAgo(date) {
     return days + " days ago";
 }
 
-// --- 10. DRAG AND DROP (Geometry Locked) ---
+// --- 10. DRAG AND DROP ---
 let draggedItem = null;
 
 function handleDragStart(e) {
@@ -728,7 +679,6 @@ async function handleDrop(e) {
         const post1 = allPosts.find(p => p.id === id1);
         const post2 = allPosts.find(p => p.id === id2);
 
-        // Safety Lock for Pinned Posts
         if (post1.pinned || post2.pinned) {
             showToast("PINNED POSTS LOCKED");
             return false;
@@ -737,25 +687,18 @@ async function handleDrop(e) {
         if (post1 && post2) {
             showToast("SWAPPING ORDER...");
             
-            // 1. Get the Sort Orders (Timestamps)
             const sortTs1 = post1.timestamp;
             const sortTs2 = post2.timestamp;
 
-            // 2. Preserve History (Handle Migration for Old Posts)
-            // If actualTimestamp doesn't exist yet, we lock the current timestamp as the "Real Time"
             const realTs1 = post1.actualTimestamp || post1.timestamp;
             const realTs2 = post2.actualTimestamp || post2.timestamp;
 
             try {
-                // UPDATE POST 1:
-                // Take Post 2's Sort Order, but Keep Post 1's History
                 await updateDoc(doc(db, "posts", id1), { 
                     timestamp: sortTs2,
                     actualTimestamp: realTs1 
                 });
 
-                // UPDATE POST 2:
-                // Take Post 1's Sort Order, but Keep Post 2's History
                 await updateDoc(doc(db, "posts", id2), { 
                     timestamp: sortTs1, 
                     actualTimestamp: realTs2
@@ -792,7 +735,6 @@ function addPostToDOM(post) {
         dragHTML = `<img src="images/drag-handle.png" class="drag-handle" draggable="true">`;
     }
 
-    // TAGS HTML
     let tagsHTML = "";
     if (post.tags && post.tags.length > 0) {
         tagsHTML = `<div class="post-tags">`;
@@ -802,10 +744,7 @@ function addPostToDOM(post) {
         tagsHTML += `</div>`;
     }
 
-    // --- MULTI-MEDIA LOGIC (UPDATED FOR HOVER PREVIEWS) ---
     let mediaHTML = "";
-    
-    // COMBINE OLD 'image' STRING AND NEW 'images' ARRAY
     let contentList = [];
     if (post.images && Array.isArray(post.images)) {
         contentList = post.images;
@@ -814,7 +753,6 @@ function addPostToDOM(post) {
     }
 
     if (contentList.length > 0) {
-        // If more than 1 image, use a grid layout, otherwise single view
         const gridClass = contentList.length > 1 ? "media-gallery" : "media-single";
         
         mediaHTML = `<div class="${gridClass}">`;
@@ -825,7 +763,6 @@ function addPostToDOM(post) {
             const isVideo = url.match(/\.(mp4|webm|ogg|mov)/i);
             const isAudio = url.match(/\.(mp3|wav)/i);
 
-            // 1. YOUTUBE (With Thumbnail!)
             if (ytMatch) {
                 const thumb = `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg`;
                 mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
@@ -836,10 +773,7 @@ function addPostToDOM(post) {
                         [ ▶ WATCH VIDEO ]
                     </button>
                 </div>`;
-            } 
-            // 2. SPOTIFY (Smart Label)
-            else if (spMatch) {
-                // spMatch[1] contains "track", "album", or "playlist"
+            } else if (spMatch) {
                 const type = spMatch[1].toUpperCase(); 
                 const spUrl = `https://open.spotify.com/embed/${spMatch[1]}/${spMatch[2]}`;
                 
@@ -850,9 +784,7 @@ function addPostToDOM(post) {
                         [ ♫ PLAY ${type} ]
                     </button>
                 </div>`;
-            }
-            // 3. MP4
-            else if (isVideo) {
+            } else if (isVideo) {
                 mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
                     <button onclick="window.launchWin98('${url}', 'video-file')" 
                             class="retro-btn" 
@@ -860,9 +792,7 @@ function addPostToDOM(post) {
                         [ ▶ WATCH CLIP ]
                     </button>
                 </div>`;
-            } 
-            // 4. MP3
-            else if (isAudio) {
+            } else if (isAudio) {
                 mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
                     <button onclick="window.launchWin98('${url}', 'audio-file')" 
                             class="retro-btn" 
@@ -870,9 +800,7 @@ function addPostToDOM(post) {
                         [ ♫ PLAY AUDIO ]
                     </button>
                 </div>`;
-            } 
-            // 5. IMAGES -> Standard Display (Still in feed)
-            else {
+            } else {
                 mediaHTML += `<div class="media-item"><img src="${url}" class="post-image click-to-zoom"></div>`;
             }
         });
@@ -880,7 +808,6 @@ function addPostToDOM(post) {
         mediaHTML += `</div>`;
     }
 
-    // --- DATE LOGIC ---
     const rawDate = post.actualTimestamp || post.timestamp;
     const postDate = rawDate ? rawDate.toDate() : new Date();
     const editDate = post.editedTimestamp ? post.editedTimestamp.toDate() : null;
@@ -890,16 +817,8 @@ function addPostToDOM(post) {
         metaContent += `<span class="edited-ts">(edited ${timeAgo(editDate)})</span>`;
     }
 
-  // --- MARKDOWN & TEXT PROCESSING ---
-    
-    // FIXED: We pass { breaks: true } directly here to force newlines to work
     let rawHTML = marked.parse(post.text, { breaks: true, gfm: true });
-
-    // 3. Sanitize (Security)
     let safeHTML = DOMPurify.sanitize(rawHTML);
-
-    // 4. Custom Spoiler Tag Logic (Markdown doesn't usually support ||spoiler||)
-    // We run this regex AFTER markdown conversion on the HTML.
     safeHTML = safeHTML.replace(/\|\|(.*?)\|\|/g, '<span class="spoiler" onclick="this.classList.toggle(\'revealed\')">$1</span>');
 
     postDiv.innerHTML = `
@@ -928,9 +847,6 @@ function addPostToDOM(post) {
 
     feed.appendChild(postDiv);
 
-    // --- RE-ATTACH LISTENERS ---
-    
-    // Timestamp Toggle
     const tsWrapper = postDiv.querySelector('.timestamp-wrapper');
     if (tsWrapper) {
         tsWrapper.addEventListener('click', () => {
@@ -949,7 +865,6 @@ function addPostToDOM(post) {
         });
     }
 
-    // Permalink
     const linkBtn = postDiv.querySelector('.permalink-btn');
     if (linkBtn) {
         linkBtn.addEventListener('click', () => {
@@ -959,7 +874,6 @@ function addPostToDOM(post) {
         });
     }
 
-    // Truncate logic needs to check the markdown container
     const textContainer = postDiv.querySelector('.post-text-container');
     if (textContainer.scrollHeight > 150) {
         textContainer.classList.add('truncated');
@@ -975,7 +889,6 @@ function addPostToDOM(post) {
         postDiv.insertBefore(expandBtn, postDiv.querySelector('.post-content').nextSibling);
     }
 
-    // Pin logic
     const pinBtn = postDiv.querySelector('.pin-icon');
     if (pinBtn && isAdmin) {
         pinBtn.addEventListener('click', async () => {
@@ -990,7 +903,6 @@ function addPostToDOM(post) {
         });
     }
 
-    // Edit/Delete
     if (isAdmin) {
         const handle = postDiv.querySelector('.drag-handle');
         if (handle) handle.addEventListener('dragstart', handleDragStart);
@@ -998,7 +910,6 @@ function addPostToDOM(post) {
         const btnContainer = postDiv.querySelector('.admin-buttons');
         const editBtn = document.createElement('button');
         editBtn.innerText = "EDIT";
-        // NOTE: We pass the NEW images array to startEdit here
         editBtn.onclick = () => startEdit(id, post.text, post.image, post.tags, post.images);
         btnContainer.appendChild(editBtn);
 
@@ -1008,7 +919,6 @@ function addPostToDOM(post) {
         btnContainer.appendChild(deleteBtn);
     }
     
-    // Lightbox (Loop through all images in the gallery)
     const imgElements = postDiv.querySelectorAll('.click-to-zoom');
     imgElements.forEach(img => {
         img.addEventListener('click', () => {
@@ -1022,7 +932,6 @@ function addPostToDOM(post) {
 function startEdit(id, text, image, tags, images) {
     textInput.value = text;
     
-    // LOAD EXISTING IMAGES INTO STACK
     if (images && images.length > 0) {
         mediaStack = images;
     } else if (image) {
@@ -1031,7 +940,7 @@ function startEdit(id, text, image, tags, images) {
         mediaStack = [];
     }
     updateMediaStackUI();
-    imageInput.value = ""; // Keep the input clean
+    imageInput.value = ""; 
     
     textInput.style.height = 'auto'; 
     textInput.style.height = (textInput.scrollHeight) + 'px';
@@ -1049,27 +958,22 @@ function startEdit(id, text, image, tags, images) {
 }
 
 // --- LIGHTBOX LOGIC ---
-
-// 1. Close on Escape Key
 document.addEventListener('keydown', (e) => {
     if (e.key === "Escape") {
         lightboxModal.classList.add('hidden');
     }
 });
 
-// 2. Close Button (Click)
 if (lightboxClose) {
     lightboxClose.addEventListener('click', (e) => {
-        e.stopPropagation(); // Don't trigger background click
-        lightboxModal.classList.add('hidden'); // ACTION 1: Hide immediately
-        playSound('click'); // ACTION 2: Play sound after
+        e.stopPropagation(); 
+        lightboxModal.classList.add('hidden'); 
+        playSound('click'); 
     });
 }
 
-// 3. Background Click
 if (lightboxModal) {
     lightboxModal.addEventListener('click', (e) => {
-        // Only close if clicking the black background (not the image)
         if(e.target === lightboxModal) {
             lightboxModal.classList.add('hidden');
         }
@@ -1083,12 +987,11 @@ window.toggleSearchTag = function(tag) {
     const targetVal = '#' + tag;
 
     if (currentVal === targetVal) {
-        searchInput.value = ''; // Toggle Off
+        searchInput.value = ''; 
         showToast("FILTER CLEARED");
     } else {
-        searchInput.value = targetVal; // Toggle On
+        searchInput.value = targetVal; 
     }
-    // Trigger the search logic immediately
     searchInput.dispatchEvent(new Event('input'));
 };
 
@@ -1098,59 +1001,49 @@ const win98Content = document.getElementById('win98-content');
 const win98Close = document.getElementById('win98-close');
 const win98Title = document.querySelector('.win98-title-text');
 
-// Global launcher function
 window.launchWin98 = function(url, type) {
     playSound('click');
     win98Box.classList.remove('hidden');
     
-    // Reset Mode
     win98Box.classList.remove('video-mode');
-    win98Content.innerHTML = ""; // Clear previous
+    win98Content.innerHTML = ""; 
 
     if (type === 'video') {
-        // YouTube
         win98Box.classList.add('video-mode');
         win98Title.innerText = "Video Player";
         win98Content.innerHTML = `<iframe src="${url}" height="300" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
     } 
     else if (type === 'video-file') {
-        // MP4
         win98Box.classList.add('video-mode');
         win98Title.innerText = "Movie Player";
         win98Content.innerHTML = `<video src="${url}" controls autoplay height="300" style="background:black;"></video>`;
     }
     else if (type === 'audio') {
-        // Spotify
         win98Title.innerText = "Winamp";
-        // Spotify embed needs height 80 or 152
         win98Content.innerHTML = `<iframe src="${url}" height="80" allowtransparency="true" allow="encrypted-media"></iframe>`;
     }
     else if (type === 'audio-file') {
-        // MP3
         win98Title.innerText = "Audio Player";
-        // Standard HTML5 Audio
         win98Content.innerHTML = `<audio src="${url}" controls autoplay style="width:100%; margin:0;"></audio>`;
     }
 }
 
-// Close Button
 if(win98Close) {
     win98Close.addEventListener('click', () => {
         playSound('click');
         win98Box.classList.add('hidden');
-        win98Content.innerHTML = ""; // Kills the audio/video instantly
+        win98Content.innerHTML = ""; 
     });
 }
 
-// DRAG LOGIC
-const dragHandle = document.getElementById('win98-drag-handle');
+// DRAG LOGIC (FIXED)
+const dragHandle = document.querySelector('.win98-title-bar');
 let isDragging = false;
 let offsetX, offsetY;
 
 if(dragHandle) {
     dragHandle.addEventListener('mousedown', (e) => {
         isDragging = true;
-        // Calculate where inside the bar we clicked
         offsetX = e.clientX - win98Box.offsetLeft;
         offsetY = e.clientY - win98Box.offsetTop;
     });
@@ -1173,13 +1066,11 @@ const previewImg = document.getElementById('preview-img');
 const previewText = document.getElementById('preview-text');
 
 if (previewBox) {
-    // 1. Mouse Enter: Show the box
     document.addEventListener('mouseover', (e) => {
         if (e.target.classList.contains('retro-btn')) {
             const thumb = e.target.dataset.thumb;
             const info = e.target.dataset.info;
 
-            // Setup Image
             if (thumb) {
                 previewImg.src = thumb;
                 previewImg.classList.remove('hidden');
@@ -1187,23 +1078,18 @@ if (previewBox) {
                 previewImg.classList.add('hidden');
             }
 
-            // Setup Text
             previewText.innerText = info || "Media Link";
-            
             previewBox.classList.remove('hidden');
         }
     });
 
-    // 2. Mouse Move: Follow the cursor
     document.addEventListener('mousemove', (e) => {
         if (!previewBox.classList.contains('hidden')) {
-            // Offset slightly so it's not under the cursor
             previewBox.style.left = (e.clientX + 15) + 'px';
             previewBox.style.top = (e.clientY + 15) + 'px';
         }
     });
 
-    // 3. Mouse Leave: Hide the box
     document.addEventListener('mouseout', (e) => {
         if (e.target.classList.contains('retro-btn')) {
             previewBox.classList.add('hidden');

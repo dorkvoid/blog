@@ -22,67 +22,62 @@
 <body>
 
     <div class="container">
+        <div class="control-bar">
+            <input type="text" id="searchBar" placeholder="Search (or #tags, /help)...">
+            <div class="view-toggles">
+                <img src="images/list-view.png" id="viewListBtn" class="active-view" title="List View" draggable="false">
+                <img src="images/grid-view.png" id="viewTileBtn" title="Grid View" draggable="false">
+            </div>
+            <div id="view-count" title="Total Views">
+                <img src="images/eye.png" class="stat-icon">
+                <span id="view-number">00000</span>
+            </div>
+        </div>
+
         <div class="input-area">
             <div class="formatting-bar">
                 <button id="fmtBold" title="Bold">B</button>
                 <button id="fmtItalic" title="Italic">I</button>
-                <button id="fmtSpoiler" title="Spoiler">||</button>
+                <button id="fmtSpoiler" title="Spoiler">S</button>
                 
                 <button id="toggleTools" title="More Tools">...</button>
-
                 <div id="extraTools" class="tools-drawer hidden">
-                    <button id="fmtHeader" title="Header">H1</button>
-                    <button id="fmtQuote" title="Quote">“</button>
-                    <button id="fmtLink" title="Link">🔗</button>
-                    <button id="fmtCode" title="Code">&lt;/&gt;</button>
-                    <button id="fmtList" title="List">☰</button>
+                    <button id="fmtHeader" title="Header">H</button>
+                    <button id="fmtQuote" title="Quote">"</button>
+                    <button id="fmtCode" title="Code">&lt;&gt;</button>
+                    <button id="fmtList" title="Bullet List">•</button>
+                    <button id="fmtLink" title="Link">@</button>
                 </div>
-                
+
                 <div class="tag-selector">
                     <span class="tag-toggle" data-tag="ART">ART</span>
-                    <span class="tag-toggle" data-tag="DEV">DEV</span>
-                    <span class="tag-toggle" data-tag="LOG">LOG</span>
-                    <span class="tag-toggle" data-tag="CLASS">CLASS</span>
-                    <span class="tag-toggle" data-tag="MUSIC">MUSIC</span>
+                    <span class="tag-toggle" data-tag="CODE">CODE</span>
+                    <span class="tag-toggle" data-tag="LIFE">LIFE</span>
+                    <span class="tag-toggle" data-tag="INSPO">INSPO</span>
                 </div>
             </div>
 
-            <textarea id="postText" placeholder="Write something..."></textarea>
+            <textarea id="postText" placeholder="Start typing..."></textarea>
             
-           <div class="media-row">
-            <input type="text" id="imageUrl" placeholder="Paste Media URL...">
-            <button id="addMediaBtn" title="Add to Stack"></button>
+            <div class="media-row">
+                <input type="text" id="imageUrl" placeholder="Image, YouTube, MP4, or Spotify URL...">
+                <button id="addMediaBtn" title="Add to Media Stack">+</button>
             </div>
-            <div id="media-stack-display"></div> <div class="button-row">
-                <button id="postBtn">POST</button>
+            
+            <div id="media-stack-display"></div>
+
+            <div class="button-row">
+                <button id="postBtn" disabled>POST</button>
                 <button id="cancelBtn" class="hidden">CANCEL</button>
             </div>
         </div>
 
-       <div class="control-bar">
-            <div id="view-count">
-                <img src="images/eye.png" class="stat-icon" alt="Views">
-                <span id="view-number">.....</span>
-            </div>
-            
-            <input type="text" id="searchBar" placeholder="> Search (or /help)..." autocomplete="off">
-            
-            <div class="view-toggles">
-                <img id="viewListBtn" src="images/list-button.png" title="List View" class="active-view">
-                <img id="viewTileBtn" src="images/tile-button.png" title="Tile View">
-            </div>
-        </div>
-
         <div id="feed"></div>
-        <button id="loadMoreBtn" class="hidden">[ LOAD MORE... ]</button>
+        <button id="loadMoreBtn" class="hidden">LOAD OLDER DATA...</button>
     </div>
-    
-    <div id="toast-container"></div>
-    
-    <img id="back-to-top" src="images/uparrow.png" class="hidden" title="Return to Surface">
-    
-    <div id="sound-toggle" title="Toggle Audio">
-        <img id="sound-icon" src="images/sound-off.png" alt="Sound Toggle">
+
+    <div id="sound-toggle" title="Toggle Sound">
+        <img id="sound-icon" src="images/sound-on.png" alt="Sound Toggle">
     </div>
 
     <div id="admin-login-bar" class="hidden">
@@ -90,6 +85,7 @@
 
         <div id="login-input-container">
             <span>ADMIN:</span>
+            <input type="text" id="adminEmail" placeholder="Email...">
             <input type="password" id="adminPassword" placeholder="Key...">
         </div>
 
@@ -115,19 +111,26 @@
     </div>
 
     <div id="win98-box" class="hidden">
-        <div class="win98-title-bar" id="win98-drag-handle">
+        <div class="win98-title-bar">
             <div class="win98-title-text">Media Player</div>
             <button id="win98-close">X</button>
         </div>
-        <div id="win98-content">
-            </div>
+        <div id="win98-content"></div>
     </div>
 
     <div id="media-preview" class="hidden">
-        <img id="preview-img" class="hidden">
+        <img id="preview-img" class="hidden" src="" alt="Preview">
         <div id="preview-text"></div>
     </div>
 
+    <div id="toast-container"></div>
+    <img id="back-to-top" src="images/arrowup.png" title="Back to top" style="cursor: pointer;">
+
     <script type="module" src="script.js"></script>
+    <script>
+        document.getElementById('back-to-top').addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
 </body>
 </html>

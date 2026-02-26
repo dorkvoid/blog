@@ -1,9 +1,10 @@
 /* --- 1. GLOBAL & SCROLLBAR --- */
 
-/* REGULAR FONT */
+/* REGULAR FONT - Prioritizes woff2 if you have it! */
 @font-face {
     font-family: 'PixeloidSans';
-    src: url('PixeloidSans.ttf'); 
+    src: url('PixeloidSans.woff2') format('woff2'),
+         url('PixeloidSans.ttf') format('truetype'); 
     font-weight: normal;
     font-style: normal;
 }
@@ -11,8 +12,9 @@
 /* BOLD FONT */
 @font-face {
     font-family: 'PixeloidSansBold';
-    src: url('PixeloidSans-Bold.ttf'); 
-    font-weight: normal;
+    src: url('PixeloidSans-Bold.woff2') format('woff2'),
+         url('PixeloidSans-Bold.ttf') format('truetype'); 
+    font-weight: normal; 
     font-style: normal;
 }
 
@@ -211,15 +213,14 @@ button:hover::before { content: "[ "; color: black; }
 button:hover::after { content: " ]"; color: black; }
 button:active { transform: translateY(2px); }
 
-/* --- DISABLED STATE (Greyed Out) --- */
+/* --- DISABLED STATE --- */
 button:disabled {
-    background: #222;       /* Dark Grey Background */
-    color: #555;            /* Faded Text */
-    border: 1px solid #333; /* Faded Border */
-    cursor: not-allowed;    /* "No" symbol cursor */
-    pointer-events: none;   /* Disable clicks completely */
+    background: #222;       
+    color: #555;            
+    border: 1px solid #333; 
+    cursor: not-allowed;    
+    pointer-events: none;   
 }
-/* Ensure no brackets appear on disabled buttons */
 button:disabled::before, 
 button:disabled::after { 
     content: none !important; 
@@ -401,7 +402,6 @@ button:disabled::after {
     margin-bottom: 0;
 }
 
-/* BOLD FIX: Target markdown bolding */
 .post-text b, .post-text strong { 
     font-family: 'PixeloidSansBold', sans-serif;
     font-weight: normal;
@@ -412,7 +412,6 @@ button:disabled::after {
     font-style: italic; color: #ccc; 
 }
 
-/* BOLD FIX: Links */
 .post-text a { 
     font-family: 'PixeloidSansBold', sans-serif;
     font-weight: normal;
@@ -498,14 +497,20 @@ iframe[src*="spotify"] { aspect-ratio: auto; height: 152px; }
     text-align: center;
 }
 
+/* Stack inputs neatly for the email box */
+#login-input-container {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
 #admin-login-bar input {
-    width: 120px;
+    width: 150px;
     border: 1px solid white;
     background: black;
     color: white;
     font-family: inherit;
-    margin-left: 10px;
-    padding: 2px 5px;
+    padding: 4px 6px;
 }
 
 .admin-buttons {
@@ -562,11 +567,12 @@ body.admin-mode .admin-buttons { display: block !important; }
     #back-to-top { left: auto; right: 10px; bottom: 10px; }
 }
 
+/* LIGHTBOX Z-INDEX FIX */
 .modal-overlay {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.9); 
-    z-index: 10002; 
+    z-index: 99998; 
     display: flex; justify-content: center; align-items: center;
     backdrop-filter: blur(2px);
 }
@@ -588,7 +594,7 @@ body.admin-mode .admin-buttons { display: block !important; }
     font-size: 1.5em; 
     font-family: 'PixeloidSansBold', sans-serif;
     font-weight: normal;
-    z-index: 10005; 
+    z-index: 99999; 
     cursor: url('images/link-select.png'), pointer;
 }
 #lightbox-close:hover { color: red; }
@@ -724,13 +730,15 @@ body.admin-mode .admin-buttons { display: block !important; }
 body:not(.admin-mode) .pin-icon:not(.active) { display: none !important; }
 body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; }
 
+/* SEIZURE FIX: Blink effect moved to text child */
 .no-signal {
     text-align: center; color: #666; margin-top: 50px;
     font-family: 'PixeloidSans', sans-serif; border: 1px dashed #444; padding: 20px;
-    animation: blink 2s infinite; column-span: all; -webkit-column-span: all;
+    column-span: all; -webkit-column-span: all;
     break-inside: avoid; page-break-inside: avoid; width: 100%; box-sizing: border-box;
 }
 .no-signal span { display: block !important; font-size: 0.8em; margin-top: 10px; color: #444; }
+.blink-text { animation: blink 2s infinite; }
 
 /* --- MULTI-IMAGE GALLERY --- */
 .media-gallery {
@@ -753,8 +761,6 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
 .media-single img { max-width: 100%; border: 1px solid white; }
 
 /* --- MARKDOWN STYLES --- */
-
-/* BOLD FIX */
 .markdown-body h1, .markdown-body h2, .markdown-body h3 {
     font-family: 'PixeloidSansBold', sans-serif;
     font-weight: normal;
