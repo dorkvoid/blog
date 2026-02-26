@@ -813,128 +813,145 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
 .markdown-body pre code { background: transparent; border: none; padding: 0; }
 
 
-/* --- WINDOWS 98 MEDIA PLAYER --- */
-#win98-box {
+/* --- CUSTOM FLOATING MEDIA PLAYER --- */
+#media-player-box {
     position: fixed;
     top: 100px;
     left: 20px;
-    background-color: #c0c0c0; /* Classic Grey */
-    border-top: 2px solid #fff;
-    border-left: 2px solid #fff;
-    border-right: 2px solid #000;
-    border-bottom: 2px solid #000;
-    box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
-    z-index: 10010; /* Above everything */
-    width: 300px; /* Default Audio Width */
+    background-color: black; 
+    border: 2px solid white;
+    z-index: 10010; 
+    width: 350px; 
     display: flex;
     flex-direction: column;
     padding: 2px;
 }
 
-/* Video Mode is wider */
-#win98-box.video-mode {
-    width: 400px;
+#media-player-box.video-mode {
+    width: 450px;
     resize: both; 
     overflow: auto;
-    
-    /* THE FIX: Stop it from shrinking to a sliver or growing past the screen */
     min-width: 250px;
     min-height: 150px;
     max-width: 95vw;
     max-height: 95vh;
 }
 
-.win98-title-bar {
-    background: linear-gradient(90deg, #000080, #1084d0); /* Classic Navy Blue */
-    color: white;
+.media-title-bar {
+    background: white; 
+    color: black;
     font-family: 'PixeloidSans', sans-serif;
-    padding: 2px 4px;
+    padding: 4px 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    cursor: move; /* Shows the grab hand */
+    cursor: move; 
     margin-bottom: 2px;
 }
 
-.win98-title-text {
+.media-title-text {
     font-family: 'PixeloidSansBold', sans-serif;
     font-weight: normal;
     font-size: 0.8em;
     pointer-events: none; 
 }
 
-#win98-close {
-    width: 16px;
-    height: 14px;
-    background: #c0c0c0;
-    border-top: 1px solid #fff;
-    border-left: 1px solid #fff;
-    border-right: 1px solid #000;
-    border-bottom: 1px solid #000;
-    font-size: 10px;
-    line-height: 10px;
+#media-close {
+    width: 20px;
+    height: 20px;
+    background: black;
+    border: 1px solid black;
+    font-size: 12px;
+    line-height: 12px;
     padding: 0;
-    color: black;
+    color: white;
     font-family: 'PixeloidSansBold', sans-serif;
     font-weight: normal;
     cursor: url('images/link-select.png'), pointer;
 }
-#win98-close:active {
-    border-top: 1px solid #000;
-    border-left: 1px solid #000;
-    border-right: 1px solid #fff;
-    border-bottom: 1px solid #fff;
+#media-close:hover {
+    background: red;
+    color: white;
+}
+#media-close:hover::before, 
+#media-close:hover::after { 
+    content: none !important; 
 }
 
-#win98-content {
+#media-content {
     background: black;
-    border-top: 2px solid #000;
-    border-left: 2px solid #000;
-    border-right: 2px solid #fff;
-    border-bottom: 2px solid #fff;
+    border: 1px dashed white;
     min-height: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 5px;
 }
 
-/* Make iframes and videos fill the content box */
-#win98-content iframe, 
-#win98-content video,
-#win98-content audio {
+#media-content iframe, 
+#media-content video {
     width: 100%;
     border: none;
     display: block;
 }
 
-/* Style for the buttons that appear in the feed */
-.retro-btn {
+/* --- CUSTOM AUDIO PLAYER UI --- */
+.custom-audio-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px;
     background: black;
     color: white;
-    border: 1px dashed white;
     font-family: 'PixeloidSans', sans-serif;
+    font-size: 0.8em;
+}
+
+.play-pause-btn {
+    background: transparent;
+    border: 1px solid white;
+    color: white;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    font-size: 12px;
     cursor: url('images/link-select.png'), pointer;
-    padding: 10px;
-    width: 100%;
     text-align: center;
 }
-.retro-btn:hover {
+.play-pause-btn:hover {
     background: white;
     color: black;
 }
+.play-pause-btn:hover::before, .play-pause-btn:hover::after { content: none !important; }
 
-/* --- FIX: REMOVE EXTRA BRACKETS ON HOVER --- */
+/* Custom Retro Scrub Bar */
+input[type=range].retro-scrub {
+    -webkit-appearance: none; /* Brute-forces Chrome/Safari */
+    appearance: none;         /* The official standard (shuts the editor up) */
+    flex-grow: 1;
+    background: transparent;
+    cursor: url('images/link-select.png'), pointer;
+}
+input[type=range].retro-scrub:focus { outline: none; }
 
-/* 1. For the [ ▶ WATCH VIDEO ] buttons */
-.retro-btn:hover::before, 
-.retro-btn:hover::after { 
-    content: none !important; 
+/* The Line */
+input[type=range].retro-scrub::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 2px;
+    background: #444; 
 }
 
-/* 2. For the Win98 [X] Close button */
-#win98-close:hover::before, 
-#win98-close:hover::after { 
-    content: none !important; 
+/* The Draggable Box */
+input[type=range].retro-scrub::-webkit-slider-thumb {
+    height: 14px;
+    width: 8px;
+    background: white;
+    -webkit-appearance: none;
+    margin-top: -6px; 
+}
+input[type=range].retro-scrub:hover::-webkit-slider-thumb {
+    background: #ccc;
 }
 
 /* --- HOVER PREVIEW TOOLTIP --- */

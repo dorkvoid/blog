@@ -768,7 +768,7 @@ function addPostToDOM(post) {
             if (ytMatch) {
                 const thumb = `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg`;
                 mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
-                    <button onclick="window.launchWin98('https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1', 'video')" 
+                    <button onclick="window.launchMedia('https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1', 'video')" 
                             class="retro-btn" 
                             data-thumb="${thumb}" 
                             data-info="YouTube Video">
@@ -780,7 +780,7 @@ function addPostToDOM(post) {
                 const spUrl = `https://open.spotify.com/embed/${spMatch[1]}/${spMatch[2]}`;
                 
                 mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
-                    <button onclick="window.launchWin98('${spUrl}', 'audio')" 
+                    <button onclick="window.launchMedia('${spUrl}', 'audio')" 
                             class="retro-btn" 
                             data-info="SPOTIFY [ ${type} ]">
                         [ ♫ PLAY ${type} ]
@@ -788,16 +788,15 @@ function addPostToDOM(post) {
                 </div>`;
             } else if (isVideo) {
                 mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
-                    <button onclick="window.launchWin98('${url}', 'video-file')" 
+                    <button onclick="window.launchMedia('${url}', 'video-file')" 
                             class="retro-btn" 
                             data-info="${url.split('/').pop()}">
                         [ ▶ WATCH CLIP ]
                     </button>
                 </div>`;
-            } 
-            else if (isAudio) {
+            } else if (isAudio) {
                 mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
-                    <button onclick="window.launchWin98('${url}', 'audio-file')" 
+                    <button onclick="window.launchMedia('${url}', 'audio-file')" 
                             class="retro-btn" 
                             data-info="${url.split('/').pop()}">
                         [ ♫ PLAY AUDIO ]
@@ -805,7 +804,7 @@ function addPostToDOM(post) {
                 </div>`;
             } else {
                 mediaHTML += `<div class="media-item"><img src="${url}" class="post-image click-to-zoom"></div>`;
-            }
+            }       
         });
         
         mediaHTML += `</div>`;
@@ -998,57 +997,114 @@ window.toggleSearchTag = function(tag) {
     searchInput.dispatchEvent(new Event('input'));
 };
 
-// --- WINDOWS 98 PLAYER LOGIC ---
-const win98Box = document.getElementById('win98-box');
-const win98Content = document.getElementById('win98-content');
-const win98Close = document.getElementById('win98-close');
-const win98Title = document.querySelector('.win98-title-text');
+// --- CUSTOM MEDIA PLAYER LOGIC ---
+const mediaBox = document.getElementById('media-player-box');
+const mediaContent = document.getElementById('media-content');
+const mediaClose = document.getElementById('media-close');
+const mediaTitle = document.querySelector('.media-title-text');
 
-window.launchWin98 = function(url, type) {
+// Helper to format seconds into M:SS
+function formatTime(seconds) {
+    if (isNaN(seconds)) return "0:00";
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+}
+
+window.launchMedia = function(url, type) {
     playSound('click');
-    win98Box.classList.remove('hidden');
-    
-    win98Box.classList.remove('video-mode');
-    win98Content.innerHTML = ""; 
+    mediaBox.classList.remove('hidden');
+    mediaBox.classList.remove('video-mode');
+    mediaContent.innerHTML = ""; 
 
     if (type === 'video') {
-        win98Box.classList.add('video-mode');
-        win98Title.innerText = "Video Player";
-        win98Content.innerHTML = `<iframe src="${url}" height="300" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+        mediaBox.classList.add('video-mode');
+        mediaTitle.innerText = "EXTERNAL VIDEO";
+        mediaContent.innerHTML = `<iframe src="${url}" height="300" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
     } 
     else if (type === 'video-file') {
-        win98Box.classList.add('video-mode');
-        win98Title.innerText = "Movie Player";
-        win98Content.innerHTML = `<video src="${url}" controls autoplay height="300" style="background:black;"></video>`;
+        mediaBox.classList.add('video-mode');
+        mediaTitle.innerText = "LOCAL VIDEO";
+        mediaContent.innerHTML = `<video src="${url}" controls autoplay height="300" style="background:black;"></video>`;
     }
     else if (type === 'audio') {
-        win98Title.innerText = "Winamp";
-        win98Content.innerHTML = `<iframe src="${url}" height="80" allowtransparency="true" allow="encrypted-media"></iframe>`;
+        mediaTitle.innerText = "SPOTIFY STREAM";
+        mediaContent.innerHTML = `<iframe src="${url}" height="80" allowtransparency="true" allow="encrypted-media"></iframe>`;
     }
     else if (type === 'audio-file') {
-        win98Title.innerText = "Audio Player";
-        win98Content.innerHTML = `<audio src="${url}" controls autoplay style="width:100%; margin:0;"></audio>`;
+        mediaTitle.innerText = "LOCAL AUDIO";
+        
+        // Build Custom Player HTML
+        mediaContent.innerHTML = `
+            <div class="custom-audio-wrapper">
+                <audio id="raw-audio" src="${url}" autoplay></audio>
+                <button id="audio-btn" class="play-pause-btn">||</button>
+                <span id="audio-time">0:00</span>
+                <input type="range" id="audio-scrub" class="retro-scrub" value="0" min="0" max="100" step="0.1">
+                <span id="audio-duration">0:00</span>
+            </div>
+        `;
+
+        // Wire up custom controls
+        const audioEl = document.getElementById('raw-audio');
+        const playBtn = document.getElementById('audio-btn');
+        const scrubBar = document.getElementById('audio-scrub');
+        const timeDisp = document.getElementById('audio-time');
+        const durDisp = document.getElementById('audio-duration');
+
+        playBtn.onclick = () => {
+            playSound('click');
+            if (audioEl.paused) {
+                audioEl.play();
+                playBtn.innerText = "||";
+            } else {
+                audioEl.pause();
+                playBtn.innerText = ">";
+            }
+        };
+
+        audioEl.addEventListener('loadedmetadata', () => {
+            durDisp.innerText = formatTime(audioEl.duration);
+        });
+
+        audioEl.addEventListener('timeupdate', () => {
+            if (!audioEl.duration) return;
+            const progress = (audioEl.currentTime / audioEl.duration) * 100;
+            scrubBar.value = progress;
+            timeDisp.innerText = formatTime(audioEl.currentTime);
+        });
+
+        scrubBar.addEventListener('input', () => {
+            const newTime = (scrubBar.value / 100) * audioEl.duration;
+            audioEl.currentTime = newTime;
+        });
+        
+        audioEl.addEventListener('ended', () => {
+            playBtn.innerText = ">";
+            scrubBar.value = 0;
+        });
     }
 }
 
-if(win98Close) {
-    win98Close.addEventListener('click', () => {
+if(mediaClose) {
+    mediaClose.addEventListener('click', () => {
         playSound('click');
-        win98Box.classList.add('hidden');
-        win98Content.innerHTML = ""; 
+        mediaBox.classList.add('hidden');
+        mediaContent.innerHTML = ""; // Cuts off audio instantly
     });
 }
 
-// DRAG LOGIC (FIXED)
-const dragHandle = document.querySelector('.win98-title-bar');
+// DRAG LOGIC
+const dragHandle = document.querySelector('.media-title-bar');
 let isDragging = false;
 let offsetX, offsetY;
 
 if(dragHandle) {
     dragHandle.addEventListener('mousedown', (e) => {
+        if(e.target === mediaClose) return; // Don't drag if clicking the X
         isDragging = true;
-        offsetX = e.clientX - win98Box.offsetLeft;
-        offsetY = e.clientY - win98Box.offsetTop;
+        offsetX = e.clientX - mediaBox.offsetLeft;
+        offsetY = e.clientY - mediaBox.offsetTop;
     });
 
     document.addEventListener('mousemove', (e) => {
@@ -1056,15 +1112,11 @@ if(dragHandle) {
             let newX = e.clientX - offsetX;
             let newY = e.clientY - offsetY;
 
-            // THE FIX: Invisible walls so the window can't get lost
-            // 1. Don't let it go past the left edge (0) or right edge (keep at least 50px visible)
             newX = Math.max(0, Math.min(newX, window.innerWidth - 50));
-            
-            // 2. Don't let it go past the top edge (0) or bottom edge
             newY = Math.max(0, Math.min(newY, window.innerHeight - 30));
 
-            win98Box.style.left = `${newX}px`;
-            win98Box.style.top = `${newY}px`;
+            mediaBox.style.left = `${newX}px`;
+            mediaBox.style.top = `${newY}px`;
         }
     });
 
