@@ -155,11 +155,12 @@ body::before {
     opacity: 0.5;
     transition: all 0.2s;
     
-    /* THE FIX: Fallback background if PNG is missing */
+    /* FALLBACK IF PNG IS MISSING */
     background-color: #111;
     color: white;
-    font-size: 9px;
-    overflow: hidden;
+    font-size: 16px;
+    text-align: center;
+    line-height: 26px; /* Centers the alt text vertically */
 }
 
 .view-toggles img:hover {
@@ -571,20 +572,25 @@ body.admin-mode .admin-buttons { display: block !important; }
 #back-to-top {
     position: fixed;
     bottom: 20px;
-    
-    /* THE FIX: Pin to the bottom right corner instead of weird math */
-    right: 20px; 
-    
+    right: 20px; /* Pins it to the bottom right */
+    left: auto !important; /* Kills the old math */
     width: 50px; 
     height: 50px;
     z-index: 10001; 
     transition: transform 0.2s ease;
+    
+    /* FALLBACK IF PNG IS MISSING */
+    background-color: #111;
+    color: white;
+    border: 2px solid white;
+    font-size: 24px;
+    text-align: center;
+    line-height: 46px; /* Centers the alt text */
 }
 #back-to-top:hover { transform: translateY(-5px); }
 @media (max-width: 750px) {
-    #back-to-top { right: 10px; bottom: 10px; width: 40px; height: 40px; }
+    #back-to-top { right: 10px; bottom: 10px; width: 40px; height: 40px; line-height: 36px; }
 }
-
 /* LIGHTBOX Z-INDEX FIX */
 .modal-overlay {
     position: fixed;
