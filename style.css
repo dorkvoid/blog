@@ -836,6 +836,12 @@ body:not(.admin-mode) .pin-icon.active { cursor: default; pointer-events: none; 
     width: 400px;
     resize: both; 
     overflow: auto;
+    
+    /* THE FIX: Stop it from shrinking to a sliver or growing past the screen */
+    min-width: 250px;
+    min-height: 150px;
+    max-width: 95vw;
+    max-height: 95vh;
 }
 
 .win98-title-bar {

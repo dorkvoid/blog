@@ -1050,8 +1050,18 @@ if(dragHandle) {
 
     document.addEventListener('mousemove', (e) => {
         if (isDragging) {
-            win98Box.style.left = `${e.clientX - offsetX}px`;
-            win98Box.style.top = `${e.clientY - offsetY}px`;
+            let newX = e.clientX - offsetX;
+            let newY = e.clientY - offsetY;
+
+            // THE FIX: Invisible walls so the window can't get lost
+            // 1. Don't let it go past the left edge (0) or right edge (keep at least 50px visible)
+            newX = Math.max(0, Math.min(newX, window.innerWidth - 50));
+            
+            // 2. Don't let it go past the top edge (0) or bottom edge
+            newY = Math.max(0, Math.min(newY, window.innerHeight - 30));
+
+            win98Box.style.left = `${newX}px`;
+            win98Box.style.top = `${newY}px`;
         }
     });
 
@@ -1085,8 +1095,21 @@ if (previewBox) {
 
     document.addEventListener('mousemove', (e) => {
         if (!previewBox.classList.contains('hidden')) {
-            previewBox.style.left = (e.clientX + 15) + 'px';
-            previewBox.style.top = (e.clientY + 15) + 'px';
+            let tooltipX = e.clientX + 15;
+            let tooltipY = e.clientY + 15;
+
+            // THE FIX: If the tooltip is going to hit the right side of the screen, flip it to the left!
+            if (tooltipX + previewBox.offsetWidth > window.innerWidth) {
+                tooltipX = e.clientX - previewBox.offsetWidth - 15;
+            }
+            
+            // Flip it up if it hits the bottom
+            if (tooltipY + previewBox.offsetHeight > window.innerHeight) {
+                tooltipY = e.clientY - previewBox.offsetHeight - 15;
+            }
+
+            previewBox.style.left = tooltipX + 'px';
+            previewBox.style.top = tooltipY + 'px';
         }
     });
 
