@@ -992,24 +992,33 @@ input[type=range].retro-scrub:hover::-webkit-slider-thumb {
 
 /* --- LIGHTBOX GALLERY ARROWS --- */
 .lightbox-nav {
-    background: transparent;
-    color: white;
+    background: transparent !important;
+    color: white !important;
     font-family: 'PixeloidSansBold', sans-serif;
     font-weight: normal;
     font-size: 2em;
-    border: none;
+    border: none !important;
     cursor: url('images/link-select.png'), pointer;
-    padding: 20px;
+    padding: 20px !important;
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
     z-index: 100000; 
     transition: color 0.2s, transform 0.2s;
+    
+    /* THE FIX: Stop the button from stretching 100% across the screen */
+    width: auto !important; 
 }
+
 .lightbox-nav:hover {
-    color: #aaa;
+    color: #aaa !important;
+    
+    /* THE FIX: Kill the global button hover so it doesn't make a giant grey block */
+    background: transparent !important; 
+    
     transform: translateY(-50%) scale(1.2);
 }
+
 .lightbox-nav:hover::before, .lightbox-nav:hover::after { content: none !important; }
 #lightbox-prev { left: 20px; }
 #lightbox-next { right: 20px; }
