@@ -45,8 +45,13 @@
     text-shadow: none;
 }
 
-html, body {
-    height: 100%;
+html {
+    min-height: 100vh;
+    cursor: url('images/cursor.png'), auto;
+}
+
+html:active {
+    cursor: url('images/cursor-click.png'), auto;
 }
 
 body {
@@ -58,6 +63,10 @@ body {
     image-rendering: pixelated; 
     -webkit-font-smoothing: none;
     padding-bottom: 100px;
+    
+    /* THE FIX: Replaced height: 100% with min-height */
+    min-height: 100vh; 
+    
     cursor: url('images/cursor.png'), auto;
     background-image: none;
 }
@@ -145,6 +154,12 @@ body::before {
     padding: 2px;
     opacity: 0.5;
     transition: all 0.2s;
+    
+    /* THE FIX: Fallback background if PNG is missing */
+    background-color: #111;
+    color: white;
+    font-size: 9px;
+    overflow: hidden;
 }
 
 .view-toggles img:hover {
@@ -556,7 +571,10 @@ body.admin-mode .admin-buttons { display: block !important; }
 #back-to-top {
     position: fixed;
     bottom: 20px;
-    left: calc(50% + 310px); 
+    
+    /* THE FIX: Pin to the bottom right corner instead of weird math */
+    right: 20px; 
+    
     width: 50px; 
     height: 50px;
     z-index: 10001; 
@@ -564,7 +582,7 @@ body.admin-mode .admin-buttons { display: block !important; }
 }
 #back-to-top:hover { transform: translateY(-5px); }
 @media (max-width: 750px) {
-    #back-to-top { left: auto; right: 10px; bottom: 10px; }
+    #back-to-top { right: 10px; bottom: 10px; width: 40px; height: 40px; }
 }
 
 /* LIGHTBOX Z-INDEX FIX */
