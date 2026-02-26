@@ -790,15 +790,16 @@ function addPostToDOM(post) {
                 mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
                     <button onclick="window.launchWin98('${url}', 'video-file')" 
                             class="retro-btn" 
-                            data-info="${url.split('/').pop()}"
+                            data-info="${url.split('/').pop()}">
                         [ ▶ WATCH CLIP ]
                     </button>
                 </div>`;
-            } else if (isAudio) {
+            } 
+            else if (isAudio) {
                 mediaHTML += `<div class="media-item" style="aspect-ratio:auto; border:none; background:transparent;">
                     <button onclick="window.launchWin98('${url}', 'audio-file')" 
                             class="retro-btn" 
-                            data-info="${url.split('/').pop()}"
+                            data-info="${url.split('/').pop()}">
                         [ ♫ PLAY AUDIO ]
                     </button>
                 </div>`;
