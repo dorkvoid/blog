@@ -824,7 +824,8 @@ function addPostToDOM(post) {
                     </button>
                 </div>`;
             } else {
-                mediaHTML += `<div class="media-item"><img src="${url}" class="post-image click-to-zoom"></div>`;
+                // THE FIX: Added loading="lazy" so off-screen images don't lag the site
+                mediaHTML += `<div class="media-item"><img src="${url}" class="post-image click-to-zoom" loading="lazy"></div>`;
             }
         });
         
@@ -1088,9 +1089,17 @@ function formatTime(seconds) {
 
 window.launchMedia = function(url, type) {
     playSound('click');
+    
+    // THE AUDIO KILL SWITCH
+    const oldAudio = document.getElementById('raw-audio');
+    if (oldAudio) {
+        oldAudio.pause();
+        oldAudio.removeAttribute('src');
+    }
+
     mediaBox.classList.remove('hidden');
     mediaBox.classList.remove('video-mode');
-    mediaContent.innerHTML = ""; 
+    mediaContent.innerHTML = "";
 
     if (type === 'video') {
         mediaBox.classList.add('video-mode');

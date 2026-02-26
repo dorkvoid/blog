@@ -18,6 +18,11 @@
     font-style: normal;
 }
 
+/* FIREFOX SCROLLBAR FIX */
+html {
+    scrollbar-width: thin;
+    scrollbar-color: white black;
+}
 ::-webkit-scrollbar {
     width: 12px;
 }
