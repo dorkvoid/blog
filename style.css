@@ -565,21 +565,21 @@ body.admin-mode .admin-buttons { display: block !important; }
 #back-to-top {
     position: fixed;
     bottom: 40px;
-    
-    /* Hugs the right side of your feed instead of the corner */
-    left: calc(50% + 320px); 
-    
+    left: calc(50% + 320px); /* Position for 600px List View */
     width: 50px; 
     height: 50px;
     z-index: 10001; 
-    
-    /* Hidden by default */
     opacity: 0;
     visibility: hidden;
-    transition: transform 0.2s ease, opacity 0.3s ease, visibility 0.3s ease;
+    /* Added 'left' to the transition so it slides over smoothly */
+    transition: transform 0.2s ease, opacity 0.3s ease, visibility 0.3s ease, left 0.3s ease;
 }
 
-/* The class JS adds when you scroll down */
+/* SCOOT OVER FOR GRID VIEW (900px wide) */
+body.grid-mode #back-to-top {
+    left: calc(50% + 470px); 
+}
+
 #back-to-top.visible {
     opacity: 1;
     visibility: visible;
@@ -589,9 +589,9 @@ body.admin-mode .admin-buttons { display: block !important; }
     transform: translateY(-5px); 
 }
 
-/* If the screen gets too narrow, shove it back into the bottom right corner */
-@media (max-width: 750px) {
-    #back-to-top { 
+/* If the screen gets narrower than 1000px, drop the math and pin it to the bottom right */
+@media (max-width: 1000px) {
+    #back-to-top, body.grid-mode #back-to-top { 
         left: auto; 
         right: 20px; 
         bottom: 20px; 

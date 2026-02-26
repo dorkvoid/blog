@@ -238,11 +238,13 @@ function setView(mode) {
     
     if (mode === 'tile') {
         feed.classList.add('grid-view');
+        document.body.classList.add('grid-mode'); // <-- NEW: Tells CSS we are in grid
         container.style.maxWidth = '900px'; 
         viewTileBtn.classList.add('active-view');
         viewListBtn.classList.remove('active-view');
     } else {
         feed.classList.remove('grid-view');
+        document.body.classList.remove('grid-mode'); // <-- NEW: Removes it for list view
         container.style.maxWidth = '600px'; 
         viewListBtn.classList.add('active-view');
         viewTileBtn.classList.remove('active-view');
