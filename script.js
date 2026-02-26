@@ -793,7 +793,7 @@ function addPostToDOM(post) {
                             class="retro-btn" 
                             data-thumb="${thumb}" 
                             data-info="YouTube Video">
-                        [ ▶ WATCH VIDEO ]
+                         ▶ WATCH VIDEO 
                     </button>
                 </div>`;
             } else if (spMatch) {
@@ -804,7 +804,7 @@ function addPostToDOM(post) {
                     <button onclick="window.launchMedia('${spUrl}', 'audio')" 
                             class="retro-btn" 
                             data-info="SPOTIFY [ ${type} ]">
-                        [ ♫ PLAY ${type} ]
+                         ♫ PLAY ${type} 
                     </button>
                 </div>`;
             } else if (isVideo) {
@@ -812,7 +812,7 @@ function addPostToDOM(post) {
                     <button onclick="window.launchMedia('${url}', 'video-file')" 
                             class="retro-btn" 
                             data-info="${url.split('/').pop()}">
-                        [ ▶ WATCH CLIP ]
+                         ▶ WATCH CLIP 
                     </button>
                 </div>`;
             } else if (isAudio) {
@@ -820,7 +820,7 @@ function addPostToDOM(post) {
                     <button onclick="window.launchMedia('${url}', 'audio-file')" 
                             class="retro-btn" 
                             data-info="${url.split('/').pop()}">
-                        [ ♫ PLAY AUDIO ]
+                         ♫ PLAY AUDIO 
                     </button>
                 </div>`;
             } else {
@@ -1267,4 +1267,5 @@ if (backToTopBtn) {
             backToTopBtn.classList.remove('visible');
         }
     });
+
 }
