@@ -78,13 +78,6 @@
     text-shadow: none;
 }
 
-
-/* 5. Firefox can't do the patterns/buttons, so we give them a simple themed fallback */
-html {
-    scrollbar-width: thin;
-    scrollbar-color: white black;
-}
-
 html {
     min-height: 100vh;
     cursor: url('images/cursor.png'), auto;

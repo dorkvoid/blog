@@ -63,12 +63,6 @@ const backToTopBtn = document.getElementById('back-to-top');
 
 // --- INIT UI TWEAKS ---
 
-// Inject System Cursor for Scrollbar Thumb (Chrome/Safari only)
-const styleSheet = document.createElement("style");
-styleSheet.innerText = `::-webkit-scrollbar-thumb:hover { cursor: url('images/link-select.png'), pointer !important; }`;
-document.head.appendChild(styleSheet);
-
-
 if (searchInput) {
     searchInput.placeholder = "Search (or #tags, /help)...";
 }
