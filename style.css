@@ -18,10 +18,12 @@
     font-style: normal;
 }
 
-/* --- FIREFOX FALLBACK --- */
-html {
-    scrollbar-width: thin;
-    scrollbar-color: white black;
+/* --- ONLY FIREFOX SEES THIS FALLBACK --- */
+@supports (-moz-appearance: none) {
+    html {
+        scrollbar-width: thin;
+        scrollbar-color: white black;
+    }
 }
 
 /* --- FORCE OVERRIDE: MAC SYSTEM 1 SCROLLBAR (CHROME/EDGE/BRAVE) --- */
