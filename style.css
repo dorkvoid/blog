@@ -1055,3 +1055,54 @@ input[type=range].retro-scrub:hover::-webkit-slider-thumb {
 .lightbox-nav:hover::before, .lightbox-nav:hover::after { content: none !important; }
 #lightbox-prev { left: 20px; }
 #lightbox-next { right: 20px; }
+
+/* --- FORCE OVERRIDE: MAC SYSTEM 1 SCROLLBAR --- */
+::-webkit-scrollbar {
+    width: 20px !important; 
+    background-color: white !important; 
+}
+
+/* The Dithered Track (Rewritten to fix Chromium bugs) */
+::-webkit-scrollbar-track {
+    background-color: white !important;
+    background-image: 
+        linear-gradient(45deg, #ccc 25%, transparent 25%),
+        linear-gradient(-45deg, #ccc 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #ccc 75%),
+        linear-gradient(-45deg, transparent 75%, #ccc 75%) !important;
+    background-size: 4px 4px !important;
+    background-position: 0 0, 0 2px, 2px 2px, 2px 0 !important;
+}
+
+/* The White Square Thumb */
+::-webkit-scrollbar-thumb {
+    background-color: white !important;
+    border: 1px solid black !important; 
+    border-radius: 0 !important; 
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #eee !important;
+}
+
+/* The Arrow Buttons */
+::-webkit-scrollbar-button:single-button {
+    background-color: white !important;
+    background-size: 10px !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    border: 1px solid black !important;
+    height: 20px !important;
+    width: 20px !important;
+    display: block !important;
+}
+
+/* UP Arrow */
+::-webkit-scrollbar-button:single-button:vertical:decrement {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' fill='black'%3E%3Cpath d='M5 1 L9 8 H1 Z'/%3E%3C/svg%3E") !important;
+}
+
+/* DOWN Arrow */
+::-webkit-scrollbar-button:single-button:vertical:increment {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' fill='black'%3E%3Cpath d='M1 2 H9 L5 9 Z'/%3E%3C/svg%3E") !important;
+}
