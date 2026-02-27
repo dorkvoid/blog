@@ -127,19 +127,42 @@ a:active, button:active, .timestamp:active, .spoiler:active, .expand-btn:active,
     cursor: url('images/link-select-click.png'), pointer;
 }
 
-/* SCANLINES */
+/* --- THE BELIEVABLE CRT TUBE --- */
 body::before {
     content: " ";
     display: block;
     position: fixed;
     top: 0;
     left: 0;
-    bottom: 0;
-    right: 0;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-    z-index: 9999;
-    background-size: 100% 3px, 3px 100%;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999999; 
     pointer-events: none; 
+    
+    /* The Micro-Scanlines */
+    background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0),
+        rgba(255, 255, 255, 0) 50%,
+        rgba(0, 0, 0, 0.1) 50%, 
+        rgba(0, 0, 0, 0.1)
+    );
+    background-size: 100% 4px; 
+
+    /* The Glass Vignette */
+    box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.6);
+
+    /* The Blend Mode */
+    mix-blend-mode: overlay;
+
+    /* The Micro-Flicker */
+    animation: crt-flicker 0.15s infinite;
+}
+
+@keyframes crt-flicker {
+    0%   { opacity: 0.98; }
+    50%  { opacity: 1.0; }
+    100% { opacity: 0.98; }
 }
 
 /* --- 2. LAYOUT & CONTAINER --- */
