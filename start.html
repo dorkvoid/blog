@@ -8,6 +8,12 @@
     <link rel="stylesheet" href="style.css">
     
     <style>
+        /* --- GLOBAL UI & CURSOR --- */
+        * {
+            /* Force the custom cursor on EVERYTHING */
+            cursor: url('images/cursor.png'), auto !important;
+        }
+
         body {
             display: flex;
             flex-direction: column;
@@ -17,10 +23,14 @@
             margin: 0;
             overflow: hidden; 
             background: black;
-            cursor: default;
         }
 
-        /* --- THE DRAWER --- */
+        /* Override for links to use the pointer variant */
+        a, button, .suggestion-item, #drawer-tab, select {
+            cursor: url('images/link-select.png'), pointer !important;
+        }
+
+        /* --- THE SETTINGS DRAWER --- */
         #settings-drawer {
             position: fixed;
             top: 0;
@@ -51,13 +61,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: url('images/link-select.png'), pointer;
         }
 
         #drawer-tab img { 
             width: 24px; 
             height: 24px; 
             transition: transform 0.4s ease-in-out; 
+            pointer-events: none;
         }
 
         .spin-once { transform: rotate(360deg); }
@@ -78,13 +88,12 @@
             outline: none;
         }
 
-        /* Link Manager Items */
+        /* Link Manager */
         .link-manager-item { display: flex; gap: 5px; margin-bottom: 10px; }
         .btn-del {
             background: #200;
             color: #f00;
             border: 1px solid #f00;
-            cursor: url('images/link-select.png'), pointer;
             padding: 0 10px;
             font-family: 'PixeloidSansBold', sans-serif;
         }
@@ -96,7 +105,6 @@
             color: #fff;
             border: 1px solid #fff;
             padding: 8px;
-            cursor: url('images/link-select.png'), pointer;
             font-family: 'PixeloidSansBold', sans-serif;
             margin-top: 10px;
         }
@@ -122,7 +130,6 @@
             color: white;
             font-family: 'PixeloidSans', sans-serif;
             text-align: left;
-            cursor: url('images/link-select.png'), pointer;
             border-bottom: 1px solid #222;
         }
         .suggestion-item:hover { background: white; color: black; }
@@ -139,7 +146,6 @@
             font-family: 'PixeloidSansBold', sans-serif; 
             border: 1px solid #333; 
             padding: 10px 20px; 
-            cursor: url('images/link-select.png'), pointer;
             transition: 0.1s;
         }
         .quick-links a:hover { 
@@ -157,7 +163,6 @@
         </div>
         <div class="drawer-content">
             <div class="drawer-header">> SYSTEM_PREFS</div>
-            
             <div class="setting-group">
                 <label>ENGINE</label>
                 <select id="engine-select">
@@ -166,7 +171,6 @@
                     <option value="youtube">YouTube</option>
                 </select>
             </div>
-
             <div class="setting-group">
                 <label>HOTLINKS</label>
                 <div id="manager-list"></div>
@@ -178,44 +182,53 @@
     <div class="start-container" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
         <div id="clock" class="terminal-clock">00:00:00</div>
         <div id="date" class="terminal-date">LOADING...</div>
-        
         <div class="search-wrapper">
             <input type="text" id="web-search" class="search-box" placeholder="search..." autofocus autocomplete="off">
             <div id="suggestions-box"></div>
         </div>
-
         <div id="links-container" class="quick-links"></div>
     </div>
 
     <script>
-        // --- UPDATED AUDIO ENGINE ---
-        // Pre-defining paths so they stay clean
-        const soundPaths = {
-            hover: 'sounds/hover.mp3',
-            click: 'sounds/click.mp3',
-            type: (idx) => `sounds/type${idx}.mp3`
-        };
-
-        const playSound = (type) => {
-            let src = '';
-            if (type === 'hover') src = soundPaths.hover;
-            else if (type === 'click') src = soundPaths.click;
-            else src = soundPaths.type(Math.floor(Math.random() * 4) + 1);
-
-            const audio = new Audio(src);
-            audio.volume = 0.4;
-            // The play() call is wrapped to catch the browser's "unmute" restriction
-            audio.play().catch(() => {
-                console.log("Audio blocked: Page needs user interaction first.");
-            });
-        };
-
-        // --- DATA ---
+        // --- DATA & PERSISTENCE ---
         let config = JSON.parse(localStorage.getItem('startConfig')) || {
             engine: "duckduckgo",
             links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}]
         };
         const save = () => localStorage.setItem('startConfig', JSON.stringify(config));
+
+        // --- ENHANCED AUDIO ENGINE ---
+        const audioAssets = {
+            hover: new Audio('sounds/hoverbutton.wav'),
+            click: new Audio('sounds/buttonclick.mp3'), // Legacy single click if needed
+            types: [
+                new Audio('sounds/type1.mp3'), new Audio('sounds/type2.mp3'),
+                new Audio('sounds/type3.mp3'), new Audio('sounds/type4.mp3')
+            ],
+            mouseClicks: [
+                new Audio('sounds/mouse1.mp3'), new Audio('sounds/mouse2.mp3'),
+                new Audio('sounds/mouse3.mp3'), new Audio('sounds/mouse4.mp3')
+            ]
+        };
+
+        const playSound = (type) => {
+            let sound;
+            if (type === 'hover') sound = audioAssets.hover;
+            else if (type === 'mouse') {
+                sound = audioAssets.mouseClicks[Math.floor(Math.random() * 4)];
+            } else {
+                sound = audioAssets.types[Math.floor(Math.random() * 4)];
+            }
+
+            const clone = sound.cloneNode();
+            clone.volume = 0.4;
+            clone.play().catch(() => {});
+        };
+
+        // GLOBAL CLICK LISTENER: Random mouse click sounds on every click
+        window.addEventListener('mousedown', () => {
+            playSound('mouse');
+        });
 
         // --- RENDER ---
         function renderAll() {
@@ -229,11 +242,7 @@
                 a.href = link.url;
                 a.target = "_blank";
                 a.innerText = `[ ${link.name} ]`;
-                
-                // Explicitly adding listeners
                 a.addEventListener('mouseenter', () => playSound('hover'));
-                a.addEventListener('click', () => playSound('click'));
-                
                 container.appendChild(a);
 
                 const item = document.createElement('div');
@@ -252,7 +261,6 @@
             document.querySelectorAll('.btn-del').forEach(btn => {
                 btn.onmouseenter = () => playSound('hover');
                 btn.onclick = (e) => {
-                    playSound('click');
                     config.links.splice(e.target.dataset.idx, 1);
                     save(); renderAll();
                 };
@@ -267,27 +275,25 @@
             });
         }
 
-        // --- GEAR & DRAWER ---
+        // --- UI & SEARCH ---
         const gearImg = document.getElementById('gear-img');
         const drawerTab = document.getElementById('drawer-tab');
-        
+        const drawer = document.getElementById('settings-drawer');
+
         drawerTab.onmouseenter = () => playSound('hover');
-        drawerTab.onclick = () => {
-            playSound('click');
+        drawerTab.onclick = (e) => {
+            e.stopPropagation(); 
             gearImg.classList.add('spin-once');
-            document.getElementById('settings-drawer').classList.toggle('open');
+            drawer.classList.toggle('open');
             setTimeout(() => gearImg.classList.remove('spin-once'), 450); 
         };
 
-        const btnAdd = document.querySelector('.btn-add');
-        btnAdd.onmouseenter = () => playSound('hover');
-        btnAdd.onclick = () => {
-            playSound('click');
+        document.querySelector('.btn-add').onmouseenter = () => playSound('hover');
+        document.querySelector('.btn-add').onclick = () => {
             config.links.push({name: "NEW", url: "https://"});
             save(); renderAll();
         };
 
-        // --- SEARCH & CLICK AWAY ---
         const searchInput = document.getElementById('web-search');
         const suggestionsBox = document.getElementById('suggestions-box');
         let debounceTimer;
@@ -313,7 +319,7 @@
                     div.className = 'suggestion-item';
                     div.innerText = item.phrase;
                     div.onmouseenter = () => playSound('hover');
-                    div.onclick = () => { playSound('click'); executeSearch(item.phrase); };
+                    div.onclick = () => executeSearch(item.phrase);
                     suggestionsBox.appendChild(div);
                 });
                 suggestionsBox.style.display = 'flex';
@@ -328,10 +334,13 @@
             window.location.href = url;
         }
 
-        // --- FIXED: CLICK AWAY HIDES SUGGESTIONS ---
-        window.addEventListener('click', (e) => {
-            if (e.target !== searchInput && !e.target.classList.contains('suggestion-item')) {
+        // GLOBAL CLICK HANDLER
+        document.addEventListener('click', (e) => {
+            if (e.target !== searchInput && !e.target.closest('#suggestions-box')) {
                 suggestionsBox.style.display = 'none';
+            }
+            if (!drawer.contains(e.target) && drawer.classList.contains('open')) {
+                drawer.classList.remove('open');
             }
         });
 
@@ -340,7 +349,7 @@
             if(e.key === 'Backspace') playSound('type');
         };
 
-        // --- CLOCK & START ---
+        // --- CLOCK ---
         function updateClock() {
             const now = new Date();
             document.getElementById('clock').innerText = now.toLocaleTimeString('en-US', { hour12: false });
