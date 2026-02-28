@@ -10,15 +10,12 @@
     
     <style>
         /* --- GLOBAL UI & CURSORS --- */
-        /* Default Cursor */
         * { cursor: url('images/cursor.png'), auto !important; }
         *:active { cursor: url('images/cursor-click.png'), auto !important; }
 
-        /* Interactive Hand - Added .link-card explicitly */
         a, button, .suggestion-item, #drawer-tab, select, .handle, .toggle-btn, .link-card, .link-card * {
             cursor: url('images/link-select.png'), pointer !important;
         }
-        /* Clicking Hand */
         a:active, button:active, .suggestion-item:active, #drawer-tab:active, select:active, .link-card:active {
             cursor: url('images/link-select-click.png'), pointer !important;
         }
@@ -65,7 +62,7 @@
         .link-label { color: #444; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; transition: color 0.2s; text-align: center; }
         .link-card:hover .link-label { color: white; }
 
-        /* --- SETTINGS DRAWER (CLEANED) --- */
+        /* --- SETTINGS DRAWER --- */
         #settings-drawer {
             position: fixed; top: 0; right: -350px; width: 350px; height: 100vh;
             background: #000; border-left: 2px solid #333; z-index: 100;
@@ -82,21 +79,16 @@
         .drawer-content { padding: 25px; flex-grow: 1; overflow-y: auto; scrollbar-width: none; }
         .drawer-header { font-family: 'PixeloidSansBold', sans-serif; color: white; margin-bottom: 25px; font-size: 1.1rem; border-bottom: 1px solid #222; padding-bottom: 10px; letter-spacing: 2px;}
 
-        /* Section Layouts */
         .setting-section { margin-bottom: 30px; }
         .section-label { display: block; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.7rem; color: #555; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1.5px; }
         
-        /* Link Manager Items (Polished) */
         .link-manager-item { display: flex; align-items: center; background: #080808; border: 1px solid #222; padding: 6px; margin-bottom: 8px; gap: 8px; }
         .manager-input { background: black; border: 1px solid #333; color: #ccc; padding: 6px; font-family: 'PixeloidSans', sans-serif; font-size: 0.7rem; outline: none; }
-        .manager-input:focus { border-color: #666; color: white; }
         .handle { padding: 0 5px; color: #333; font-size: 1rem; }
         .btn-del { background: #111; color: #f00; border: 1px solid #300; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-family: 'PixeloidSansBold', sans-serif; }
         .btn-del:hover { background: #f00; color: #000; box-shadow: 0 0 10px #f00; border-color: #f00; }
         .btn-add { width: 100%; background: #000; color: #fff; border: 1px solid #333; padding: 10px; font-family: 'PixeloidSansBold', sans-serif; margin-top: 5px; transition: 0.2s; }
-        .btn-add:hover { background: #fff; color: #000; border-color: white; }
 
-        /* Toggles & Selects */
         .option-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .toggle-input { display: none; }
         .toggle-btn { width: 34px; height: 18px; background: #1a1a1a; position: relative; border: 1px solid #333; }
@@ -105,15 +97,20 @@
         .toggle-input:checked + .toggle-btn::after { left: 17px; background: black; }
         
         select { background: #080808; border: 1px solid #333; color: #ccc; padding: 10px; font-family: 'PixeloidSans', sans-serif; width: 100%; outline: none; font-size: 0.8rem; }
-
-        /* Cheat Sheet (The Return) */
         .cheat-sheet { font-size: 0.65rem; color: #444; line-height: 1.6; background: #050505; padding: 12px; border: 1px solid #111; margin-top: 10px; }
-        .cheat-sheet b { color: #888; }
 
-        /* Main UI Bits */
+        /* --- STATUS BAR & WEATHER --- */
+        .status-bar { 
+            position: fixed; bottom: 10px; left: 20px; 
+            font-family: 'PixeloidSans', sans-serif; font-size: 0.6rem; 
+            color: #1a1a1a; letter-spacing: 2px; text-transform: uppercase; 
+            display: flex; align-items: center; gap: 10px;
+        }
+        .weather-display { display: flex; align-items: center; gap: 6px; }
+        .weather-icon { width: 16px; height: 16px; image-rendering: pixelated; }
+
         .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 2.5rem; color: white; margin-bottom: 5px; }
         #greeting { font-family: 'PixeloidSans', sans-serif; color: #333; margin-bottom: 30px; font-size: 0.8rem; letter-spacing: 2px;}
-        .status-bar { position: fixed; bottom: 10px; left: 20px; font-family: 'PixeloidSans', sans-serif; font-size: 0.6rem; color: #1a1a1a; letter-spacing: 2px; text-transform: uppercase; }
     </style>
 </head>
 <body>
@@ -133,8 +130,7 @@
                 <div class="cheat-sheet">
                     <b>yt [query]</b> -> YouTube<br>
                     <b>g  [query]</b> -> Google<br>
-                    <b>r/[sub]</b> &nbsp;&nbsp;&nbsp;-> Subreddit<br>
-                    <b>Default</b> &nbsp;&nbsp;-> Selected Engine
+                    <b>r/[sub]</b> &nbsp;&nbsp;&nbsp;-> Subreddit
                 </div>
             </div>
 
@@ -172,7 +168,14 @@
         <div id="links-container" class="quick-links"></div>
     </div>
 
-    <div class="status-bar" id="status-bar">MIKEVOID OS // STATUS: NOMINAL // WEATHER: CLEAR</div>
+    <div class="status-bar" id="status-bar">
+        <span>MIKEVOID OS // STATUS: NOMINAL</span>
+        <div id="weather-module" class="weather-display">
+            <span>//</span>
+            <img id="w-icon" class="weather-icon" style="display:none">
+            <span id="w-text">LOADING_ENV...</span>
+        </div>
+    </div>
 
     <script>
         let config = JSON.parse(localStorage.getItem('startConfig')) || {
@@ -198,11 +201,42 @@
 
         window.addEventListener('mousedown', () => playSound('mouse'));
 
-        function getFavicon(url) {
+        // --- WEATHER ENGINE ---
+        async function fetchWeather() {
             try {
-                const domain = new URL(url).hostname;
-                return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
-            } catch(e) { return 'images/plxeyestiny.png'; }
+                // Get coords via IP
+                const locRes = await fetch('https://ipapi.co/json/');
+                const locData = await locRes.json();
+                
+                // Get weather via Open-Meteo (No key needed)
+                const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${locData.latitude}&longitude=${locData.longitude}&current_weather=true`);
+                const wData = await wRes.json();
+                const code = wData.current_weather.weathercode;
+                const temp = Math.round(wData.current_weather.temperature);
+                
+                const iconMap = {
+                    0: "sunny", 1: "partly cloudy", 2: "partly cloudy", 3: "cloudy",
+                    45: "foggy", 48: "foggy", 51: "rainy", 61: "rainy", 80: "rainy",
+                    71: "cold", 73: "cold", 75: "cold", 95: "thunderstorm"
+                };
+
+                let condition = iconMap[code] || "sunny";
+                
+                // Night check
+                const hour = new Date().getHours();
+                if ((hour >= 20 || hour <= 5) && condition === "sunny") condition = "night";
+
+                document.getElementById('w-icon').src = `images/${condition}.png`;
+                document.getElementById('w-icon').style.display = 'block';
+                document.getElementById('w-text').innerText = `${condition} // ${temp}°C`;
+            } catch (e) {
+                document.getElementById('w-text').innerText = "ENV_OFFLINE";
+            }
+        }
+
+        function getFavicon(url) {
+            try { return `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=64`; }
+            catch(e) { return 'images/plxeyestiny.png'; }
         }
 
         function renderAll() {
@@ -229,7 +263,7 @@
                 manager.appendChild(item);
             });
             
-            document.getElementById('status-bar').style.display = config.showStatus ? 'block' : 'none';
+            document.getElementById('status-bar').style.display = config.showStatus ? 'flex' : 'none';
             document.getElementById('toggle-status').checked = config.showStatus;
             document.getElementById('toggle-power').checked = config.lowPower;
             document.getElementById('engine-select').value = config.engine;
@@ -250,14 +284,6 @@
                     });
                     config.links = nl; save(); renderLinksOnly();
                 }
-            });
-            document.querySelectorAll('.manager-input').forEach((input, idx) => {
-                input.onchange = () => {
-                    const i = Math.floor(idx/2);
-                    if(idx%2===0) config.links[i].name = input.value;
-                    else config.links[i].url = input.value;
-                    save(); renderLinksOnly();
-                };
             });
         }
 
@@ -338,7 +364,7 @@
             const hr = now.getHours();
             document.getElementById('greeting').innerText = hr < 12 ? "GOOD_MORNING" : hr < 18 ? "GOOD_AFTERNOON" : "GOOD_EVENING";
         }
-        setInterval(updateClock, 1000); updateClock(); renderAll();
+        setInterval(updateClock, 1000); updateClock(); renderAll(); fetchWeather();
     </script>
 </body>
 </html>
