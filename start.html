@@ -17,6 +17,7 @@
             margin: 0;
             overflow: hidden; 
             background: black;
+            cursor: default;
         }
 
         /* --- THE DRAWER --- */
@@ -59,7 +60,6 @@
             transition: transform 0.4s ease-in-out; 
         }
 
-        /* Tight one-spin animation */
         .spin-once { transform: rotate(360deg); }
 
         .drawer-content { padding: 25px; flex-grow: 1; overflow-y: auto; }
@@ -132,7 +132,6 @@
         .terminal-date { font-family: 'PixeloidSans', sans-serif; color: #444; margin-bottom: 30px; }
         .search-box { width: 100%; background: black; border: 2px solid white; color: white; font-family: 'PixeloidSans', sans-serif; font-size: 1.5rem; padding: 15px; outline: none; text-align: center; box-sizing: border-box;}
         
-        /* RESTORED QUICK LINKS STYLING */
         .quick-links { margin-top: 40px; display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
         .quick-links a { 
             color: white; 
@@ -189,16 +188,29 @@
     </div>
 
     <script>
-        // --- AUDIO ENGINE (REFERENCING SCRIPT.JS LOGIC) ---
-        const playSound = (type) => {
-            const audio = (type === 'hover') ? new Audio('sounds/hover.mp3') : 
-                          (type === 'click') ? new Audio('sounds/click.mp3') : 
-                          new Audio(`sounds/type${Math.floor(Math.random()*4)+1}.mp3`);
-            audio.volume = 0.4;
-            audio.play().catch(()=>{});
+        // --- UPDATED AUDIO ENGINE ---
+        // Pre-defining paths so they stay clean
+        const soundPaths = {
+            hover: 'sounds/hover.mp3',
+            click: 'sounds/click.mp3',
+            type: (idx) => `sounds/type${idx}.mp3`
         };
 
-        // --- PERSISTENCE ---
+        const playSound = (type) => {
+            let src = '';
+            if (type === 'hover') src = soundPaths.hover;
+            else if (type === 'click') src = soundPaths.click;
+            else src = soundPaths.type(Math.floor(Math.random() * 4) + 1);
+
+            const audio = new Audio(src);
+            audio.volume = 0.4;
+            // The play() call is wrapped to catch the browser's "unmute" restriction
+            audio.play().catch(() => {
+                console.log("Audio blocked: Page needs user interaction first.");
+            });
+        };
+
+        // --- DATA ---
         let config = JSON.parse(localStorage.getItem('startConfig')) || {
             engine: "duckduckgo",
             links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}]
@@ -218,7 +230,7 @@
                 a.target = "_blank";
                 a.innerText = `[ ${link.name} ]`;
                 
-                // Audio listeners fixed
+                // Explicitly adding listeners
                 a.addEventListener('mouseenter', () => playSound('hover'));
                 a.addEventListener('click', () => playSound('click'));
                 
@@ -255,7 +267,7 @@
             });
         }
 
-        // --- UI & GEAR SPIN ---
+        // --- GEAR & DRAWER ---
         const gearImg = document.getElementById('gear-img');
         const drawerTab = document.getElementById('drawer-tab');
         
@@ -264,7 +276,7 @@
             playSound('click');
             gearImg.classList.add('spin-once');
             document.getElementById('settings-drawer').classList.toggle('open');
-            setTimeout(() => gearImg.classList.remove('spin-once'), 400); // 400ms match
+            setTimeout(() => gearImg.classList.remove('spin-once'), 450); 
         };
 
         const btnAdd = document.querySelector('.btn-add');
@@ -275,7 +287,7 @@
             save(); renderAll();
         };
 
-        // --- PREDICTIVE SEARCH ---
+        // --- SEARCH & CLICK AWAY ---
         const searchInput = document.getElementById('web-search');
         const suggestionsBox = document.getElementById('suggestions-box');
         let debounceTimer;
@@ -316,8 +328,8 @@
             window.location.href = url;
         }
 
-        // HIDE PREDICTIVE ON CLICK AWAY
-        document.addEventListener('click', (e) => {
+        // --- FIXED: CLICK AWAY HIDES SUGGESTIONS ---
+        window.addEventListener('click', (e) => {
             if (e.target !== searchInput && !e.target.classList.contains('suggestion-item')) {
                 suggestionsBox.style.display = 'none';
             }
@@ -328,7 +340,7 @@
             if(e.key === 'Backspace') playSound('type');
         };
 
-        // --- CLOCK & ENGINE ---
+        // --- CLOCK & START ---
         function updateClock() {
             const now = new Date();
             document.getElementById('clock').innerText = now.toLocaleTimeString('en-US', { hour12: false });
