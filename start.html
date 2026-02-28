@@ -10,8 +10,12 @@
     <style>
         /* --- GLOBAL UI & CURSOR --- */
         * {
-            /* Force the custom cursor on EVERYTHING */
             cursor: url('images/cursor.png'), auto !important;
+        }
+
+        /* Swap to click variant when mouse is held down */
+        *:active {
+            cursor: url('images/cursor-click.png'), auto !important;
         }
 
         body {
@@ -25,12 +29,12 @@
             background: black;
         }
 
-        /* Override for links to use the pointer variant */
+        /* Pointer variants for interactive stuff */
         a, button, .suggestion-item, #drawer-tab, select {
             cursor: url('images/link-select.png'), pointer !important;
         }
 
-        /* --- THE SETTINGS DRAWER --- */
+        /* --- SETTINGS DRAWER --- */
         #settings-drawer {
             position: fixed;
             top: 0;
@@ -197,10 +201,10 @@
         };
         const save = () => localStorage.setItem('startConfig', JSON.stringify(config));
 
-        // --- ENHANCED AUDIO ENGINE ---
+        // --- FIXED AUDIO ENGINE ---
         const audioAssets = {
-            hover: new Audio('sounds/hoverbutton.wav'),
-            click: new Audio('sounds/buttonclick.mp3'), // Legacy single click if needed
+            hover: new Audio('sounds/hoverbutton.wav'), // Corrected Name
+            click: new Audio('sounds/buttonclick.mp3'), // Corrected Name
             types: [
                 new Audio('sounds/type1.mp3'), new Audio('sounds/type2.mp3'),
                 new Audio('sounds/type3.mp3'), new Audio('sounds/type4.mp3')
@@ -213,22 +217,24 @@
 
         const playSound = (type) => {
             let sound;
+            let targetVolume = 0.4;
+
             if (type === 'hover') sound = audioAssets.hover;
+            else if (type === 'click') sound = audioAssets.click;
             else if (type === 'mouse') {
                 sound = audioAssets.mouseClicks[Math.floor(Math.random() * 4)];
+                targetVolume = 0.15; // Lowered volume for mouse clicks
             } else {
                 sound = audioAssets.types[Math.floor(Math.random() * 4)];
             }
 
             const clone = sound.cloneNode();
-            clone.volume = 0.4;
+            clone.volume = targetVolume;
             clone.play().catch(() => {});
         };
 
-        // GLOBAL CLICK LISTENER: Random mouse click sounds on every click
-        window.addEventListener('mousedown', () => {
-            playSound('mouse');
-        });
+        // --- GLOBAL INTERACTION ---
+        window.addEventListener('mousedown', () => playSound('mouse'));
 
         // --- RENDER ---
         function renderAll() {
@@ -243,6 +249,7 @@
                 a.target = "_blank";
                 a.innerText = `[ ${link.name} ]`;
                 a.addEventListener('mouseenter', () => playSound('hover'));
+                a.addEventListener('click', () => playSound('click'));
                 container.appendChild(a);
 
                 const item = document.createElement('div');
@@ -261,6 +268,7 @@
             document.querySelectorAll('.btn-del').forEach(btn => {
                 btn.onmouseenter = () => playSound('hover');
                 btn.onclick = (e) => {
+                    playSound('click');
                     config.links.splice(e.target.dataset.idx, 1);
                     save(); renderAll();
                 };
@@ -283,6 +291,7 @@
         drawerTab.onmouseenter = () => playSound('hover');
         drawerTab.onclick = (e) => {
             e.stopPropagation(); 
+            playSound('click');
             gearImg.classList.add('spin-once');
             drawer.classList.toggle('open');
             setTimeout(() => gearImg.classList.remove('spin-once'), 450); 
@@ -290,6 +299,7 @@
 
         document.querySelector('.btn-add').onmouseenter = () => playSound('hover');
         document.querySelector('.btn-add').onclick = () => {
+            playSound('click');
             config.links.push({name: "NEW", url: "https://"});
             save(); renderAll();
         };
@@ -319,7 +329,7 @@
                     div.className = 'suggestion-item';
                     div.innerText = item.phrase;
                     div.onmouseenter = () => playSound('hover');
-                    div.onclick = () => executeSearch(item.phrase);
+                    div.onclick = () => { playSound('click'); executeSearch(item.phrase); };
                     suggestionsBox.appendChild(div);
                 });
                 suggestionsBox.style.display = 'flex';
@@ -334,22 +344,23 @@
             window.location.href = url;
         }
 
-        // GLOBAL CLICK HANDLER
         document.addEventListener('click', (e) => {
             if (e.target !== searchInput && !e.target.closest('#suggestions-box')) {
                 suggestionsBox.style.display = 'none';
             }
-            if (!drawer.contains(e.target) && drawer.classList.contains('open')) {
+            if (!drawer.contains(e.target) && !drawerTab.contains(e.target) && drawer.classList.contains('open')) {
                 drawer.classList.remove('open');
             }
         });
 
         searchInput.onkeydown = (e) => {
-            if(e.key === 'Enter') executeSearch(searchInput.value);
+            if(e.key === 'Enter') {
+                playSound('click');
+                executeSearch(searchInput.value);
+            }
             if(e.key === 'Backspace') playSound('type');
         };
 
-        // --- CLOCK ---
         function updateClock() {
             const now = new Date();
             document.getElementById('clock').innerText = now.toLocaleTimeString('en-US', { hour12: false });
@@ -362,7 +373,11 @@
         const engineSelect = document.getElementById('engine-select');
         engineSelect.value = config.engine;
         engineSelect.onmouseenter = () => playSound('hover');
-        engineSelect.onchange = (e) => { config.engine = e.target.value; save(); };
+        engineSelect.onchange = (e) => { 
+            playSound('click');
+            config.engine = e.target.value; 
+            save(); 
+        };
 
     </script>
 </body>
