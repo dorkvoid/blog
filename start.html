@@ -23,11 +23,11 @@
         #settings-drawer {
             position: fixed;
             top: 0;
-            right: -350px; /* Hidden off-screen */
+            right: -350px; 
             width: 350px;
             height: 100vh;
             background: #000;
-            border-left: 2px solid #222;
+            border-left: 2px solid #333;
             z-index: 100;
             transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             color: white;
@@ -36,11 +36,9 @@
             flex-direction: column;
         }
 
-        #settings-drawer.open {
-            right: 0;
-        }
+        #settings-drawer.open { right: 0; }
 
-        /* The Gear Tab attached to the side */
+        /* Gear Tab */
         #drawer-tab {
             position: absolute;
             left: -42px;
@@ -48,7 +46,7 @@
             width: 40px;
             height: 40px;
             background: #000;
-            border: 2px solid #222;
+            border: 2px solid #333;
             border-right: none;
             display: flex;
             align-items: center;
@@ -56,37 +54,32 @@
             cursor: url('images/link-select.png'), pointer;
         }
 
-        #drawer-tab img { width: 24px; height: 24px; transition: transform 0.3s; }
-        #settings-drawer.open #drawer-tab img { transform: rotate(90deg); }
+        #drawer-tab img { width: 24px; height: 24px; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .spin-gear { transform: rotate(360deg); }
 
         .drawer-content { padding: 25px; flex-grow: 1; overflow-y: auto; }
-        .drawer-header { font-family: 'PixeloidSansBold', sans-serif; color: #ff0000; margin-bottom: 20px; font-size: 1.2rem; }
+        .drawer-header { font-family: 'PixeloidSansBold', sans-serif; color: white; margin-bottom: 20px; font-size: 1.2rem; border-bottom: 1px solid #333; padding-bottom: 10px;}
 
-        /* Settings Inputs */
         .setting-group { margin-bottom: 25px; }
-        .setting-group label { display: block; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.8rem; margin-bottom: 8px; color: #666; }
+        .setting-group label { display: block; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.8rem; margin-bottom: 8px; color: #888; }
         
         select, input[type="text"] {
             width: 100%;
             background: #111;
-            border: 1px solid #333;
+            border: 1px solid #444;
             color: white;
             padding: 10px;
             font-family: 'PixeloidSans', sans-serif;
             outline: none;
         }
 
-        /* Link Manager List */
-        .link-manager-item {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 10px;
-        }
+        /* Link Manager */
+        .link-manager-item { display: flex; gap: 5px; margin-bottom: 10px; }
         .btn-del {
             background: #200;
             color: #f00;
             border: 1px solid #f00;
-            cursor: pointer;
+            cursor: url('images/link-select.png'), pointer;
             padding: 0 10px;
             font-family: 'PixeloidSansBold', sans-serif;
         }
@@ -98,28 +91,53 @@
             color: #fff;
             border: 1px solid #fff;
             padding: 8px;
-            cursor: pointer;
+            cursor: url('images/link-select.png'), pointer;
             font-family: 'PixeloidSansBold', sans-serif;
             margin-top: 10px;
         }
         .btn-add:hover { background: #fff; color: #000; }
 
-        /* Standard bits */
+        /* Predictive Search Dropdown */
+        .search-wrapper { position: relative; width: 100%; max-width: 600px; }
+        #suggestions-box {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: black;
+            border: 2px solid white;
+            border-top: none;
+            display: none;
+            flex-direction: column;
+            z-index: 20;
+            box-sizing: border-box;
+        }
+        .suggestion-item {
+            padding: 12px;
+            color: white;
+            font-family: 'PixeloidSans', sans-serif;
+            text-align: left;
+            cursor: url('images/link-select.png'), pointer;
+            border-bottom: 1px solid #222;
+        }
+        .suggestion-item:hover { background: white; color: black; }
+
+        /* Main Elements */
         .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 2.5rem; color: white; }
         .terminal-date { font-family: 'PixeloidSans', sans-serif; color: #444; margin-bottom: 30px; }
-        .search-box { width: 100%; max-width: 600px; background: black; border: 2px solid white; color: white; font-family: 'PixeloidSans', sans-serif; font-size: 1.5rem; padding: 15px; outline: none; text-align: center; }
-        .search-box:focus { border-color: #ff0000; box-shadow: 0 0 15px rgba(255, 0, 0, 0.4); }
+        .search-box { width: 100%; background: black; border: 2px solid white; color: white; font-family: 'PixeloidSans', sans-serif; font-size: 1.5rem; padding: 15px; outline: none; text-align: center; box-sizing: border-box;}
+        .search-box:focus { box-shadow: 0 0 15px rgba(255, 255, 255, 0.2); }
         
         .quick-links { margin-top: 40px; display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
-        .quick-links a { color: white; text-decoration: none; font-family: 'PixeloidSansBold', sans-serif; border: 1px solid #333; padding: 8px 15px; }
-        .quick-links a:hover { background: white; color: black; }
+        .quick-links a { color: white; text-decoration: none; font-family: 'PixeloidSansBold', sans-serif; border: 1px solid #333; padding: 8px 15px; cursor: url('images/link-select.png'), pointer; }
+        .quick-links a:hover { background: white; color: black; border-color: white; }
     </style>
 </head>
 <body>
 
     <div id="settings-drawer">
-        <div id="drawer-tab" class="hover-trigger">
-            <img src="images/gear.png" alt="Settings">
+        <div id="drawer-tab">
+            <img src="images/gear.png" id="gear-img" alt="Settings">
         </div>
         <div class="drawer-content">
             <div class="drawer-header">> SYSTEM_PREFS</div>
@@ -136,15 +154,20 @@
             <div class="setting-group">
                 <label>HOTLINKS</label>
                 <div id="manager-list"></div>
-                <button class="btn-add hover-trigger">+ ADD NEW</button>
+                <button class="btn-add">+ ADD NEW</button>
             </div>
         </div>
     </div>
 
-    <div class="start-container">
+    <div class="start-container" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
         <div id="clock" class="terminal-clock">00:00:00</div>
         <div id="date" class="terminal-date">LOADING...</div>
-        <input type="text" id="web-search" class="search-box" placeholder="search..." autofocus>
+        
+        <div class="search-wrapper">
+            <input type="text" id="web-search" class="search-box" placeholder="search..." autofocus autocomplete="off">
+            <div id="suggestions-box"></div>
+        </div>
+
         <div id="links-container" class="quick-links"></div>
     </div>
 
@@ -159,18 +182,14 @@
             audio.play().catch(()=>{});
         };
 
-        // --- DATA PERSISTENCE ---
+        // --- DATA ---
         let config = JSON.parse(localStorage.getItem('startConfig')) || {
             engine: "duckduckgo",
-            links: [
-                {name: "HUB", url: "/blog/"},
-                {name: "YOUTUBE", url: "https://youtube.com"}
-            ]
+            links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}]
         };
-
         const save = () => localStorage.setItem('startConfig', JSON.stringify(config));
 
-        // --- RENDER FUNCTIONS ---
+        // --- RENDER ---
         function renderAll() {
             const container = document.getElementById('links-container');
             const manager = document.getElementById('manager-list');
@@ -178,16 +197,14 @@
             manager.innerHTML = '';
 
             config.links.forEach((link, index) => {
-                // Main Page Buttons
                 const a = document.createElement('a');
                 a.href = link.url;
                 a.target = "_blank";
                 a.innerText = `[ ${link.name} ]`;
-                a.addEventListener('mouseenter', () => playSound('hover'));
-                a.addEventListener('click', () => playSound('click'));
+                a.onmouseenter = () => playSound('hover');
+                a.onclick = () => playSound('click');
                 container.appendChild(a);
 
-                // Drawer Manager Items
                 const item = document.createElement('div');
                 item.className = 'link-manager-item';
                 item.innerHTML = `
@@ -202,6 +219,7 @@
 
         function attachManagerEvents() {
             document.querySelectorAll('.btn-del').forEach(btn => {
+                btn.onmouseenter = () => playSound('hover');
                 btn.onclick = (e) => {
                     playSound('click');
                     config.links.splice(e.target.dataset.idx, 1);
@@ -218,42 +236,70 @@
             });
         }
 
-        // --- UI LOGIC ---
+        // --- UI & SEARCH ---
+        const gearImg = document.getElementById('gear-img');
+        document.getElementById('drawer-tab').onmouseenter = () => playSound('hover');
         document.getElementById('drawer-tab').onclick = () => {
             playSound('click');
+            gearImg.classList.toggle('spin-gear');
             document.getElementById('settings-drawer').classList.toggle('open');
+            // Remove spin class after animation so it can trigger again
+            setTimeout(() => gearImg.classList.remove('spin-gear'), 500);
         };
 
+        document.querySelector('.btn-add').onmouseenter = () => playSound('hover');
         document.querySelector('.btn-add').onclick = () => {
             playSound('click');
             config.links.push({name: "NEW", url: "https://"});
             save(); renderAll();
         };
 
-        document.getElementById('engine-select').onchange = (e) => {
-            config.engine = e.target.value;
-            save();
-        };
-
-        // Typing sounds and search
         const searchInput = document.getElementById('web-search');
-        searchInput.oninput = () => playSound('type');
-        searchInput.onkeydown = (e) => {
-            if(e.key === 'Enter') {
-                const q = encodeURIComponent(searchInput.value);
-                let url = config.engine === 'google' ? `https://google.com/search?q=${q}` : `https://duckduckgo.com/?q=${q}`;
-                window.location.href = url;
-            }
+        const suggestionsBox = document.getElementById('suggestions-box');
+        let debounceTimer;
+
+        searchInput.oninput = (e) => {
+            playSound('type');
+            const query = e.target.value.trim();
+            if (query.length === 0) { suggestionsBox.style.display = 'none'; return; }
+
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const script = document.createElement('script');
+                script.src = `https://duckduckgo.com/ac/?q=${encodeURIComponent(query)}&callback=autocompleteCallback`;
+                document.body.appendChild(script);
+            }, 150);
         };
 
-        // Global hover sound for buttons
-        document.addEventListener('mouseover', (e) => {
-            if(e.target.classList.contains('hover-trigger') || e.target.tagName === 'BUTTON' || e.target.tagName === 'SELECT') {
-                playSound('hover');
-            }
-        });
+        window.autocompleteCallback = (data) => {
+            suggestionsBox.innerHTML = '';
+            if (data && data.length > 0) {
+                data.slice(0, 5).forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.innerText = item.phrase;
+                    div.onmouseenter = () => playSound('hover');
+                    div.onclick = () => { playSound('click'); executeSearch(item.phrase); };
+                    suggestionsBox.appendChild(div);
+                });
+                suggestionsBox.style.display = 'flex';
+            } else { suggestionsBox.style.display = 'none'; }
+        };
 
-        // Initial Boot
+        function executeSearch(query) {
+            const q = encodeURIComponent(query);
+            let url = config.engine === 'google' ? `https://google.com/search?q=${q}` : 
+                      config.engine === 'youtube' ? `https://youtube.com/results?search_query=${q}` : 
+                      `https://duckduckgo.com/?q=${q}`;
+            window.location.href = url;
+        }
+
+        searchInput.onkeydown = (e) => {
+            if(e.key === 'Enter') executeSearch(searchInput.value);
+            if(e.key === 'Backspace') playSound('type');
+        };
+
+        // --- CLOCK ---
         function updateClock() {
             const now = new Date();
             document.getElementById('clock').innerText = now.toLocaleTimeString('en-US', { hour12: false });
@@ -263,6 +309,8 @@
         updateClock();
         renderAll();
         document.getElementById('engine-select').value = config.engine;
+        document.getElementById('engine-select').onchange = (e) => { config.engine = e.target.value; save(); };
+        document.getElementById('engine-select').onmouseenter = () => playSound('hover');
 
     </script>
 </body>
