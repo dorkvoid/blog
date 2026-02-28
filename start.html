@@ -19,7 +19,7 @@
             background: black;
         }
 
-        /* --- THE DRAWER (SIDE FOLDER) --- */
+        /* --- THE DRAWER --- */
         #settings-drawer {
             position: fixed;
             top: 0;
@@ -38,7 +38,6 @@
 
         #settings-drawer.open { right: 0; }
 
-        /* Gear Tab */
         #drawer-tab {
             position: absolute;
             left: -42px;
@@ -54,8 +53,14 @@
             cursor: url('images/link-select.png'), pointer;
         }
 
-        #drawer-tab img { width: 24px; height: 24px; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .spin-gear { transform: rotate(360deg); }
+        #drawer-tab img { 
+            width: 24px; 
+            height: 24px; 
+            transition: transform 0.5s ease; 
+        }
+
+        /* Clean one-time spin */
+        .spin-once { transform: rotate(360deg); }
 
         .drawer-content { padding: 25px; flex-grow: 1; overflow-y: auto; }
         .drawer-header { font-family: 'PixeloidSansBold', sans-serif; color: white; margin-bottom: 20px; font-size: 1.2rem; border-bottom: 1px solid #333; padding-bottom: 10px;}
@@ -97,7 +102,7 @@
         }
         .btn-add:hover { background: #fff; color: #000; }
 
-        /* Predictive Search Dropdown */
+        /* Predictive Search */
         .search-wrapper { position: relative; width: 100%; max-width: 600px; }
         #suggestions-box {
             position: absolute;
@@ -126,11 +131,6 @@
         .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 2.5rem; color: white; }
         .terminal-date { font-family: 'PixeloidSans', sans-serif; color: #444; margin-bottom: 30px; }
         .search-box { width: 100%; background: black; border: 2px solid white; color: white; font-family: 'PixeloidSans', sans-serif; font-size: 1.5rem; padding: 15px; outline: none; text-align: center; box-sizing: border-box;}
-        .search-box:focus { box-shadow: 0 0 15px rgba(255, 255, 255, 0.2); }
-        
-        .quick-links { margin-top: 40px; display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
-        .quick-links a { color: white; text-decoration: none; font-family: 'PixeloidSansBold', sans-serif; border: 1px solid #333; padding: 8px 15px; cursor: url('images/link-select.png'), pointer; }
-        .quick-links a:hover { background: white; color: black; border-color: white; }
     </style>
 </head>
 <body>
@@ -172,7 +172,7 @@
     </div>
 
     <script>
-        // --- AUDIO ENGINE ---
+        // --- AUDIO ENGINE (MATCHES SCRIPT.JS) ---
         const playSound = (type) => {
             let audio;
             if (type === 'hover') audio = new Audio('sounds/hover.mp3');
@@ -201,8 +201,11 @@
                 a.href = link.url;
                 a.target = "_blank";
                 a.innerText = `[ ${link.name} ]`;
-                a.onmouseenter = () => playSound('hover');
-                a.onclick = () => playSound('click');
+                
+                // Audio Listeners
+                a.addEventListener('mouseenter', () => playSound('hover'));
+                a.addEventListener('click', () => playSound('click'));
+                
                 container.appendChild(a);
 
                 const item = document.createElement('div');
@@ -236,15 +239,18 @@
             });
         }
 
-        // --- UI & SEARCH ---
+        // --- UI & GEAR ---
         const gearImg = document.getElementById('gear-img');
-        document.getElementById('drawer-tab').onmouseenter = () => playSound('hover');
-        document.getElementById('drawer-tab').onclick = () => {
+        const drawerTab = document.getElementById('drawer-tab');
+        
+        drawerTab.onmouseenter = () => playSound('hover');
+        drawerTab.onclick = () => {
             playSound('click');
-            gearImg.classList.toggle('spin-gear');
+            // Trigger 360 spin
+            gearImg.classList.add('spin-once');
             document.getElementById('settings-drawer').classList.toggle('open');
-            // Remove spin class after animation so it can trigger again
-            setTimeout(() => gearImg.classList.remove('spin-gear'), 500);
+            // Remove class after animation finishes (0.5s) to allow re-trigger
+            setTimeout(() => gearImg.classList.remove('spin-once'), 500);
         };
 
         document.querySelector('.btn-add').onmouseenter = () => playSound('hover');
@@ -254,6 +260,7 @@
             save(); renderAll();
         };
 
+        // --- PREDICTIVE SEARCH ---
         const searchInput = document.getElementById('web-search');
         const suggestionsBox = document.getElementById('suggestions-box');
         let debounceTimer;
@@ -286,6 +293,7 @@
             } else { suggestionsBox.style.display = 'none'; }
         };
 
+        // EXECUTE SEARCH
         function executeSearch(query) {
             const q = encodeURIComponent(query);
             let url = config.engine === 'google' ? `https://google.com/search?q=${q}` : 
@@ -294,12 +302,19 @@
             window.location.href = url;
         }
 
+        // HIDE SUGGESTIONS ON CLICK AWAY
+        document.addEventListener('click', (e) => {
+            if (e.target !== searchInput && !e.target.classList.contains('suggestion-item')) {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+
         searchInput.onkeydown = (e) => {
             if(e.key === 'Enter') executeSearch(searchInput.value);
             if(e.key === 'Backspace') playSound('type');
         };
 
-        // --- CLOCK ---
+        // --- INIT ---
         function updateClock() {
             const now = new Date();
             document.getElementById('clock').innerText = now.toLocaleTimeString('en-US', { hour12: false });
@@ -308,9 +323,10 @@
         setInterval(updateClock, 1000);
         updateClock();
         renderAll();
+
         document.getElementById('engine-select').value = config.engine;
-        document.getElementById('engine-select').onchange = (e) => { config.engine = e.target.value; save(); };
         document.getElementById('engine-select').onmouseenter = () => playSound('hover');
+        document.getElementById('engine-select').onchange = (e) => { config.engine = e.target.value; save(); };
 
     </script>
 </body>
