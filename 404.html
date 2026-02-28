@@ -9,13 +9,7 @@
     <link rel="stylesheet" href="style.css">
     
     <style>
-        /* Force the void to be violently red */
-        body {
-            background-color: #ff0000 !important;
-            margin: 0;
-            overflow: hidden; /* Stops scrollbars from appearing during the glitch */
-        }
-
+        /* Center everything and set the base color to PURE RED */
         .error-container {
             display: flex;
             flex-direction: column;
@@ -23,88 +17,54 @@
             justify-content: center;
             height: 100vh;
             text-align: center;
+            color: #ff0000; 
         }
 
-        /* The Glitch Core */
-        .glitch {
-            position: relative;
+        .error-code {
             font-family: 'PixeloidSansBold', sans-serif;
-            font-size: 8rem;
-            color: white;
+            font-size: 6rem;
             margin-bottom: 10px;
+            /* Creates a dark red ghosting effect behind the main text */
+            text-shadow: 4px 0px 0 #550000, -4px 0px 0 #330000;
+            /* Triggers the rapid glitch keyframes */
+            animation: violent-glitch 0.15s infinite;
         }
 
-        /* Creates two identical ghost copies of the text right on top of it */
-        .glitch::before, .glitch::after {
-            content: attr(data-text);
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #ff0000; /* Hides the real text underneath */
-        }
-
-        /* The Black Ghost */
-        .glitch::before {
-            left: 3px;
-            text-shadow: -2px 0 black;
-            animation: glitch-anim-1 2s infinite linear alternate-reverse;
-        }
-
-        /* The White Ghost */
-        .glitch::after {
-            left: -3px;
-            text-shadow: 2px 0 white;
-            animation: glitch-anim-2 3s infinite linear alternate-reverse;
-        }
-
-        /* Violently slicing the text horizontally */
-        @keyframes glitch-anim-1 {
-            0% { clip-path: inset(20% 0 80% 0); transform: translate(-2px, 1px); }
-            20% { clip-path: inset(60% 0 10% 0); transform: translate(2px, -1px); }
-            40% { clip-path: inset(40% 0 50% 0); transform: translate(-2px, 2px); }
-            60% { clip-path: inset(80% 0 5% 0); transform: translate(2px, -2px); }
-            80% { clip-path: inset(10% 0 70% 0); transform: translate(-1px, 1px); }
-            100% { clip-path: inset(30% 0 50% 0); transform: translate(1px, -1px); }
-        }
-
-        @keyframes glitch-anim-2 {
-            0% { clip-path: inset(10% 0 60% 0); transform: translate(2px, 1px); }
-            20% { clip-path: inset(30% 0 20% 0); transform: translate(-2px, -1px); }
-            40% { clip-path: inset(70% 0 10% 0); transform: translate(2px, 2px); }
-            60% { clip-path: inset(20% 0 50% 0); transform: translate(-2px, -2px); }
-            80% { clip-path: inset(50% 0 30% 0); transform: translate(1px, 1px); }
-            100% { clip-path: inset(5% 0 80% 0); transform: translate(-1px, -1px); }
-        }
-
-        /* High-contrast inverted text box */
         .error-text {
             font-family: 'PixeloidSans', sans-serif;
             font-size: 1.2rem;
-            margin-bottom: 40px;
-            color: black;
-            background: white;
-            padding: 5px 10px;
-            text-transform: uppercase;
+            margin-bottom: 30px;
+            /* Runs the same animation, but slightly out of sync */
+            animation: violent-glitch 0.25s infinite reverse;
         }
 
         .home-btn {
             background-color: transparent;
-            color: white;
-            border: 3px solid white;
-            padding: 12px 24px;
+            color: #ff0000;
+            border: 2px solid #ff0000;
+            padding: 10px 20px;
             font-family: 'PixeloidSansBold', sans-serif;
-            font-size: 1.2rem;
             cursor: url('images/link-select.png'), pointer;
             text-decoration: none;
-            transition: 0s; /* 0s transition makes hover instant and jarring */
+            transition: 0.1s;
         }
 
+        /* Reverses colors and adds a glowing red shadow on hover */
         .home-btn:hover {
-            background-color: black;
-            color: white;
-            border-color: black;
+            background-color: #ff0000;
+            color: black;
+            box-shadow: 0 0 15px #ff0000;
+        }
+
+        /* --- THE GLITCH ANIMATION ENGINE --- */
+        @keyframes violent-glitch {
+            0%   { opacity: 1.0; transform: skewX(0deg) translate(0px, 0px); }
+            20%  { opacity: 0.8; transform: skewX(3deg) translate(-2px, 1px); }
+            30%  { opacity: 0.2; } /* Sudden power drop */
+            40%  { opacity: 1.0; transform: skewX(-3deg) translate(2px, -1px); }
+            60%  { opacity: 0.9; transform: skewX(0deg) translate(0px, 0px); }
+            80%  { opacity: 1.0; transform: skewX(1deg) translate(-1px, 2px); }
+            100% { opacity: 1.0; transform: skewX(0deg) translate(0px, 0px); }
         }
     </style>
 </head>
