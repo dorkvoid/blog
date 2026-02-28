@@ -70,11 +70,13 @@
         #drawer-tab img { 
             width: 24px; 
             height: 24px; 
-            transition: transform 0.4s ease-in-out; 
+            /* Snappy transition for the slight spin */
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
             pointer-events: none;
         }
 
-        .spin-once { transform: rotate(360deg); }
+        /* FIXED: SLIGHT 90 DEGREE SPIN */
+        .slight-spin { transform: rotate(90deg); }
 
         .drawer-content { padding: 25px; flex-grow: 1; overflow-y: auto; }
         .drawer-header { font-family: 'PixeloidSansBold', sans-serif; color: white; margin-bottom: 20px; font-size: 1.2rem; border-bottom: 1px solid #333; padding-bottom: 10px;}
@@ -92,7 +94,7 @@
             outline: none;
         }
 
-        /* Link Manager */
+        /* Link Manager Items */
         .link-manager-item { display: flex; gap: 5px; margin-bottom: 10px; }
         .btn-del {
             background: #200;
@@ -114,7 +116,7 @@
         }
         .btn-add:hover { background: #fff; color: #000; }
 
-        /* Predictive Search */
+        /* Search Infrastructure */
         .search-wrapper { position: relative; width: 100%; max-width: 600px; }
         #suggestions-box {
             position: absolute;
@@ -138,7 +140,7 @@
         }
         .suggestion-item:hover { background: white; color: black; }
 
-        /* Main Elements */
+        /* Main Viewport */
         .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 2.5rem; color: white; }
         .terminal-date { font-family: 'PixeloidSans', sans-serif; color: #444; margin-bottom: 30px; }
         .search-box { width: 100%; background: black; border: 2px solid white; color: white; font-family: 'PixeloidSans', sans-serif; font-size: 1.5rem; padding: 15px; outline: none; text-align: center; box-sizing: border-box;}
@@ -194,17 +196,17 @@
     </div>
 
     <script>
-        // --- DATA & PERSISTENCE ---
+        // --- DATA ---
         let config = JSON.parse(localStorage.getItem('startConfig')) || {
             engine: "duckduckgo",
             links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}]
         };
         const save = () => localStorage.setItem('startConfig', JSON.stringify(config));
 
-        // --- FIXED AUDIO ENGINE ---
+        // --- AUDIO ENGINE ---
         const audioAssets = {
-            hover: new Audio('sounds/hoverbutton.wav'), // Corrected Name
-            click: new Audio('sounds/buttonclick.mp3'), // Corrected Name
+            hover: new Audio('sounds/hoverbutton.wav'), 
+            click: new Audio('sounds/buttonclick.mp3'),
             types: [
                 new Audio('sounds/type1.mp3'), new Audio('sounds/type2.mp3'),
                 new Audio('sounds/type3.mp3'), new Audio('sounds/type4.mp3')
@@ -223,7 +225,7 @@
             else if (type === 'click') sound = audioAssets.click;
             else if (type === 'mouse') {
                 sound = audioAssets.mouseClicks[Math.floor(Math.random() * 4)];
-                targetVolume = 0.15; // Lowered volume for mouse clicks
+                targetVolume = 0.15; // Kept mechanical clicks quiet
             } else {
                 sound = audioAssets.types[Math.floor(Math.random() * 4)];
             }
@@ -233,7 +235,7 @@
             clone.play().catch(() => {});
         };
 
-        // --- GLOBAL INTERACTION ---
+        // Global mouse interaction
         window.addEventListener('mousedown', () => playSound('mouse'));
 
         // --- RENDER ---
@@ -283,7 +285,7 @@
             });
         }
 
-        // --- UI & SEARCH ---
+        // --- UI ELEMENTS ---
         const gearImg = document.getElementById('gear-img');
         const drawerTab = document.getElementById('drawer-tab');
         const drawer = document.getElementById('settings-drawer');
@@ -292,9 +294,10 @@
         drawerTab.onclick = (e) => {
             e.stopPropagation(); 
             playSound('click');
-            gearImg.classList.add('spin-once');
+            
+            // Toggle the 90-degree spin
+            gearImg.classList.toggle('slight-spin');
             drawer.classList.toggle('open');
-            setTimeout(() => gearImg.classList.remove('spin-once'), 450); 
         };
 
         document.querySelector('.btn-add').onmouseenter = () => playSound('hover');
@@ -304,6 +307,7 @@
             save(); renderAll();
         };
 
+        // --- SEARCH ENGINE ---
         const searchInput = document.getElementById('web-search');
         const suggestionsBox = document.getElementById('suggestions-box');
         let debounceTimer;
@@ -344,12 +348,14 @@
             window.location.href = url;
         }
 
+        // Click-away logic for search and drawer
         document.addEventListener('click', (e) => {
             if (e.target !== searchInput && !e.target.closest('#suggestions-box')) {
                 suggestionsBox.style.display = 'none';
             }
             if (!drawer.contains(e.target) && !drawerTab.contains(e.target) && drawer.classList.contains('open')) {
                 drawer.classList.remove('open');
+                gearImg.classList.remove('slight-spin'); // Reset spin when drawer closes
             }
         });
 
