@@ -27,7 +27,6 @@
             position: relative;
         }
 
-        /* The New Dashboard Clock */
         .terminal-clock {
             font-family: 'PixeloidSansBold', sans-serif;
             font-size: 2rem;
@@ -43,11 +42,7 @@
             font-size: 1rem;
         }
 
-        /* Search Infrastructure */
-        .search-wrapper {
-            position: relative;
-            width: 100%;
-        }
+        .search-wrapper { position: relative; width: 100%; }
 
         .search-box {
             width: 100%;
@@ -69,7 +64,6 @@
             color: #ff0000;
         }
 
-        /* Predictive Autocomplete Dropdown */
         #suggestions-box {
             position: absolute;
             top: 100%;
@@ -79,7 +73,7 @@
             border: 2px solid #ff0000;
             border-top: none;
             box-shadow: 0 10px 20px rgba(0,0,0,0.8);
-            display: none; /* Hidden by default */
+            display: none; 
             flex-direction: column;
             z-index: 20;
             box-sizing: border-box;
@@ -94,16 +88,8 @@
             border-bottom: 1px solid #333;
         }
 
-        .suggestion-item:last-child {
-            border-bottom: none;
-        }
+        .suggestion-item:hover { background: #ff0000; color: black; }
 
-        .suggestion-item:hover, .suggestion-item.active {
-            background: #ff0000;
-            color: black;
-        }
-
-        /* Dynamic Hotlinks */
         .quick-links {
             margin-top: 40px;
             display: flex;
@@ -127,14 +113,139 @@
             color: black;
             border-color: white;
         }
+
+        /* --- GEAR ICON --- */
+        #settings-gear {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 32px; /* Set larger for clicking, adjust if needed */
+            height: 32px;
+            cursor: url('images/link-select.png'), pointer;
+            z-index: 50;
+            transition: transform 0.3s ease;
+        }
+        #settings-gear:hover {
+            transform: rotate(90deg); /* Spins on hover */
+        }
+
+        /* --- MANILLA FOLDER MODAL --- */
+        #folder-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 450px;
+            background-color: #e5c158; /* Classic manilla yellow/tan */
+            border: 3px solid black;
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.8);
+            z-index: 100;
+            display: none;
+            color: black;
+            font-family: 'PixeloidSans', sans-serif;
+        }
+
+        /* The little tab at the top of the folder */
+        .folder-tab {
+            position: absolute;
+            top: -33px;
+            left: -3px;
+            background-color: #e5c158;
+            border: 3px solid black;
+            border-bottom: none;
+            padding: 5px 15px;
+            font-family: 'PixeloidSansBold', sans-serif;
+            font-size: 1.2rem;
+        }
+
+        .folder-content {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .folder-content label {
+            font-family: 'PixeloidSansBold', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .folder-content select, .folder-content textarea {
+            background: #fff;
+            border: 2px solid black;
+            font-family: 'PixeloidSans', sans-serif;
+            padding: 8px;
+            width: 100%;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .folder-content textarea {
+            height: 100px;
+            resize: none;
+            white-space: pre; /* Keeps formatting strict */
+        }
+
+        .folder-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .folder-btn {
+            background: black;
+            color: white;
+            border: 2px solid black;
+            padding: 8px 15px;
+            font-family: 'PixeloidSansBold', sans-serif;
+            cursor: url('images/link-select.png'), pointer;
+            transition: 0.2s;
+        }
+        .folder-btn:hover { background: white; color: black; }
+        
+        /* Modal Background Dimmer */
+        #folder-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.6);
+            z-index: 90;
+            display: none;
+        }
     </style>
 </head>
 <body>
 
+    <img src="images/gear.png" id="settings-gear" class="hover-sound" alt="Settings">
+
+    <div id="folder-overlay"></div>
+    <div id="folder-modal">
+        <div class="folder-tab">SYS_CONFIG</div>
+        <div class="folder-content">
+            
+            <div>
+                <label>SEARCH ENGINE:</label><br>
+                <select id="engine-select">
+                    <option value="duckduckgo">DuckDuckGo</option>
+                    <option value="google">Google</option>
+                    <option value="youtube">YouTube</option>
+                </select>
+            </div>
+
+            <div>
+                <label>HOTLINKS (Format: NAME, URL):</label><br>
+                <textarea id="links-editor" placeholder="HUB, /blog/&#10;YOUTUBE, https://youtube.com"></textarea>
+            </div>
+
+            <div class="folder-actions">
+                <button id="close-folder" class="folder-btn hover-sound">CANCEL</button>
+                <button id="save-folder" class="folder-btn hover-sound">SAVE</button>
+            </div>
+        </div>
+    </div>
+
     <div class="start-container">
-        
         <div id="clock" class="terminal-clock">00:00:00</div>
-        <div id="date" class="terminal-date">LOADING SYSTEM...</div>
+        <div id="date" class="terminal-date">LOADING...</div>
         
         <div class="search-wrapper">
             <input type="text" id="web-search" class="search-box" placeholder="query network..." autofocus autocomplete="off">
@@ -142,61 +253,102 @@
         </div>
         
         <div id="links-container" class="quick-links"></div>
-
     </div>
 
     <script>
-        // ==========================================
-        // ⚙️ YOUR CONTROL PANEL ⚙️ 
-        // Edit anything in here to instantly change the page
-        // ==========================================
-        const CONFIG = {
-            // Options: "duckduckgo", "google", "bing", "youtube"
-            searchEngine: "duckduckgo", 
-
-            // Make sure these match the actual names of your sound files
-            typingSounds: [
-                "sounds/type1.mp3",
-                "sounds/type2.mp3",
-                "sounds/type3.mp3",
-                "sounds/type4.mp3"
-            ],
-
-            // Add, remove, or re-arrange these easily
-            hotlinks: [
-                { name: "HUB", url: "/blog/" },
-                { name: "YOUTUBE", url: "https://youtube.com" },
-                { name: "GITHUB", url: "https://github.com" },
-                { name: "REDDIT", url: "https://reddit.com" }
+        // --- AUDIO ENGINE ---
+        // Make sure you have 'sounds/hover.mp3', 'sounds/click.mp3', and your type sounds.
+        const sounds = {
+            hover: new Audio('sounds/hover.mp3'),
+            click: new Audio('sounds/click.mp3'),
+            types: [
+                new Audio('sounds/type1.mp3'),
+                new Audio('sounds/type2.mp3'),
+                new Audio('sounds/type3.mp3'),
+                new Audio('sounds/type4.mp3')
             ]
         };
-        // ==========================================
 
+        function playHover() { sounds.hover.cloneNode(true).play().catch(()=>{}); }
+        function playClick() { sounds.click.cloneNode(true).play().catch(()=>{}); }
+        function playType() { 
+            const s = sounds.types[Math.floor(Math.random() * sounds.types.length)];
+            s.cloneNode(true).play().catch(()=>{}); 
+        }
 
-        const searchInput = document.getElementById('web-search');
-        const suggestionsBox = document.getElementById('suggestions-box');
-        const linksContainer = document.getElementById('links-container');
-
-        // --- 1. RENDER HOTLINKS ---
-        // Automatically builds your buttons from the Control Panel list
-        CONFIG.hotlinks.forEach(link => {
-            const a = document.createElement('a');
-            a.href = link.url;
-            a.innerText = `[ ${link.name} ]`;
-            linksContainer.appendChild(a);
+        // Attach hover sounds to anything with the .hover-sound class
+        document.querySelectorAll('.hover-sound').forEach(el => {
+            el.addEventListener('mouseenter', playHover);
+            el.addEventListener('click', playClick);
         });
 
-        // --- 2. TYPING SOUNDS ---
-        const playTypeSound = () => {
-            if (CONFIG.typingSounds.length > 0) {
-                const randomSound = CONFIG.typingSounds[Math.floor(Math.random() * CONFIG.typingSounds.length)];
-                const audio = new Audio(randomSound);
-                audio.volume = 0.5; // Adjust volume here if it's too loud
-                audio.play().catch(e => {}); // Catch prevents errors if browser blocks autoplay
-            }
+        // --- LOCAL STORAGE & CONFIG LOGIC ---
+        // Default settings if the user has never saved anything
+        let config = JSON.parse(localStorage.getItem('terminalConfig')) || {
+            engine: "duckduckgo",
+            links: "HUB, /blog/\nYOUTUBE, https://youtube.com\nGITHUB, https://github.com"
         };
 
-        // --- 3. DYNAMIC CLOCK ---
+        const linksContainer = document.getElementById('links-container');
+
+        function renderLinks() {
+            linksContainer.innerHTML = ''; // Clear old links
+            const lines = config.links.split('\n');
+            
+            lines.forEach(line => {
+                if(line.trim() === '') return;
+                const parts = line.split(',');
+                if(parts.length >= 2) {
+                    const a = document.createElement('a');
+                    a.innerText = `[ ${parts[0].trim()} ]`;
+                    a.href = parts[1].trim();
+                    a.target = "_blank"; // <--- OPENS IN NEW TAB!
+                    a.className = "hover-sound";
+                    
+                    // Add audio listeners to the newly created links
+                    a.addEventListener('mouseenter', playHover);
+                    a.addEventListener('click', playClick);
+                    
+                    linksContainer.appendChild(a);
+                }
+            });
+        }
+        renderLinks(); // Run it on boot
+
+        // --- MANILLA FOLDER GUI LOGIC ---
+        const gear = document.getElementById('settings-gear');
+        const overlay = document.getElementById('folder-overlay');
+        const modal = document.getElementById('folder-modal');
+        const engineSelect = document.getElementById('engine-select');
+        const linksEditor = document.getElementById('links-editor');
+        const saveBtn = document.getElementById('save-folder');
+        const closeBtn = document.getElementById('close-folder');
+
+        // Open Menu
+        gear.addEventListener('click', () => {
+            playClick();
+            engineSelect.value = config.engine;
+            linksEditor.value = config.links;
+            overlay.style.display = 'block';
+            modal.style.display = 'block';
+        });
+
+        // Close Menu
+        const closeMenu = () => { overlay.style.display = 'none'; modal.style.display = 'none'; };
+        closeBtn.addEventListener('click', closeMenu);
+        overlay.addEventListener('click', closeMenu);
+
+        // Save Settings
+        saveBtn.addEventListener('click', () => {
+            config.engine = engineSelect.value;
+            config.links = linksEditor.value;
+            localStorage.setItem('terminalConfig', JSON.stringify(config)); // Save to browser!
+            renderLinks(); // Re-draw the links immediately
+            closeMenu();
+        });
+
+
+        // --- DYNAMIC CLOCK ---
         function updateClock() {
             const now = new Date();
             document.getElementById('clock').innerText = now.toLocaleTimeString('en-US', { hour12: false });
@@ -205,44 +357,39 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // --- 4. PREDICTIVE SEARCH (AUTOCOMPLETE) ---
-        let debounceTimer;
-        
-        searchInput.addEventListener('input', (e) => {
-            playTypeSound(); // Play noise on every keystroke
-            
-            const query = e.target.value.trim();
-            if (query.length === 0) {
-                suggestionsBox.style.display = 'none';
-                return;
-            }
 
-            // Wait a split second before fetching so we don't spam the API
+        // --- SEARCH ENGINE ---
+        const searchInput = document.getElementById('web-search');
+        const suggestionsBox = document.getElementById('suggestions-box');
+        let debounceTimer;
+
+        searchInput.addEventListener('input', (e) => {
+            playType(); // Type sounds!
+            const query = e.target.value.trim();
+            if (query.length === 0) { suggestionsBox.style.display = 'none'; return; }
+
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
-                // Using DuckDuckGo's public autocomplete API via JSONP
                 const script = document.createElement('script');
                 script.src = `https://duckduckgo.com/ac/?q=${encodeURIComponent(query)}&callback=autocompleteCallback`;
                 document.body.appendChild(script);
             }, 150);
         });
 
-        // The function DuckDuckGo's API talks back to
         window.autocompleteCallback = function(data) {
-            suggestionsBox.innerHTML = ''; // Clear old suggestions
-            
+            suggestionsBox.innerHTML = ''; 
             if (data && data.length > 0) {
-                data.slice(0, 5).forEach(item => { // Only show top 5
+                data.slice(0, 5).forEach(item => { 
                     const div = document.createElement('div');
-                    div.className = 'suggestion-item';
+                    div.className = 'suggestion-item hover-sound';
                     div.innerText = item.phrase;
                     
-                    // If you click a suggestion, it instantly searches
+                    div.addEventListener('mouseenter', playHover);
                     div.addEventListener('click', () => {
+                        playClick();
                         searchInput.value = item.phrase;
                         executeSearch(item.phrase);
                     });
-                    
                     suggestionsBox.appendChild(div);
                 });
                 suggestionsBox.style.display = 'flex';
@@ -251,46 +398,30 @@
             }
         };
 
-        // --- 5. SEARCH EXECUTION ENGINE ---
         function executeSearch(query) {
             const encoded = encodeURIComponent(query);
-            let searchUrl = "";
-
-            switch (CONFIG.searchEngine.toLowerCase()) {
-                case "google":
-                    searchUrl = `https://www.google.com/search?q=${encoded}`;
-                    break;
-                case "youtube":
-                    searchUrl = `https://www.youtube.com/results?search_query=${encoded}`;
-                    break;
-                case "bing":
-                    searchUrl = `https://www.bing.com/search?q=${encoded}`;
-                    break;
-                case "duckduckgo":
-                default:
-                    searchUrl = `https://duckduckgo.com/?q=${encoded}`;
-                    break;
-            }
-            window.location.href = searchUrl;
+            let url = "";
+            if (config.engine === "google") url = `https://www.google.com/search?q=${encoded}`;
+            else if (config.engine === "youtube") url = `https://www.youtube.com/results?search_query=${encoded}`;
+            else url = `https://duckduckgo.com/?q=${encoded}`;
+            
+            // Search executes in the current tab so it acts like a real start page
+            window.location.href = url;
         }
 
         searchInput.addEventListener('keydown', (e) => {
-            // Also play sound on backspace/enter
-            if (e.key === 'Backspace' || e.key === 'Enter') playTypeSound();
-
+            if (e.key === 'Backspace' || e.key === 'Enter') playType();
             if (e.key === 'Enter' && searchInput.value.trim() !== '') {
                 executeSearch(searchInput.value.trim());
             }
         });
 
-        // Hide suggestions if you click away
         document.addEventListener('click', (e) => {
-            if (e.target !== searchInput && e.target.className !== 'suggestion-item') {
+            if (e.target !== searchInput && !e.target.classList.contains('suggestion-item')) {
                 suggestionsBox.style.display = 'none';
             }
         });
 
     </script>
-
 </body>
 </html>
