@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="style.css">
     
     <style>
-        /* Center everything and set the base color to PURE RED */
+        /* Center the error message perfectly on the screen */
         .error-container {
             display: flex;
             flex-direction: column;
@@ -17,62 +17,44 @@
             justify-content: center;
             height: 100vh;
             text-align: center;
-            color: #ff0000; 
+            color: red; /* Or whatever your font color is */
         }
 
         .error-code {
             font-family: 'PixeloidSansBold', sans-serif;
-            font-size: 6rem;
+            font-size: 4rem;
             margin-bottom: 10px;
-            /* Creates a dark red ghosting effect behind the main text */
-            text-shadow: 4px 0px 0 #550000, -4px 0px 0 #330000;
-            /* Triggers the rapid glitch keyframes */
-            animation: violent-glitch 0.15s infinite;
+            text-shadow: 2px 2px 0 rgb(116, 0, 0); /* Sick red glitch shadow */
         }
 
         .error-text {
             font-family: 'PixeloidSans', sans-serif;
             font-size: 1.2rem;
             margin-bottom: 30px;
-            /* Runs the same animation, but slightly out of sync */
-            animation: violent-glitch 0.25s infinite reverse;
         }
 
         .home-btn {
             background-color: transparent;
-            color: #ff0000;
-            border: 2px solid #ff0000;
+            color: white;
+            border: 2px solid white;
             padding: 10px 20px;
             font-family: 'PixeloidSansBold', sans-serif;
             cursor: url('images/link-select.png'), pointer;
             text-decoration: none;
-            transition: 0.1s;
+            transition: 0.2s;
         }
 
-        /* Reverses colors and adds a glowing red shadow on hover */
         .home-btn:hover {
-            background-color: #ff0000;
+            background-color: white;
             color: black;
-            box-shadow: 0 0 15px #ff0000;
-        }
-
-        /* --- THE GLITCH ANIMATION ENGINE --- */
-        @keyframes violent-glitch {
-            0%   { opacity: 1.0; transform: skewX(0deg) translate(0px, 0px); }
-            20%  { opacity: 0.8; transform: skewX(3deg) translate(-2px, 1px); }
-            30%  { opacity: 0.2; } /* Sudden power drop */
-            40%  { opacity: 1.0; transform: skewX(-3deg) translate(2px, -1px); }
-            60%  { opacity: 0.9; transform: skewX(0deg) translate(0px, 0px); }
-            80%  { opacity: 1.0; transform: skewX(1deg) translate(-1px, 2px); }
-            100% { opacity: 1.0; transform: skewX(0deg) translate(0px, 0px); }
         }
     </style>
 </head>
 <body>
 
     <div class="error-container">
-        <div class="glitch" data-text="404">404</div>
-        <div class="error-text">>> SYSTEM NOT FOUND. No destination!</div>
+        <div class="error-code">404</div>
+        <div class="error-text">> SYSTEM HALTED. DESTINATION NOT FOUND.</div>
         <a href="/blog/" class="home-btn">[ RETURN TO HUB ]</a>
     </div>
 
