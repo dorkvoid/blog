@@ -13,7 +13,6 @@
             cursor: url('images/cursor.png'), auto !important;
         }
 
-        /* Swap to click variant when mouse is held down */
         *:active {
             cursor: url('images/cursor-click.png'), auto !important;
         }
@@ -32,6 +31,11 @@
         /* Pointer variants for interactive stuff */
         a, button, .suggestion-item, #drawer-tab, select {
             cursor: url('images/link-select.png'), pointer !important;
+        }
+
+        /* FIXED: Added clicking state for the selection hand */
+        a:active, button:active, .suggestion-item:active, #drawer-tab:active, select:active {
+            cursor: url('images/link-select-click.png'), pointer !important;
         }
 
         /* --- SETTINGS DRAWER --- */
@@ -70,12 +74,10 @@
         #drawer-tab img { 
             width: 24px; 
             height: 24px; 
-            /* Snappy transition for the slight spin */
             transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
             pointer-events: none;
         }
 
-        /* FIXED: SLIGHT 90 DEGREE SPIN */
         .slight-spin { transform: rotate(90deg); }
 
         .drawer-content { padding: 25px; flex-grow: 1; overflow-y: auto; }
@@ -143,7 +145,25 @@
         /* Main Viewport */
         .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 2.5rem; color: white; }
         .terminal-date { font-family: 'PixeloidSans', sans-serif; color: #444; margin-bottom: 30px; }
-        .search-box { width: 100%; background: black; border: 2px solid white; color: white; font-family: 'PixeloidSans', sans-serif; font-size: 1.5rem; padding: 15px; outline: none; text-align: center; box-sizing: border-box;}
+        
+        .search-box { 
+            width: 100%; 
+            background: black; 
+            border: 2px solid #333; /* Default darker outline */
+            color: white; 
+            font-family: 'PixeloidSans', sans-serif; 
+            font-size: 1.5rem; 
+            padding: 15px; 
+            outline: none; 
+            text-align: center; 
+            box-sizing: border-box;
+            transition: border-color 0.2s ease;
+        }
+        
+        /* FIXED: Search bar outline turns white when focused */
+        .search-box:focus {
+            border-color: white;
+        }
         
         .quick-links { margin-top: 40px; display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
         .quick-links a { 
@@ -225,7 +245,7 @@
             else if (type === 'click') sound = audioAssets.click;
             else if (type === 'mouse') {
                 sound = audioAssets.mouseClicks[Math.floor(Math.random() * 4)];
-                targetVolume = 0.15; // Kept mechanical clicks quiet
+                targetVolume = 0.15; 
             } else {
                 sound = audioAssets.types[Math.floor(Math.random() * 4)];
             }
@@ -235,7 +255,6 @@
             clone.play().catch(() => {});
         };
 
-        // Global mouse interaction
         window.addEventListener('mousedown', () => playSound('mouse'));
 
         // --- RENDER ---
@@ -291,14 +310,12 @@
         const drawer = document.getElementById('settings-drawer');
 
         drawerTab.onmouseenter = () => playSound('hover');
-        drawerTab.onclick = (e) => {
+        drawerTab.addEventListener('click', (e) => {
             e.stopPropagation(); 
             playSound('click');
-            
-            // Toggle the 90-degree spin
             gearImg.classList.toggle('slight-spin');
             drawer.classList.toggle('open');
-        };
+        });
 
         document.querySelector('.btn-add').onmouseenter = () => playSound('hover');
         document.querySelector('.btn-add').onclick = () => {
@@ -348,14 +365,13 @@
             window.location.href = url;
         }
 
-        // Click-away logic for search and drawer
         document.addEventListener('click', (e) => {
             if (e.target !== searchInput && !e.target.closest('#suggestions-box')) {
                 suggestionsBox.style.display = 'none';
             }
             if (!drawer.contains(e.target) && !drawerTab.contains(e.target) && drawer.classList.contains('open')) {
                 drawer.classList.remove('open');
-                gearImg.classList.remove('slight-spin'); // Reset spin when drawer closes
+                gearImg.classList.remove('slight-spin');
             }
         });
 
