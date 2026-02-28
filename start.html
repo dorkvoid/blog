@@ -9,22 +9,20 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     
     <style>
-        /* --- 1. THE CRT GLASS OVERLAY --- */
-        /* This creates the curve, scanlines, and flicker without breaking your layout */
+        /* --- CRT HARDWARE OVERLAY --- */
         body::before {
             content: " ";
             display: block;
             position: absolute;
             top: 0; left: 0; bottom: 0; right: 0;
-            /* The physical pixel grid */
+            /* Sub-pixel RGB grid */
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 200; /* Above everything */
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05));
+            z-index: 500; 
             background-size: 100% 2px, 3px 100%;
             pointer-events: none;
         }
 
-        /* The rolling phosphor scanline */
         body::after {
             content: " ";
             display: block;
@@ -32,33 +30,15 @@
             top: 0; left: 0; bottom: 0; right: 0;
             background: rgba(18, 16, 16, 0.1);
             opacity: 0;
-            z-index: 201;
+            z-index: 501;
             pointer-events: none;
-            animation: flicker 0.15s infinite;
+            animation: flicker 0.12s infinite;
         }
 
         @keyframes flicker {
-            0% { opacity: 0.27861; }
-            5% { opacity: 0.34769; }
-            10% { opacity: 0.23604; }
-            15% { opacity: 0.90626; }
-            20% { opacity: 0.18128; }
-            25% { opacity: 0.83891; }
-            30% { opacity: 0.65583; }
-            35% { opacity: 0.57807; }
-            40% { opacity: 0.26593; }
-            45% { opacity: 0.84693; }
-            50% { opacity: 0.96019; }
-            55% { opacity: 0.08523; }
-            60% { opacity: 0.71056; }
-            65% { opacity: 0.73437; }
-            70% { opacity: 0.8523; }
-            75% { opacity: 0.11894; }
-            80% { opacity: 0.44387; }
-            85% { opacity: 0.94114; }
-            90% { opacity: 0.90385; }
-            95% { opacity: 0.52247; }
-            100% { opacity: 0.22383; }
+            0% { opacity: 0.15; }
+            50% { opacity: 0.05; }
+            100% { opacity: 0.12; }
         }
 
         /* --- GLOBAL UI & CURSORS --- */
@@ -73,21 +53,22 @@
             height: 100vh;
             margin: 0;
             overflow: hidden; 
-            background: #030303; /* Slightly off-black for depth */
-            /* SCREEN CURVATURE EFFECT */
-            transform: perspective(1000px) rotateX(1deg);
-            filter: contrast(1.2) brightness(1.1);
+            background: #020202;
+            /* Subtle lens curve */
+            transform: perspective(1000px) rotateX(0.5deg);
+            filter: contrast(1.1) brightness(1.05);
         }
 
-        /* Inner Vignette (Dark corners) */
+        /* Inner Vignette */
         .crt-vignette {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            box-shadow: inset 0 0 150px rgba(0,0,0,0.9);
-            z-index: 150;
+            box-shadow: inset 0 0 120px rgba(0,0,0,0.85);
+            z-index: 400; /* Below the status bar but above main content */
             pointer-events: none;
         }
 
+        /* Interaction Hand */
         a, button, .suggestion-item, #drawer-tab, select, .handle, .toggle-btn, .link-card, .link-card * {
             cursor: url('images/link-select.png'), pointer !important;
         }
@@ -99,12 +80,12 @@
         body.low-power::after, body.low-power::before { display: none; }
 
         /* --- SEARCH BAR --- */
-        .search-wrapper { position: relative; width: 100%; max-width: 650px; padding: 10px; }
+        .search-wrapper { position: relative; width: 100%; max-width: 650px; padding: 10px; z-index: 10; }
         .search-wrapper::before {
             content: '>'; position: absolute; left: 25px; top: 50%; transform: translateY(-50%);
             color: #fff; font-family: 'PixeloidSansBold', sans-serif; font-size: 1.5rem; z-index: 5;
             animation: blink 1s infinite;
-            text-shadow: 0 0 5px #fff;
+            text-shadow: 0 0 3px rgba(255,255,255,0.4);
         }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
@@ -112,24 +93,24 @@
             width: 100%; background: #000; border: 2px solid #222; color: white; 
             font-family: 'PixeloidSans', sans-serif; font-size: 1.3rem; padding: 18px 18px 18px 50px;
             outline: none; text-align: left; box-sizing: border-box; transition: 0.3s;
-            /* Phosphor bleed effect */
-            text-shadow: 0 0 3px rgba(255, 255, 255, 0.5);
+            text-shadow: 0 0 2px rgba(255, 255, 255, 0.3);
         }
-        .search-box:focus { border-color: #fff; background: #050505; box-shadow: 0 0 20px rgba(255, 255, 255, 0.2); }
+        .search-box:focus { border-color: #fff; background: #050505; box-shadow: 0 0 10px rgba(255, 255, 255, 0.1); }
 
         /* --- ICON GRID --- */
         .quick-links { margin-top: 50px; display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; max-width: 800px; position: relative; z-index: 10; }
         .link-card { display: flex; flex-direction: column; align-items: center; gap: 10px; text-decoration: none; width: 80px; transition: transform 0.1s; }
+        .link-card:hover { transform: scale(1.05); }
         .icon-box { width: 54px; height: 54px; background: #000; border: 2px solid #333; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-        .link-card:hover .icon-box { border-color: white; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
-        .icon-box img { width: 32px; height: 32px; image-rendering: pixelated; pointer-events: none; filter: brightness(1.2); }
-        .link-label { color: #555; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; transition: color 0.2s; text-align: center; }
-        .link-card:hover .link-label { color: white; text-shadow: 0 0 5px white; }
+        .link-card:hover .icon-box { border-color: white; box-shadow: 0 0 10px rgba(255,255,255,0.1); }
+        .icon-box img { width: 32px; height: 32px; image-rendering: pixelated; pointer-events: none; filter: brightness(1.1); }
+        .link-label { color: #444; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; transition: color 0.2s; text-align: center; }
+        .link-card:hover .link-label { color: white; text-shadow: 0 0 3px rgba(255,255,255,0.5); }
 
         /* --- SETTINGS DRAWER --- */
         #settings-drawer {
             position: fixed; top: 0; right: -350px; width: 350px; height: 100vh;
-            background: #000; border-left: 2px solid #333; z-index: 300; /* Higher than CRT filter */
+            background: #000; border-left: 2px solid #333; z-index: 1000; 
             transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             color: white; font-family: 'PixeloidSans', sans-serif; display: flex; flex-direction: column;
         }
@@ -163,18 +144,17 @@
         
         select { background: #080808; border: 1px solid #333; color: #ccc; padding: 10px; font-family: 'PixeloidSans', sans-serif; width: 100%; outline: none; }
 
-        .cheat-sheet { font-size: 0.65rem; color: #444; line-height: 1.6; background: #050505; padding: 12px; border: 1px solid #111; margin-top: 10px; }
-
         /* Main UI Bits */
-        .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 3rem; color: white; margin-bottom: 5px; text-shadow: 0 0 10px white; }
-        #greeting { font-family: 'PixeloidSans', sans-serif; color: #333; margin-bottom: 30px; font-size: 1rem; letter-spacing: 2px;}
+        .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 3rem; color: white; margin-bottom: 5px; text-shadow: 0 0 5px rgba(255,255,255,0.4); z-index: 10; position: relative;}
+        #greeting { font-family: 'PixeloidSans', sans-serif; color: #333; margin-bottom: 30px; font-size: 1rem; letter-spacing: 2px; z-index: 10; position: relative;}
         
+        /* FIXED STATUS BAR: High Z-index */
         .status-bar { 
             position: fixed; bottom: 20px; left: 30px; 
             font-family: 'PixeloidSansBold', sans-serif; font-size: 0.85rem; 
             color: #333; letter-spacing: 2px; text-transform: uppercase; 
             display: flex; align-items: center; gap: 15px;
-            z-index: 10;
+            z-index: 600; 
         }
         .weather-module { display: flex; align-items: center; gap: 10px; color: #444; }
         .weather-icon { width: 24px; height: 24px; image-rendering: pixelated; filter: brightness(0.8); }
@@ -196,12 +176,6 @@
                     <option value="google">Google</option>
                     <option value="youtube">YouTube</option>
                 </select>
-                <div class="cheat-sheet">
-                    <b>yt [query]</b> -> YouTube<br>
-                    <b>g  [query]</b> -> Google<br>
-                    <b>r/[sub]</b> &nbsp;&nbsp;&nbsp;-> Subreddit<br>
-                    <b>Default</b> &nbsp;&nbsp;-> Selected Engine
-                </div>
             </div>
 
             <div class="setting-section">
@@ -250,7 +224,6 @@
     </div>
 
     <script>
-        // --- ALL ORIGINAL LOGIC KEPT INTACT ---
         let config = JSON.parse(localStorage.getItem('startConfig')) || {
             showStatus: true, lowPower: false, engine: "duckduckgo",
             links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}]
@@ -288,7 +261,7 @@
                 let icon = "sunny.png";
                 if (code === 0) icon = "sunny.png";
                 else if (code >= 1 && code <= 3) icon = "partly cloudy.png";
-                else if (code >= 45 && code <= 48) icon = "foggy.png";
+                else if (code >= 45 && code <= 48) icon = "fogny.png";
                 else if (code >= 51 && code <= 67) icon = "rainy.png";
                 else if (code >= 71 && code <= 77) icon = "cold.png"; 
                 else if (code >= 80 && code <= 82) icon = "rainy.png";
