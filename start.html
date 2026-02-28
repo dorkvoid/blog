@@ -9,13 +9,8 @@
     
     <style>
         /* --- GLOBAL UI & CURSOR --- */
-        * {
-            cursor: url('images/cursor.png'), auto !important;
-        }
-
-        *:active {
-            cursor: url('images/cursor-click.png'), auto !important;
-        }
+        * { cursor: url('images/cursor.png'), auto !important; }
+        *:active { cursor: url('images/cursor-click.png'), auto !important; }
 
         body {
             display: flex;
@@ -26,14 +21,13 @@
             margin: 0;
             overflow: hidden; 
             background: black;
+            transition: opacity 0.5s;
         }
 
-        /* Pointer variants for interactive stuff */
-        a, button, .suggestion-item, #drawer-tab, select {
+        /* Interactive cursors */
+        a, button, .suggestion-item, #drawer-tab, select, .toggle-label {
             cursor: url('images/link-select.png'), pointer !important;
         }
-
-        /* Selection hand clicking state */
         a:active, button:active, .suggestion-item:active, #drawer-tab:active, select:active {
             cursor: url('images/link-select-click.png'), pointer !important;
         }
@@ -54,14 +48,12 @@
             display: flex;
             flex-direction: column;
         }
-
         #settings-drawer.open { right: 0; }
 
-        /* MOVED TO BOTTOM RIGHT */
         #drawer-tab {
             position: absolute;
             left: -42px;
-            bottom: 40px; /* Sitting near the bottom now */
+            bottom: 40px; 
             width: 40px;
             height: 40px;
             background: #000;
@@ -71,13 +63,7 @@
             align-items: center;
             justify-content: center;
         }
-
-        #drawer-tab img { 
-            width: 24px; 
-            height: 24px; 
-            pointer-events: none;
-            /* Rotation code removed entirely */
-        }
+        #drawer-tab img { width: 24px; height: 24px; pointer-events: none; }
 
         .drawer-content { padding: 25px; flex-grow: 1; overflow-y: auto; }
         .drawer-header { font-family: 'PixeloidSansBold', sans-serif; color: white; margin-bottom: 20px; font-size: 1.2rem; border-bottom: 1px solid #333; padding-bottom: 10px;}
@@ -95,29 +81,12 @@
             outline: none;
         }
 
-        /* Manager List */
-        .link-manager-item { display: flex; gap: 5px; margin-bottom: 10px; }
-        .btn-del {
-            background: #200;
-            color: #f00;
-            border: 1px solid #f00;
-            padding: 0 10px;
-            font-family: 'PixeloidSansBold', sans-serif;
-        }
+        .btn-del { background: #200; color: #f00; border: 1px solid #f00; padding: 0 10px; font-family: 'PixeloidSansBold', sans-serif; margin-left:5px;}
         .btn-del:hover { background: #f00; color: #000; }
-
-        .btn-add {
-            width: 100%;
-            background: #000;
-            color: #fff;
-            border: 1px solid #fff;
-            padding: 8px;
-            font-family: 'PixeloidSansBold', sans-serif;
-            margin-top: 10px;
-        }
+        .btn-add { width: 100%; background: #000; color: #fff; border: 1px solid #fff; padding: 8px; font-family: 'PixeloidSansBold', sans-serif; margin-top: 10px; }
         .btn-add:hover { background: #fff; color: #000; }
 
-        /* Predictive Search */
+        /* --- PREDICTIVE SEARCH --- */
         .search-wrapper { position: relative; width: 100%; max-width: 600px; }
         #suggestions-box {
             position: absolute;
@@ -132,19 +101,9 @@
             z-index: 20;
             box-sizing: border-box;
         }
-        .suggestion-item {
-            padding: 12px;
-            color: white;
-            font-family: 'PixeloidSans', sans-serif;
-            text-align: left;
-            border-bottom: 1px solid #222;
-        }
+        .suggestion-item { padding: 12px; color: white; font-family: 'PixeloidSans', sans-serif; text-align: left; border-bottom: 1px solid #222; }
         .suggestion-item:hover { background: white; color: black; }
 
-        /* Main Viewport Elements */
-        .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 2.5rem; color: white; }
-        .terminal-date { font-family: 'PixeloidSans', sans-serif; color: #444; margin-bottom: 30px; }
-        
         .search-box { 
             width: 100%; 
             background: black; 
@@ -156,46 +115,52 @@
             outline: none; 
             text-align: center; 
             box-sizing: border-box;
-            transition: border-color 0.2s ease;
+            transition: border-color 0.2s;
         }
-        
-        /* White outline on focus */
-        .search-box:focus {
-            border-color: white;
-        }
+        .search-box:focus { border-color: white; }
+
+        /* --- UI ELEMENTS --- */
+        .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 2.5rem; color: white; }
+        #greeting { font-family: 'PixeloidSans', sans-serif; color: #444; margin-bottom: 30px; font-size: 0.9rem; letter-spacing: 1px; }
         
         .quick-links { margin-top: 40px; display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-        .quick-links a { 
-            color: white; 
-            text-decoration: none; 
-            font-family: 'PixeloidSansBold', sans-serif; 
-            border: 1px solid #333; 
-            padding: 10px 20px; 
-            transition: 0.1s;
+        .quick-links a { color: white; text-decoration: none; font-family: 'PixeloidSansBold', sans-serif; border: 1px solid #333; padding: 10px 20px; }
+        .quick-links a:hover { background: white; color: black; border-color: white; }
+
+        /* Bottom Status Bar */
+        .status-bar {
+            position: fixed;
+            bottom: 10px;
+            left: 20px;
+            font-family: 'PixeloidSans', sans-serif;
+            font-size: 0.7rem;
+            color: #333;
+            text-transform: uppercase;
         }
-        .quick-links a:hover { 
-            background: white; 
-            color: black; 
-            border-color: white; 
-        }
+
+        /* Toggle switches for drawer */
+        .toggle-group { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+        .toggle-label { font-size: 0.8rem; color: #888; }
     </style>
 </head>
-<body>
+<body id="main-body">
 
     <div id="settings-drawer">
         <div id="drawer-tab">
-            <img src="images/gear.png" id="gear-img" alt="Settings">
+            <img src="images/gear.png" alt="Settings">
         </div>
         <div class="drawer-content">
             <div class="drawer-header">> SYSTEM_PREFS</div>
+            
             <div class="setting-group">
-                <label>ENGINE</label>
-                <select id="engine-select">
-                    <option value="duckduckgo">DuckDuckGo</option>
-                    <option value="google">Google</option>
-                    <option value="youtube">YouTube</option>
-                </select>
+                <label>SEARCH COMMANDS</label>
+                <div style="font-size: 0.7rem; color: #555; line-height: 1.4;">
+                    yt [query] - YouTube<br>
+                    g [query] - Google<br>
+                    r/[sub] - Subreddit
+                </div>
             </div>
+
             <div class="setting-group">
                 <label>HOTLINKS</label>
                 <div id="manager-list"></div>
@@ -206,12 +171,18 @@
 
     <div class="start-container" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
         <div id="clock" class="terminal-clock">00:00:00</div>
-        <div id="date" class="terminal-date">LOADING...</div>
+        <div id="greeting">> INITIALIZING...</div>
+        
         <div class="search-wrapper">
-            <input type="text" id="web-search" class="search-box" placeholder="search..." autofocus autocomplete="off">
+            <input type="text" id="web-search" class="search-box" placeholder="type command..." autofocus autocomplete="off">
             <div id="suggestions-box"></div>
         </div>
+
         <div id="links-container" class="quick-links"></div>
+    </div>
+
+    <div class="status-bar" id="status-bar">
+        Network Status: Nominal // System: MikeVoid v2.0
     </div>
 
     <script>
@@ -222,36 +193,24 @@
         };
         const save = () => localStorage.setItem('startConfig', JSON.stringify(config));
 
-        // --- AUDIO ENGINE ---
+        // --- AUDIO ---
         const audioAssets = {
             hover: new Audio('sounds/hoverbutton.wav'), 
             click: new Audio('sounds/buttonclick.mp3'),
-            types: [
-                new Audio('sounds/type1.mp3'), new Audio('sounds/type2.mp3'),
-                new Audio('sounds/type3.mp3'), new Audio('sounds/type4.mp3')
-            ],
-            mouseClicks: [
-                new Audio('sounds/mouse1.mp3'), new Audio('sounds/mouse2.mp3'),
-                new Audio('sounds/mouse3.mp3'), new Audio('sounds/mouse4.mp3')
-            ]
+            types: [new Audio('sounds/type1.mp3'), new Audio('sounds/type2.mp3'), new Audio('sounds/type3.mp3'), new Audio('sounds/type4.mp3')],
+            mouseClicks: [new Audio('sounds/mouse1.mp3'), new Audio('sounds/mouse2.mp3'), new Audio('sounds/mouse3.mp3'), new Audio('sounds/mouse4.mp3')]
         };
 
         const playSound = (type) => {
             let sound;
-            let targetVolume = 0.4;
-
+            let vol = 0.4;
             if (type === 'hover') sound = audioAssets.hover;
             else if (type === 'click') sound = audioAssets.click;
-            else if (type === 'mouse') {
-                sound = audioAssets.mouseClicks[Math.floor(Math.random() * 4)];
-                targetVolume = 0.15; 
-            } else {
-                sound = audioAssets.types[Math.floor(Math.random() * 4)];
-            }
-
+            else if (type === 'mouse') { sound = audioAssets.mouseClicks[Math.floor(Math.random()*4)]; vol = 0.15; }
+            else sound = audioAssets.types[Math.floor(Math.random()*4)];
             const clone = sound.cloneNode();
-            clone.volume = targetVolume;
-            clone.play().catch(() => {});
+            clone.volume = vol;
+            clone.play().catch(()=>{});
         };
 
         window.addEventListener('mousedown', () => playSound('mouse'));
@@ -265,15 +224,13 @@
 
             config.links.forEach((link, index) => {
                 const a = document.createElement('a');
-                a.href = link.url;
-                a.target = "_blank";
-                a.innerText = `[ ${link.name} ]`;
+                a.href = link.url; a.target = "_blank"; a.innerText = `[ ${link.name} ]`;
                 a.addEventListener('mouseenter', () => playSound('hover'));
                 a.addEventListener('click', () => playSound('click'));
                 container.appendChild(a);
 
                 const item = document.createElement('div');
-                item.className = 'link-manager-item';
+                item.style.display = 'flex'; item.style.marginBottom = '10px';
                 item.innerHTML = `
                     <input type="text" value="${link.name}" data-idx="${index}" class="edit-name" style="width:70px">
                     <input type="text" value="${link.url}" data-idx="${index}" class="edit-url">
@@ -281,17 +238,13 @@
                 `;
                 manager.appendChild(item);
             });
-            attachManagerEvents();
+            attachEvents();
         }
 
-        function attachManagerEvents() {
+        function attachEvents() {
             document.querySelectorAll('.btn-del').forEach(btn => {
                 btn.onmouseenter = () => playSound('hover');
-                btn.onclick = (e) => {
-                    playSound('click');
-                    config.links.splice(e.target.dataset.idx, 1);
-                    save(); renderAll();
-                };
+                btn.onclick = (e) => { playSound('click'); config.links.splice(e.target.dataset.idx, 1); save(); renderAll(); };
             });
             document.querySelectorAll('.edit-name, .edit-url').forEach(input => {
                 input.onchange = (e) => {
@@ -303,25 +256,38 @@
             });
         }
 
-        // --- UI ELEMENTS ---
-        const drawerTab = document.getElementById('drawer-tab');
-        const drawer = document.getElementById('settings-drawer');
+        // --- SEARCH ENGINE COMMANDS ---
+        function executeSearch(input) {
+            const val = input.trim();
+            if(!val) return;
+            
+            // YouTube Prefix: "yt [query]"
+            if(val.toLowerCase().startsWith('yt ')) {
+                window.location.href = `https://youtube.com/results?search_query=${encodeURIComponent(val.substring(3))}`;
+            } 
+            // Google Prefix: "g [query]"
+            else if(val.toLowerCase().startsWith('g ')) {
+                window.location.href = `https://google.com/search?q=${encodeURIComponent(val.substring(2))}`;
+            }
+            // Subreddit Prefix: "r/[sub]"
+            else if(val.toLowerCase().startsWith('r/')) {
+                window.location.href = `https://reddit.com/${val}`;
+            }
+            // Default Search
+            else {
+                window.location.href = `https://duckduckgo.com/?q=${encodeURIComponent(val)}`;
+            }
+        }
 
+        // --- UI LOGIC ---
+        const drawer = document.getElementById('settings-drawer');
+        const drawerTab = document.getElementById('drawer-tab');
         drawerTab.onmouseenter = () => playSound('hover');
-        drawerTab.addEventListener('click', (e) => {
-            e.stopPropagation(); 
-            playSound('click');
-            drawer.classList.toggle('open');
-        });
+        drawerTab.onclick = (e) => { e.stopPropagation(); playSound('click'); drawer.classList.toggle('open'); };
 
         document.querySelector('.btn-add').onmouseenter = () => playSound('hover');
-        document.querySelector('.btn-add').onclick = () => {
-            playSound('click');
-            config.links.push({name: "NEW", url: "https://"});
-            save(); renderAll();
-        };
+        document.querySelector('.btn-add').onclick = () => { playSound('click'); config.links.push({name: "NEW", url: "https://"}); save(); renderAll(); };
 
-        // --- SEARCH ENGINE ---
         const searchInput = document.getElementById('web-search');
         const suggestionsBox = document.getElementById('suggestions-box');
         let debounceTimer;
@@ -329,7 +295,7 @@
         searchInput.oninput = (e) => {
             playSound('type');
             const query = e.target.value.trim();
-            if (query.length === 0) { suggestionsBox.style.display = 'none'; return; }
+            if (query.length === 0 || query.includes(' ')) { suggestionsBox.style.display = 'none'; return; }
 
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
@@ -344,8 +310,7 @@
             if (data && data.length > 0) {
                 data.slice(0, 5).forEach(item => {
                     const div = document.createElement('div');
-                    div.className = 'suggestion-item';
-                    div.innerText = item.phrase;
+                    div.className = 'suggestion-item'; div.innerText = item.phrase;
                     div.onmouseenter = () => playSound('hover');
                     div.onclick = () => { playSound('click'); executeSearch(item.phrase); };
                     suggestionsBox.appendChild(div);
@@ -354,48 +319,41 @@
             } else { suggestionsBox.style.display = 'none'; }
         };
 
-        function executeSearch(query) {
-            const q = encodeURIComponent(query);
-            let url = config.engine === 'google' ? `https://google.com/search?q=${q}` : 
-                      config.engine === 'youtube' ? `https://youtube.com/results?search_query=${q}` : 
-                      `https://duckduckgo.com/?q=${q}`;
-            window.location.href = url;
-        }
-
         document.addEventListener('click', (e) => {
-            if (e.target !== searchInput && !e.target.closest('#suggestions-box')) {
-                suggestionsBox.style.display = 'none';
-            }
-            if (!drawer.contains(e.target) && !drawerTab.contains(e.target) && drawer.classList.contains('open')) {
-                drawer.classList.remove('open');
-            }
+            if (e.target !== searchInput && !e.target.closest('#suggestions-box')) suggestionsBox.style.display = 'none';
+            if (!drawer.contains(e.target) && !drawerTab.contains(e.target) && drawer.classList.contains('open')) drawer.classList.remove('open');
         });
 
         searchInput.onkeydown = (e) => {
-            if(e.key === 'Enter') {
-                playSound('click');
-                executeSearch(searchInput.value);
-            }
+            if(e.key === 'Enter') { playSound('click'); executeSearch(searchInput.value); }
             if(e.key === 'Backspace') playSound('type');
         };
 
-        function updateClock() {
+        // --- CLOCK & GREETING ---
+        function updateUI() {
             const now = new Date();
-            document.getElementById('clock').innerText = now.toLocaleTimeString('en-US', { hour12: false });
+            // 12-Hour Clock
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            document.getElementById('clock').innerText = `${hours}:${minutes}:${seconds} ${ampm}`;
+            
+            // Dynamic Greeting
+            const h = now.getHours();
+            let msg = "> SYSTEM READY. STANDING BY.";
+            if (h >= 5 && h < 12) msg = "> GOOD MORNING, OPERATOR. SYSTEM NOMINAL.";
+            else if (h >= 12 && h < 18) msg = "> GOOD AFTERNOON. NETWORK STATUS STABLE.";
+            else if (h >= 18 && h < 22) msg = "> GOOD EVENING. MAINTENANCE CYCLE DEFERRED.";
+            else msg = "> LATE NIGHT SESSION DETECTED. EYES ON THE VOID.";
+            
+            document.getElementById('greeting').innerText = msg;
             document.getElementById('date').innerText = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }).toUpperCase();
         }
-        setInterval(updateClock, 1000);
-        updateClock();
+        setInterval(updateUI, 1000);
+        updateUI();
         renderAll();
-
-        const engineSelect = document.getElementById('engine-select');
-        engineSelect.value = config.engine;
-        engineSelect.onmouseenter = () => playSound('hover');
-        engineSelect.onchange = (e) => { 
-            playSound('click');
-            config.engine = e.target.value; 
-            save(); 
-        };
 
     </script>
 </body>
