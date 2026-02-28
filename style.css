@@ -1121,3 +1121,14 @@ input[type=range].retro-scrub:hover::-webkit-slider-thumb {
 ::-webkit-scrollbar-button:single-button:vertical:increment {
     background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' fill='black'%3E%3Cpath d='M1 2 H9 L5 9 Z'/%3E%3C/svg%3E") !important;
 }
+
+/* --- KILL CHUNKY SCROLLBAR ON MOBILE --- */
+@media (max-width: 768px) {
+    ::-webkit-scrollbar {
+        display: none !important; /* Hides the physical bar */
+    }
+    html {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
+}

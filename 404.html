@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FATAL ERROR</title>
+    <link rel="icon" type="image/png" href="images/plxeyestiny.png">
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* Center the error message perfectly on the screen */
+        .error-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+            color: white; /* Or whatever your font color is */
+        }
+
+        .error-code {
+            font-family: 'PixeloidSansBold', sans-serif;
+            font-size: 4rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 0 #ff0000; /* Sick red glitch shadow */
+        }
+
+        .error-text {
+            font-family: 'PixeloidSans', sans-serif;
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+
+        .home-btn {
+            background-color: transparent;
+            color: white;
+            border: 2px solid white;
+            padding: 10px 20px;
+            font-family: 'PixeloidSansBold', sans-serif;
+            cursor: url('images/link-select.png'), pointer;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .home-btn:hover {
+            background-color: white;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="error-container">
+        <div class="error-code">404</div>
+        <div class="error-text">> SYSTEM HALTED. DESTINATION NOT FOUND.</div>
+        <a href="/blog/" class="home-btn">[ RETURN TO HUB ]</a>
+    </div>
+
+</body>
+</html>

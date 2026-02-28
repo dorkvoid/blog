@@ -1282,3 +1282,12 @@ if (backToTopBtn) {
         }
     });
 }
+
+// THE NEEDY TAB
+let docTitle = document.title;
+window.addEventListener("blur", () => {
+    document.title = "system paused...";
+});
+window.addEventListener("focus", () => {
+    document.title = docTitle;
+});
