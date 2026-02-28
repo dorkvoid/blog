@@ -41,7 +41,7 @@
         
         .search-wrapper::before {
             content: '>'; position: absolute; left: 25px; 
-            top: 50%; transform: translateY(-54%); /* Nudged up to optically center with pixel font */
+            top: 50%; transform: translateY(-54%);
             color: #fff; font-family: 'PixeloidSansBold', sans-serif; font-size: 1.5rem; z-index: 5;
             animation: blink 1s infinite;
         }
@@ -51,8 +51,8 @@
             width: 100%; background: #050505; border: 2px solid #222; color: white; 
             font-family: 'PixeloidSans', sans-serif; font-size: 1.3rem; 
             padding: 0 18px 0 50px; 
-            height: 60px; /* Locked height for perfect centering */
-            line-height: 56px; /* Matches height minus borders */
+            height: 60px; 
+            line-height: 56px; 
             outline: none; text-align: left; box-sizing: border-box; transition: 0.3s;
             box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.02);
             background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.02));
@@ -79,7 +79,6 @@
         }
         #settings-drawer.open { right: 0; }
         
-        /* SMOOTH & BIGGER GEAR TAB */
         #drawer-tab {
             position: absolute; left: -52px; bottom: 40px; 
             width: 50px; height: 50px; 
@@ -87,11 +86,11 @@
             display: flex; align-items: center; justify-content: center;
         }
         #drawer-tab img { 
-            width: 36px; height: 36px; /* Bigger gear */
+            width: 36px; height: 36px; 
             pointer-events: none; 
-            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1); /* Buttery smooth easing */
+            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1); 
         }
-        .gear-spin { transform: rotate(180deg); /* Full smooth half-turn */ }
+        .gear-spin { transform: rotate(180deg); }
 
         .drawer-content { padding: 25px; flex-grow: 1; overflow-y: auto; scrollbar-width: none; }
         .drawer-header { font-family: 'PixeloidSansBold', sans-serif; color: white; margin-bottom: 25px; font-size: 1.1rem; border-bottom: 1px solid #222; padding-bottom: 10px; letter-spacing: 2px;}
@@ -99,20 +98,26 @@
         .setting-section { margin-bottom: 30px; }
         .section-label { display: block; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.7rem; color: #555; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1.5px; }
         
+        /* CHEAT SHEET RESTORED */
+        .cheat-sheet { font-size: 0.65rem; color: #444; line-height: 1.6; background: #050505; padding: 12px; border: 1px solid #111; margin-top: 10px; }
+        .cheat-sheet b { color: #888; }
+
         /* STRICTLY ALIGNED LINK MANAGER */
         .link-manager-item { 
             display: flex; align-items: center; background: #080808; border: 1px solid #222; 
             padding: 6px; margin-bottom: 8px; gap: 8px; box-sizing: border-box; 
         }
+        .handle { padding: 0 5px; color: #333; font-size: 1rem; line-height: 1; }
         .manager-input { 
             background: black; border: 1px solid #333; color: #ccc; 
-            padding: 0 6px; height: 26px; box-sizing: border-box; /* Locked height */
+            padding: 0 6px; margin: 0; height: 26px; line-height: 24px; box-sizing: border-box; 
             font-family: 'PixeloidSans', sans-serif; font-size: 0.7rem; outline: none; 
+            flex-grow: 1; /* Auto fill space */
         }
-        .handle { padding: 0 5px; color: #333; font-size: 1rem; display: flex; align-items: center; }
+        .manager-input.edit-name { flex-grow: 0; width: 60px; }
         .btn-del { 
             background: #111; color: #f00; border: 1px solid #300; 
-            width: 26px; height: 26px; box-sizing: border-box; /* Matches input exactly */
+            width: 26px; height: 26px; padding: 0; margin: 0; box-sizing: border-box; 
             display: flex; align-items: center; justify-content: center; 
             transition: 0.2s; font-family: 'PixeloidSansBold', sans-serif; 
         }
@@ -131,7 +136,7 @@
         
         select { 
             background: #080808; border: 1px solid #333; color: #ccc; 
-            padding: 0 10px; height: 36px; box-sizing: border-box; /* Locked height */
+            padding: 0 10px; height: 36px; box-sizing: border-box; 
             font-family: 'PixeloidSans', sans-serif; width: 100%; outline: none; font-size: 0.8rem; 
         }
 
@@ -139,7 +144,6 @@
         .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 3rem; color: white; margin-bottom: 5px; }
         #greeting { font-family: 'PixeloidSans', sans-serif; color: #444; margin-bottom: 30px; font-size: 1rem; letter-spacing: 2px;}
         
-        /* --- VISIBLE STATUS BAR --- */
         .status-bar { 
             position: fixed; bottom: 20px; left: 30px; 
             font-family: 'PixeloidSansBold', sans-serif; font-size: 0.85rem; 
@@ -161,6 +165,21 @@
         <div class="drawer-content">
             <div class="drawer-header">CORE_SYSTEM</div>
             
+            <div class="setting-section">
+                <span class="section-label">Search Config</span>
+                <select id="engine-select">
+                    <option value="duckduckgo">DuckDuckGo</option>
+                    <option value="google">Google</option>
+                    <option value="youtube">YouTube</option>
+                </select>
+                <div class="cheat-sheet">
+                    <b>yt [query]</b> -> YouTube<br>
+                    <b>g  [query]</b> -> Google<br>
+                    <b>r/[sub]</b> &nbsp;&nbsp;&nbsp;-> Subreddit<br>
+                    <b>Default</b> &nbsp;&nbsp;-> Selected Engine
+                </div>
+            </div>
+
             <div class="setting-section">
                 <span class="section-label">Interface</span>
                 <div class="option-row">
@@ -230,7 +249,7 @@
 
         window.addEventListener('mousedown', () => playSound('mouse'));
 
-        // --- GLOBAL KEYBOARD SOUNDS & ANTI-SPAM ---
+        // Global Keydown Sound with Anti-Spam
         window.addEventListener('keydown', (e) => {
             if (e.repeat) return; 
             if (e.key !== 'Enter') playSound('type'); 
@@ -288,8 +307,8 @@
                 item.className = 'link-manager-item';
                 item.innerHTML = `
                     <span class="handle">::</span>
-                    <input type="text" value="${link.name}" class="manager-input edit-name" data-idx="${index}" style="width:60px">
-                    <input type="text" value="${link.url}" class="manager-input edit-url" data-idx="${index}" style="flex-grow:1">
+                    <input type="text" value="${link.name}" class="manager-input edit-name" data-idx="${index}">
+                    <input type="text" value="${link.url}" class="manager-input edit-url" data-idx="${index}">
                     <button class="btn-del" onclick="deleteLink(${index})">X</button>
                 `;
                 manager.appendChild(item);
@@ -298,6 +317,8 @@
             document.getElementById('status-bar').style.display = config.showStatus ? 'flex' : 'none';
             document.getElementById('toggle-status').checked = config.showStatus;
             document.getElementById('toggle-power').checked = config.lowPower;
+            document.getElementById('engine-select').value = config.engine;
+            
             if(config.lowPower) document.body.classList.add('low-power');
             else document.body.classList.remove('low-power');
             attachEvents();
@@ -370,22 +391,21 @@
 
         function executeSearch(val) {
             if(!val) return;
-            
             const lowerVal = val.toLowerCase();
-            
-            if(lowerVal.startsWith('yt ')) {
-                window.location.href = `https://youtube.com/results?search_query=${encodeURIComponent(val.substring(3))}`;
-            } else if(lowerVal.startsWith('g ')) {
-                window.location.href = `https://google.com/search?q=${encodeURIComponent(val.substring(2))}`;
-            } else if(lowerVal.startsWith('r/')) {
-                window.location.href = `https://reddit.com/${val}`;
-            } else {
-                window.location.href = `https://duckduckgo.com/?q=${encodeURIComponent(val)}`;
+            if(lowerVal.startsWith('yt ')) window.location.href = `https://youtube.com/results?search_query=${encodeURIComponent(val.substring(3))}`;
+            else if(lowerVal.startsWith('g ')) window.location.href = `https://google.com/search?q=${encodeURIComponent(val.substring(2))}`;
+            else if(lowerVal.startsWith('r/')) window.location.href = `https://reddit.com/${val}`;
+            else {
+                const q = encodeURIComponent(val);
+                if(config.engine === 'google') window.location.href = `https://google.com/search?q=${q}`;
+                else if(config.engine === 'youtube') window.location.href = `https://youtube.com/results?search_query=${q}`;
+                else window.location.href = `https://duckduckgo.com/?q=${q}`;
             }
         }
 
         document.getElementById('toggle-status').onchange = (e) => { config.showStatus = e.target.checked; save(); renderAll(); };
         document.getElementById('toggle-power').onchange = (e) => { config.lowPower = e.target.checked; save(); renderAll(); };
+        document.getElementById('engine-select').onchange = (e) => { config.engine = e.target.value; save(); };
 
         const drawer = document.getElementById('settings-drawer');
         const gearIcon = document.getElementById('gear-icon');
@@ -405,10 +425,7 @@
         };
 
         searchInput.onkeydown = (e) => { 
-            if(e.key === 'Enter') { 
-                playSound('click'); 
-                executeSearch(searchInput.value); 
-            } 
+            if(e.key === 'Enter') { playSound('click'); executeSearch(searchInput.value); } 
         };
         
         window.onclick = (e) => { 
