@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TERMINAL // START</title>
+    <link rel="icon" type="image/png" href="images/plxeyestiny.png">
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        /* Centers everything perfectly on the screen */
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden; /* Prevents scrolling on the start page */
+        }
+
+        .start-container {
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+            z-index: 10; /* Keeps it above the scanlines */
+        }
+
+        /* A sick little ASCII header */
+        .ascii-art {
+            font-family: monospace;
+            white-space: pre;
+            margin-bottom: 20px;
+            color: #555;
+            font-size: 14px;
+        }
+
+        /* The Search Box */
+        .search-box {
+            width: 100%;
+            background: black;
+            border: 2px solid white;
+            color: white;
+            font-family: 'PixeloidSans', sans-serif;
+            font-size: 1.5rem;
+            padding: 15px;
+            outline: none;
+            text-align: center;
+            transition: 0.2s;
+        }
+
+        /* Makes it glow aggressive red when you click it */
+        .search-box:focus {
+            border-color: #ff0000;
+            box-shadow: 0 0 15px #ff0000;
+            color: #ff0000;
+        }
+
+        /* Your bookmarks */
+        .quick-links {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .quick-links a {
+            color: white;
+            text-decoration: none;
+            font-family: 'PixeloidSansBold', sans-serif;
+            border: 1px solid #333;
+            padding: 8px 15px;
+            transition: 0.1s;
+            cursor: url('images/link-select.png'), pointer;
+        }
+
+        .quick-links a:hover {
+            background: white;
+            color: black;
+            border-color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="start-container">
+        
+        <div class="ascii-art">
+   _____ __  __ ____  
+  / ___/ \ \/ // __ \ 
+  \__ \   \  // /_/ / 
+ ___/ /   / // ____/  
+/____/   /_//_/      
+        </div>
+        
+        <input type="text" id="web-search" class="search-box" placeholder="search the network..." autofocus autocomplete="off">
+        
+        <div class="quick-links">
+            <a href="/blog/">[ HUB ]</a>
+            <a href="https://youtube.com">[ YOUTUBE ]</a>
+            <a href="https://github.com">[ GITHUB ]</a>
+        </div>
+    </div>
+
+    <script>
+        const searchInput = document.getElementById('web-search');
+
+        // Listens for you to hit the "Enter" key
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && this.value.trim() !== '') {
+                // Encodes your text so it works in a URL (turns spaces into %20)
+                const query = encodeURIComponent(this.value.trim());
+                
+                // Routes the search to DuckDuckGo. 
+                // If you want Google instead, change the URL to:
+                // "https://www.google.com/search?q=" + query;
+                window.location.href = "https://duckduckgo.com/?q=" + query;
+            }
+        });
+    </script>
+
+</body>
+</html>
