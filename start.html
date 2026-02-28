@@ -26,13 +26,60 @@
         }
 
         body.low-power { filter: brightness(0.7); }
-        body.low-power * { box-shadow: none !important; text-shadow: none !important; transition: none !important; }
 
-        a, button, .suggestion-item, #drawer-tab, select, .handle, .toggle-btn {
-            cursor: url('images/link-select.png'), pointer !important;
+        /* --- SEARCH BAR OVERHAUL --- */
+        .search-wrapper { 
+            position: relative; 
+            width: 100%; 
+            max-width: 650px; 
+            padding: 10px;
         }
-        a:active, button:active, .suggestion-item:active, #drawer-tab:active, select:active {
-            cursor: url('images/link-select-click.png'), pointer !important;
+
+        /* The terminal prompt ">" */
+        .search-wrapper::before {
+            content: '>';
+            position: absolute;
+            left: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #fff;
+            font-family: 'PixeloidSansBold', sans-serif;
+            font-size: 1.5rem;
+            z-index: 5;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .search-box { 
+            width: 100%; 
+            background: #050505; 
+            border: 2px solid #222; 
+            color: white; 
+            font-family: 'PixeloidSans', sans-serif; 
+            font-size: 1.3rem; 
+            padding: 18px 18px 18px 50px; /* Padding for the prompt */
+            outline: none; 
+            text-align: left; 
+            box-sizing: border-box;
+            transition: 0.3s;
+            /* Backlit screen glow effect */
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.02);
+        }
+
+        .search-box:focus { 
+            border-color: #fff;
+            background: #0a0a0a;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1), inset 0 0 10px rgba(255, 255, 255, 0.05);
+        }
+
+        /* Subtle scanlines inside the bar */
+        .search-box {
+            background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.02));
+            background-size: 100% 4px, 3px 100%;
         }
 
         /* --- SETTINGS DRAWER --- */
@@ -74,7 +121,6 @@
         .setting-group { margin-bottom: 25px; }
         .setting-group label { display: block; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.8rem; margin-bottom: 8px; color: #888; }
         
-        /* --- LINK MANAGER --- */
         .link-manager-item {
             display: flex;
             align-items: center;
@@ -87,31 +133,14 @@
         .handle { padding: 0 8px; color: #444; font-size: 1.2rem; }
         .manager-input { background: black; border: 1px solid #222; color: white; padding: 5px; font-family: 'PixeloidSans', sans-serif; font-size: 0.75rem; }
 
-        /* FIXED: Narrow Delete Button with Red Glow */
         .btn-del { 
-            background: #111; 
-            color: #f00; 
-            border: 1px solid #300; 
-            width: 24px; 
-            height: 24px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-family: 'PixeloidSansBold', sans-serif;
-            transition: 0.2s;
-            flex-shrink: 0;
+            background: #111; color: #f00; border: 1px solid #300; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-family: 'PixeloidSansBold', sans-serif; transition: 0.2s; flex-shrink: 0;
         }
-        .btn-del:hover { 
-            background: #f00; 
-            color: #000; 
-            border-color: #f00;
-            box-shadow: 0 0 10px #f00; /* Red Glow */
-        }
+        .btn-del:hover { background: #f00; color: #000; border-color: #f00; box-shadow: 0 0 10px #f00; }
 
         .btn-add { width: 100%; background: #000; color: #fff; border: 1px solid #fff; padding: 8px; font-family: 'PixeloidSansBold', sans-serif; margin-top: 10px; }
         .btn-add:hover { background: #fff; color: #000; }
 
-        /* --- TOGGLES & SELECTS --- */
         .toggle-wrap { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .toggle-input { display: none; }
         .toggle-btn { width: 40px; height: 20px; background: #222; position: relative; border: 1px solid #444; }
@@ -121,13 +150,12 @@
 
         select { background: #111; border: 1px solid #444; color: white; padding: 8px; font-family: 'PixeloidSans', sans-serif; width: 100%; outline: none; }
 
-        /* --- SEARCH & PREDICTIVE --- */
-        .search-wrapper { position: relative; width: 100%; max-width: 600px; }
+        /* --- PREDICTIVE SEARCH UI --- */
         #suggestions-box {
             position: absolute;
             top: 100%;
-            left: 0;
-            width: 100%;
+            left: 10px;
+            width: calc(100% - 20px);
             background: black;
             border: 2px solid white;
             border-top: none;
@@ -139,11 +167,8 @@
         .suggestion-item { padding: 12px; color: white; font-family: 'PixeloidSans', sans-serif; text-align: left; border-bottom: 1px solid #222; }
         .suggestion-item:hover { background: white; color: black; }
 
-        .search-box { width: 100%; background: black; border: 2px solid #333; color: white; font-family: 'PixeloidSans', sans-serif; font-size: 1.5rem; padding: 15px; outline: none; text-align: center; transition: 0.2s; box-sizing: border-box; }
-        .search-box:focus { border-color: white; }
-
         /* --- MAIN UI --- */
-        .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 2.5rem; color: white; }
+        .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 2.5rem; color: white; margin-bottom: 5px; }
         #greeting { font-family: 'PixeloidSans', sans-serif; color: #444; margin-bottom: 30px; font-size: 0.9rem; }
         .quick-links { margin-top: 40px; display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
         .quick-links a { color: white; text-decoration: none; font-family: 'PixeloidSansBold', sans-serif; border: 1px solid #333; padding: 10px 20px; }
@@ -209,7 +234,7 @@
         <div id="greeting">SYSTEM_ONLINE</div>
         
         <div class="search-wrapper">
-            <input type="text" id="web-search" class="search-box" placeholder="Search..." autofocus autocomplete="off">
+            <input type="text" id="web-search" class="search-box" placeholder="type command..." autofocus autocomplete="off">
             <div id="suggestions-box"></div>
         </div>
 
@@ -221,7 +246,6 @@
     </div>
 
     <script>
-        // --- DATA ---
         let config = JSON.parse(localStorage.getItem('startConfig')) || {
             showStatus: true,
             lowPower: false,
@@ -230,7 +254,6 @@
         };
         const save = () => localStorage.setItem('startConfig', JSON.stringify(config));
 
-        // --- AUDIO (0.05 Mouse Vol) ---
         const audioAssets = {
             hover: new Audio('sounds/hoverbutton.wav'), 
             click: new Audio('sounds/buttonclick.mp3'),
@@ -251,7 +274,6 @@
 
         window.addEventListener('mousedown', () => playSound('mouse'));
 
-        // --- RENDER ---
         function renderAll() {
             const container = document.getElementById('links-container');
             const manager = document.getElementById('manager-list');
@@ -326,7 +348,6 @@
             });
         }
 
-        // --- SEARCH ENGINE ---
         const searchInput = document.getElementById('web-search');
         const suggestionsBox = document.getElementById('suggestions-box');
         let debounceTimer;
@@ -371,7 +392,6 @@
             }
         }
 
-        // --- UI LOGIC ---
         document.getElementById('toggle-status').onchange = (e) => { config.showStatus = e.target.checked; save(); renderAll(); };
         document.getElementById('toggle-power').onchange = (e) => { config.lowPower = e.target.checked; save(); renderAll(); };
         document.getElementById('engine-select').onchange = (e) => { config.engine = e.target.value; save(); };
