@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     
     <style>
-        /* --- GLOBAL UI --- */
+        /* --- GLOBAL UI & CURSORS --- */
         * { cursor: url('images/cursor.png'), auto !important; }
         *:active { cursor: url('images/cursor-click.png'), auto !important; }
 
@@ -27,120 +27,86 @@
 
         body.low-power { filter: brightness(0.7); }
 
-        /* --- SEARCH BAR OVERHAUL --- */
-        .search-wrapper { 
-            position: relative; 
-            width: 100%; 
-            max-width: 650px; 
-            padding: 10px;
+        /* Interaction Cursors */
+        a, button, .suggestion-item, #drawer-tab, select, .handle, .toggle-btn {
+            cursor: url('images/link-select.png'), pointer !important;
+        }
+        /* FIXED: Clicking hand variant */
+        a:active, button:active, .suggestion-item:active, #drawer-tab:active, select:active {
+            cursor: url('images/link-select-click.png'), pointer !important;
         }
 
-        /* The terminal prompt ">" */
+        /* --- SEARCH BAR --- */
+        .search-wrapper { position: relative; width: 100%; max-width: 650px; padding: 10px; }
         .search-wrapper::before {
-            content: '>';
-            position: absolute;
-            left: 25px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #fff;
-            font-family: 'PixeloidSansBold', sans-serif;
-            font-size: 1.5rem;
-            z-index: 5;
+            content: '>'; position: absolute; left: 25px; top: 50%; transform: translateY(-50%);
+            color: #fff; font-family: 'PixeloidSansBold', sans-serif; font-size: 1.5rem; z-index: 5;
             animation: blink 1s infinite;
         }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
         .search-box { 
-            width: 100%; 
-            background: #050505; 
-            border: 2px solid #222; 
-            color: white; 
-            font-family: 'PixeloidSans', sans-serif; 
-            font-size: 1.3rem; 
-            padding: 18px 18px 18px 50px; /* Padding for the prompt */
-            outline: none; 
-            text-align: left; 
-            box-sizing: border-box;
-            transition: 0.3s;
-            /* Backlit screen glow effect */
+            width: 100%; background: #050505; border: 2px solid #222; color: white; 
+            font-family: 'PixeloidSans', sans-serif; font-size: 1.3rem; padding: 18px 18px 18px 50px;
+            outline: none; text-align: left; box-sizing: border-box; transition: 0.3s;
             box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.02);
-        }
-
-        .search-box:focus { 
-            border-color: #fff;
-            background: #0a0a0a;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1), inset 0 0 10px rgba(255, 255, 255, 0.05);
-        }
-
-        /* Subtle scanlines inside the bar */
-        .search-box {
             background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.02));
             background-size: 100% 4px, 3px 100%;
         }
+        .search-box:focus { border-color: #fff; background: #0a0a0a; box-shadow: 0 0 20px rgba(255, 255, 255, 0.1); }
+
+        /* --- ICON GRID --- */
+        .quick-links { 
+            margin-top: 50px; display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; 
+            max-width: 800px;
+        }
+        .link-card {
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+            text-decoration: none; width: 80px; transition: transform 0.1s;
+        }
+        .link-card:hover { transform: scale(1.1); }
+        
+        .icon-box {
+            width: 54px; height: 54px; background: #111; border: 2px solid #333;
+            display: flex; align-items: center; justify-content: center;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .link-card:hover .icon-box { border-color: white; box-shadow: 0 0 15px rgba(255,255,255,0.1); }
+        
+        .icon-box img { width: 32px; height: 32px; image-rendering: pixelated; }
+
+        .link-label {
+            color: #666; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.7rem;
+            text-transform: uppercase; letter-spacing: 1px; transition: color 0.2s;
+        }
+        .link-card:hover .link-label { color: white; }
 
         /* --- SETTINGS DRAWER --- */
         #settings-drawer {
-            position: fixed;
-            top: 0;
-            right: -350px; 
-            width: 350px;
-            height: 100vh;
-            background: #000;
-            border-left: 2px solid #333;
-            z-index: 100;
+            position: fixed; top: 0; right: -350px; width: 350px; height: 100vh;
+            background: #000; border-left: 2px solid #333; z-index: 100;
             transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            color: white;
-            font-family: 'PixeloidSans', sans-serif;
-            display: flex;
-            flex-direction: column;
+            color: white; font-family: 'PixeloidSans', sans-serif; display: flex; flex-direction: column;
         }
         #settings-drawer.open { right: 0; }
-
         #drawer-tab {
-            position: absolute;
-            left: -42px;
-            bottom: 40px; 
-            width: 40px;
-            height: 40px;
-            background: #000;
-            border: 2px solid #333;
-            border-right: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: absolute; left: -42px; bottom: 40px; width: 40px; height: 40px;
+            background: #000; border: 2px solid #333; border-right: none;
+            display: flex; align-items: center; justify-content: center;
         }
-        #drawer-tab img { width: 24px; height: 24px; pointer-events: none; }
-
         .drawer-content { padding: 25px; flex-grow: 1; overflow-y: auto; }
         .drawer-header { font-family: 'PixeloidSansBold', sans-serif; color: white; margin-bottom: 20px; font-size: 1.2rem; border-bottom: 1px solid #333; padding-bottom: 10px;}
 
-        .setting-group { margin-bottom: 25px; }
-        .setting-group label { display: block; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.8rem; margin-bottom: 8px; color: #888; }
-        
         .link-manager-item {
-            display: flex;
-            align-items: center;
-            background: #111;
-            border: 1px solid #333;
-            padding: 5px;
-            margin-bottom: 5px;
-            gap: 5px;
+            display: flex; align-items: center; background: #111; border: 1px solid #333;
+            padding: 5px; margin-bottom: 5px; gap: 5px;
         }
-        .handle { padding: 0 8px; color: #444; font-size: 1.2rem; }
         .manager-input { background: black; border: 1px solid #222; color: white; padding: 5px; font-family: 'PixeloidSans', sans-serif; font-size: 0.75rem; }
-
-        .btn-del { 
-            background: #111; color: #f00; border: 1px solid #300; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-family: 'PixeloidSansBold', sans-serif; transition: 0.2s; flex-shrink: 0;
-        }
-        .btn-del:hover { background: #f00; color: #000; border-color: #f00; box-shadow: 0 0 10px #f00; }
-
+        .btn-del { background: #111; color: #f00; border: 1px solid #300; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .btn-del:hover { background: #f00; color: #000; box-shadow: 0 0 10px #f00; }
         .btn-add { width: 100%; background: #000; color: #fff; border: 1px solid #fff; padding: 8px; font-family: 'PixeloidSansBold', sans-serif; margin-top: 10px; }
-        .btn-add:hover { background: #fff; color: #000; }
 
+        /* Toggles */
         .toggle-wrap { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .toggle-input { display: none; }
         .toggle-btn { width: 40px; height: 20px; background: #222; position: relative; border: 1px solid #444; }
@@ -148,55 +114,26 @@
         .toggle-input:checked + .toggle-btn { background: #fff; }
         .toggle-input:checked + .toggle-btn::after { left: 20px; background: black; }
 
-        select { background: #111; border: 1px solid #444; color: white; padding: 8px; font-family: 'PixeloidSans', sans-serif; width: 100%; outline: none; }
-
-        /* --- PREDICTIVE SEARCH UI --- */
-        #suggestions-box {
-            position: absolute;
-            top: 100%;
-            left: 10px;
-            width: calc(100% - 20px);
-            background: black;
-            border: 2px solid white;
-            border-top: none;
-            display: none;
-            flex-direction: column;
-            z-index: 20;
-            box-sizing: border-box;
-        }
-        .suggestion-item { padding: 12px; color: white; font-family: 'PixeloidSans', sans-serif; text-align: left; border-bottom: 1px solid #222; }
-        .suggestion-item:hover { background: white; color: black; }
-
-        /* --- MAIN UI --- */
+        /* Main UI Bits */
         .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 2.5rem; color: white; margin-bottom: 5px; }
         #greeting { font-family: 'PixeloidSans', sans-serif; color: #444; margin-bottom: 30px; font-size: 0.9rem; }
-        .quick-links { margin-top: 40px; display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-        .quick-links a { color: white; text-decoration: none; font-family: 'PixeloidSansBold', sans-serif; border: 1px solid #333; padding: 10px 20px; }
-        .quick-links a:hover { background: white; color: black; border-color: white; }
-
         .status-bar { position: fixed; bottom: 10px; left: 20px; font-family: 'PixeloidSans', sans-serif; font-size: 0.7rem; color: #222; letter-spacing: 1px; }
-
-        .cheat-sheet { font-size: 0.7rem; color: #555; line-height: 1.5; background: #080808; padding: 10px; border: 1px solid #1a1a1a; }
     </style>
 </head>
 <body>
 
     <div id="settings-drawer">
-        <div id="drawer-tab">
-            <img src="images/gear.png" alt="Settings">
-        </div>
+        <div id="drawer-tab"><img src="images/gear.png" alt="Settings"></div>
         <div class="drawer-content">
             <div class="drawer-header">SETTINGS</div>
-            
             <div class="setting-group">
-                <label>ENGINE CONFIG</label>
+                <label>ENGINE</label>
                 <select id="engine-select">
-                    <option value="duckduckgo">DuckDuckGo (Default)</option>
+                    <option value="duckduckgo">DuckDuckGo</option>
                     <option value="google">Google</option>
                     <option value="youtube">YouTube</option>
                 </select>
             </div>
-
             <div class="setting-group">
                 <label>SYSTEM</label>
                 <div class="toggle-wrap">
@@ -210,17 +147,6 @@
                     <label for="toggle-status" class="toggle-btn"></label>
                 </div>
             </div>
-
-            <div class="setting-group">
-                <label>SEARCH COMMANDS</label>
-                <div class="cheat-sheet">
-                    yt [query] &nbsp;-> YouTube Search<br>
-                    g  [query] &nbsp;-> Google Search<br>
-                    r/[sub] &nbsp;&nbsp;&nbsp;&nbsp;-> Direct Subreddit<br>
-                    [query] &nbsp;&nbsp;&nbsp;&nbsp;-> Uses Selected Engine
-                </div>
-            </div>
-
             <div class="setting-group">
                 <label>HOTLINKS (Drag to reorder)</label>
                 <div id="manager-list"></div>
@@ -235,28 +161,23 @@
         
         <div class="search-wrapper">
             <input type="text" id="web-search" class="search-box" placeholder="type command..." autofocus autocomplete="off">
-            <div id="suggestions-box"></div>
+            <div id="suggestions-box" style="position: absolute; top: 100%; left: 10px; width: calc(100% - 20px); background: black; border: 2px solid white; border-top: none; display: none; flex-direction: column; z-index: 20;"></div>
         </div>
 
         <div id="links-container" class="quick-links"></div>
     </div>
 
-    <div class="status-bar" id="status-bar">
-        MIKEVOID OS // STATUS: NOMINAL // WEATHER: CLEAR
-    </div>
+    <div class="status-bar" id="status-bar">MIKEVOID OS // STATUS: NOMINAL // WEATHER: CLEAR</div>
 
     <script>
         let config = JSON.parse(localStorage.getItem('startConfig')) || {
-            showStatus: true,
-            lowPower: false,
-            engine: "duckduckgo",
+            showStatus: true, lowPower: false, engine: "duckduckgo",
             links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}]
         };
         const save = () => localStorage.setItem('startConfig', JSON.stringify(config));
 
         const audioAssets = {
-            hover: new Audio('sounds/hoverbutton.wav'), 
-            click: new Audio('sounds/buttonclick.mp3'),
+            hover: new Audio('sounds/hoverbutton.wav'), click: new Audio('sounds/buttonclick.mp3'),
             types: [new Audio('sounds/type1.mp3'), new Audio('sounds/type2.mp3'), new Audio('sounds/type3.mp3'), new Audio('sounds/type4.mp3')],
             mouseClicks: [new Audio('sounds/mouse1.mp3'), new Audio('sounds/mouse2.mp3'), new Audio('sounds/mouse3.mp3'), new Audio('sounds/mouse4.mp3')]
         };
@@ -267,26 +188,38 @@
             else if (type === 'click') sound = audioAssets.click;
             else if (type === 'mouse') { sound = audioAssets.mouseClicks[Math.floor(Math.random()*4)]; vol = 0.05; }
             else sound = audioAssets.types[Math.floor(Math.random()*4)];
-            const clone = sound.cloneNode();
-            clone.volume = vol;
-            clone.play().catch(()=>{});
+            const clone = sound.cloneNode(); clone.volume = vol; clone.play().catch(()=>{});
         };
 
         window.addEventListener('mousedown', () => playSound('mouse'));
 
+        function getFavicon(url) {
+            try {
+                const domain = new URL(url).hostname;
+                return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+            } catch(e) { return 'images/plxeyestiny.png'; } // Fallback to your tiny icon
+        }
+
         function renderAll() {
             const container = document.getElementById('links-container');
             const manager = document.getElementById('manager-list');
-            container.innerHTML = '';
-            manager.innerHTML = '';
+            container.innerHTML = ''; manager.innerHTML = '';
 
             config.links.forEach((link, index) => {
-                const a = document.createElement('a');
-                a.href = link.url; a.target = "_blank"; a.innerText = `[ ${link.name} ]`;
-                a.onmouseenter = () => playSound('hover');
-                a.onclick = () => playSound('click');
-                container.appendChild(a);
+                // ICON GRID RENDER
+                const card = document.createElement('a');
+                card.className = 'link-card'; card.href = link.url; card.target = "_blank";
+                card.innerHTML = `
+                    <div class="icon-box">
+                        <img src="${getFavicon(link.url)}" onerror="this.src='images/plxeyestiny.png'">
+                    </div>
+                    <div class="link-label">${link.name}</div>
+                `;
+                card.onmouseenter = () => playSound('hover');
+                card.onclick = () => playSound('click');
+                container.appendChild(card);
 
+                // MANAGER RENDER
                 const item = document.createElement('div');
                 item.className = 'link-manager-item';
                 item.innerHTML = `
@@ -302,35 +235,28 @@
             document.getElementById('toggle-status').checked = config.showStatus;
             document.getElementById('toggle-power').checked = config.lowPower;
             document.getElementById('engine-select').value = config.engine;
-            
             if(config.lowPower) document.body.classList.add('low-power');
             else document.body.classList.remove('low-power');
-            
             attachSortable();
         }
 
-        function deleteLink(idx) {
-            playSound('click');
-            config.links.splice(idx, 1);
-            save();
-            renderAll();
-        }
+        function deleteLink(idx) { playSound('click'); config.links.splice(idx, 1); save(); renderAll(); }
 
         function attachSortable() {
             Sortable.create(document.getElementById('manager-list'), {
                 handle: '.handle', animation: 150,
                 onEnd: () => {
-                    const newLinks = [];
+                    const nl = [];
                     document.querySelectorAll('.link-manager-item').forEach(el => {
-                        newLinks.push({ name: el.querySelector('.edit-name').value, url: el.querySelector('.edit-url').value });
+                        nl.push({ name: el.querySelector('.edit-name').value, url: el.querySelector('.edit-url').value });
                     });
-                    config.links = newLinks; save(); renderLinksOnly();
+                    config.links = nl; save(); renderLinksOnly();
                 }
             });
             document.querySelectorAll('.manager-input').forEach((input, idx) => {
                 input.onchange = () => {
-                    const i = Math.floor(idx / 2);
-                    if(idx % 2 === 0) config.links[i].name = input.value;
+                    const i = Math.floor(idx/2);
+                    if(idx%2===0) config.links[i].name = input.value;
                     else config.links[i].url = input.value;
                     save(); renderLinksOnly();
                 };
@@ -341,10 +267,11 @@
             const container = document.getElementById('links-container');
             container.innerHTML = '';
             config.links.forEach(link => {
-                const a = document.createElement('a');
-                a.href = link.url; a.target = "_blank"; a.innerText = `[ ${link.name} ]`;
-                a.onmouseenter = () => playSound('hover');
-                container.appendChild(a);
+                const card = document.createElement('a');
+                card.className = 'link-card'; card.href = link.url; card.target = "_blank";
+                card.innerHTML = `<div class="icon-box"><img src="${getFavicon(link.url)}" onerror="this.src='images/plxeyestiny.png'"></div><div class="link-label">${link.name}</div>`;
+                card.onmouseenter = () => playSound('hover');
+                container.appendChild(card);
             });
         }
 
@@ -356,7 +283,6 @@
             playSound('type');
             const query = searchInput.value.trim();
             if (query.length === 0 || query.includes(' ')) { suggestionsBox.style.display = 'none'; return; }
-
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
                 const script = document.createElement('script');
@@ -380,8 +306,7 @@
         };
 
         function executeSearch(val) {
-            if(!val) return;
-            const q = encodeURIComponent(val);
+            if(!val) return; const q = encodeURIComponent(val);
             if(val.startsWith('yt ')) window.location.href = `https://youtube.com/results?search_query=${encodeURIComponent(val.substring(3))}`;
             else if(val.startsWith('g ')) window.location.href = `https://google.com/search?q=${encodeURIComponent(val.substring(2))}`;
             else if(val.startsWith('r/')) window.location.href = `https://reddit.com/${val}`;
