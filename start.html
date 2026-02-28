@@ -6,9 +6,10 @@
     <title>TERMINAL // START</title>
     <link rel="icon" type="image/png" href="images/plxeyestiny.png">
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     
     <style>
-        /* --- GLOBAL UI & CURSOR --- */
+        /* --- GLOBAL UI --- */
         * { cursor: url('images/cursor.png'), auto !important; }
         *:active { cursor: url('images/cursor-click.png'), auto !important; }
 
@@ -21,11 +22,9 @@
             margin: 0;
             overflow: hidden; 
             background: black;
-            transition: opacity 0.5s;
         }
 
-        /* Interactive cursors */
-        a, button, .suggestion-item, #drawer-tab, select, .toggle-label {
+        a, button, .suggestion-item, #drawer-tab, select, .handle {
             cursor: url('images/link-select.png'), pointer !important;
         }
         a:active, button:active, .suggestion-item:active, #drawer-tab:active, select:active {
@@ -71,98 +70,73 @@
         .setting-group { margin-bottom: 25px; }
         .setting-group label { display: block; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.8rem; margin-bottom: 8px; color: #888; }
         
-        select, input[type="text"] {
-            width: 100%;
+        /* Drag and Drop Manager Styles */
+        #manager-list { margin-top: 10px; }
+        .link-manager-item {
+            display: flex;
+            align-items: center;
             background: #111;
-            border: 1px solid #444;
-            color: white;
-            padding: 10px;
-            font-family: 'PixeloidSans', sans-serif;
-            outline: none;
+            border: 1px solid #333;
+            padding: 5px;
+            margin-bottom: 5px;
+            gap: 5px;
         }
+        .handle { padding: 0 10px; color: #444; font-weight: bold; }
+        .manager-input { background: black; border: 1px solid #222; color: white; padding: 5px; font-family: 'PixeloidSans', sans-serif; }
 
-        .btn-del { background: #200; color: #f00; border: 1px solid #f00; padding: 0 10px; font-family: 'PixeloidSansBold', sans-serif; margin-left:5px;}
-        .btn-del:hover { background: #f00; color: #000; }
+        .btn-del { background: #200; color: #f00; border: 1px solid #f00; padding: 2px 8px; font-family: 'PixeloidSansBold', sans-serif; }
         .btn-add { width: 100%; background: #000; color: #fff; border: 1px solid #fff; padding: 8px; font-family: 'PixeloidSansBold', sans-serif; margin-top: 10px; }
-        .btn-add:hover { background: #fff; color: #000; }
 
-        /* --- PREDICTIVE SEARCH --- */
-        .search-wrapper { position: relative; width: 100%; max-width: 600px; }
-        #suggestions-box {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: 100%;
-            background: black;
-            border: 2px solid white;
-            border-top: none;
-            display: none;
-            flex-direction: column;
-            z-index: 20;
-            box-sizing: border-box;
+        /* --- TOGGLES --- */
+        .toggle-wrap { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .toggle-input { display: none; }
+        .toggle-btn {
+            width: 40px; height: 20px; background: #333; position: relative; border: 1px solid #444;
         }
-        .suggestion-item { padding: 12px; color: white; font-family: 'PixeloidSans', sans-serif; text-align: left; border-bottom: 1px solid #222; }
-        .suggestion-item:hover { background: white; color: black; }
-
-        .search-box { 
-            width: 100%; 
-            background: black; 
-            border: 2px solid #333; 
-            color: white; 
-            font-family: 'PixeloidSans', sans-serif; 
-            font-size: 1.5rem; 
-            padding: 15px; 
-            outline: none; 
-            text-align: center; 
-            box-sizing: border-box;
-            transition: border-color 0.2s;
+        .toggle-btn::after {
+            content: ''; position: absolute; width: 18px; height: 18px; background: white; top: 0; left: 0; transition: 0.2s;
         }
-        .search-box:focus { border-color: white; }
+        .toggle-input:checked + .toggle-btn { background: #fff; }
+        .toggle-input:checked + .toggle-btn::after { left: 20px; background: black; }
 
-        /* --- UI ELEMENTS --- */
+        /* --- MAIN UI --- */
         .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 2.5rem; color: white; }
-        #greeting { font-family: 'PixeloidSans', sans-serif; color: #444; margin-bottom: 30px; font-size: 0.9rem; letter-spacing: 1px; }
+        #greeting { font-family: 'PixeloidSans', sans-serif; color: #444; margin-bottom: 30px; font-size: 0.9rem; }
+        .search-box { width: 100%; max-width: 600px; background: black; border: 2px solid #333; color: white; font-family: 'PixeloidSans', sans-serif; font-size: 1.5rem; padding: 15px; outline: none; text-align: center; transition: 0.2s; }
+        .search-box:focus { border-color: white; }
         
         .quick-links { margin-top: 40px; display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
         .quick-links a { color: white; text-decoration: none; font-family: 'PixeloidSansBold', sans-serif; border: 1px solid #333; padding: 10px 20px; }
-        .quick-links a:hover { background: white; color: black; border-color: white; }
+        .quick-links a:hover { background: white; color: black; }
 
-        /* Bottom Status Bar */
-        .status-bar {
-            position: fixed;
-            bottom: 10px;
-            left: 20px;
-            font-family: 'PixeloidSans', sans-serif;
-            font-size: 0.7rem;
-            color: #333;
-            text-transform: uppercase;
-        }
+        /* Status Bar */
+        .status-bar { position: fixed; bottom: 10px; left: 20px; font-family: 'PixeloidSans', sans-serif; font-size: 0.7rem; color: #222; letter-spacing: 1px; }
 
-        /* Toggle switches for drawer */
-        .toggle-group { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
-        .toggle-label { font-size: 0.8rem; color: #888; }
+        #suggestions-box { position: absolute; top: 100%; left: 0; width: 100%; background: black; border: 2px solid white; display: none; flex-direction: column; z-index: 20; }
+        .suggestion-item { padding: 12px; color: white; font-family: 'PixeloidSans', sans-serif; }
+        .suggestion-item:hover { background: white; color: black; }
     </style>
 </head>
-<body id="main-body">
+<body>
 
     <div id="settings-drawer">
         <div id="drawer-tab">
             <img src="images/gear.png" alt="Settings">
         </div>
         <div class="drawer-content">
-            <div class="drawer-header">> SYSTEM_PREFS</div>
+            <div class="drawer-header">SETTINGS</div>
             
             <div class="setting-group">
-                <label>SEARCH COMMANDS</label>
-                <div style="font-size: 0.7rem; color: #555; line-height: 1.4;">
-                    yt [query] - YouTube<br>
-                    g [query] - Google<br>
-                    r/[sub] - Subreddit
+                <label>INTERFACE</label>
+                <div class="toggle-wrap">
+                    <span>Show Status Bar</span>
+                    <input type="checkbox" id="toggle-status" class="toggle-input" checked>
+                    <label for="toggle-status" class="toggle-btn"></label>
                 </div>
             </div>
 
             <div class="setting-group">
-                <label>HOTLINKS</label>
+                <label>HOTLINKS (Drag to reorder)</label>
                 <div id="manager-list"></div>
                 <button class="btn-add">+ ADD NEW</button>
             </div>
@@ -171,10 +145,10 @@
 
     <div class="start-container" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
         <div id="clock" class="terminal-clock">00:00:00</div>
-        <div id="greeting">> INITIALIZING...</div>
+        <div id="greeting">SYSTEM_READY</div>
         
-        <div class="search-wrapper">
-            <input type="text" id="web-search" class="search-box" placeholder="type command..." autofocus autocomplete="off">
+        <div class="search-wrapper" style="position: relative; width: 100%; max-width: 600px;">
+            <input type="text" id="web-search" class="search-box" placeholder="Search..." autofocus autocomplete="off">
             <div id="suggestions-box"></div>
         </div>
 
@@ -182,18 +156,18 @@
     </div>
 
     <div class="status-bar" id="status-bar">
-        Network Status: Nominal // System: MikeVoid v2.0
+        MIKEVOID OS // STATUS: NOMINAL // WEATHER: CLEAR
     </div>
 
     <script>
         // --- DATA ---
         let config = JSON.parse(localStorage.getItem('startConfig')) || {
-            engine: "duckduckgo",
+            showStatus: true,
             links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}]
         };
         const save = () => localStorage.setItem('startConfig', JSON.stringify(config));
 
-        // --- AUDIO ---
+        // --- AUDIO (Mouse sounds quieted to 0.05) ---
         const audioAssets = {
             hover: new Audio('sounds/hoverbutton.wav'), 
             click: new Audio('sounds/buttonclick.mp3'),
@@ -206,7 +180,7 @@
             let vol = 0.4;
             if (type === 'hover') sound = audioAssets.hover;
             else if (type === 'click') sound = audioAssets.click;
-            else if (type === 'mouse') { sound = audioAssets.mouseClicks[Math.floor(Math.random()*4)]; vol = 0.15; }
+            else if (type === 'mouse') { sound = audioAssets.mouseClicks[Math.floor(Math.random()*4)]; vol = 0.05; }
             else sound = audioAssets.types[Math.floor(Math.random()*4)];
             const clone = sound.cloneNode();
             clone.volume = vol;
@@ -230,131 +204,111 @@
                 container.appendChild(a);
 
                 const item = document.createElement('div');
-                item.style.display = 'flex'; item.style.marginBottom = '10px';
+                item.className = 'link-manager-item';
                 item.innerHTML = `
-                    <input type="text" value="${link.name}" data-idx="${index}" class="edit-name" style="width:70px">
-                    <input type="text" value="${link.url}" data-idx="${index}" class="edit-url">
-                    <button class="btn-del" data-idx="${index}">X</button>
+                    <span class="handle">::</span>
+                    <input type="text" value="${link.name}" class="manager-input edit-name" style="width:60px">
+                    <input type="text" value="${link.url}" class="manager-input edit-url" style="flex-grow:1">
+                    <button class="btn-del">X</button>
                 `;
                 manager.appendChild(item);
             });
+            
+            document.getElementById('status-bar').style.display = config.showStatus ? 'block' : 'none';
+            document.getElementById('toggle-status').checked = config.showStatus;
+            
             attachEvents();
         }
 
         function attachEvents() {
-            document.querySelectorAll('.btn-del').forEach(btn => {
-                btn.onmouseenter = () => playSound('hover');
-                btn.onclick = (e) => { playSound('click'); config.links.splice(e.target.dataset.idx, 1); save(); renderAll(); };
+            const list = document.getElementById('manager-list');
+            // DRAG AND DROP LOGIC
+            Sortable.create(list, {
+                handle: '.handle',
+                animation: 150,
+                onEnd: () => {
+                    const newLinks = [];
+                    document.querySelectorAll('.link-manager-item').forEach(el => {
+                        newLinks.push({
+                            name: el.querySelector('.edit-name').value,
+                            url: el.querySelector('.edit-url').value
+                        });
+                    });
+                    config.links = newLinks;
+                    save(); renderLinksOnly();
+                }
             });
-            document.querySelectorAll('.edit-name, .edit-url').forEach(input => {
-                input.onchange = (e) => {
-                    const idx = e.target.dataset.idx;
-                    if(e.target.classList.contains('edit-name')) config.links[idx].name = e.target.value;
-                    else config.links[idx].url = e.target.value;
-                    save(); renderAll();
+
+            document.querySelectorAll('.btn-del').forEach((btn, idx) => {
+                btn.onclick = () => { playSound('click'); config.links.splice(idx, 1); save(); renderAll(); };
+            });
+
+            document.querySelectorAll('.manager-input').forEach((input, idx) => {
+                input.onchange = () => {
+                    const i = Math.floor(idx / 2);
+                    if(idx % 2 === 0) config.links[i].name = input.value;
+                    else config.links[i].url = input.value;
+                    save(); renderLinksOnly();
                 };
             });
         }
 
-        // --- SEARCH ENGINE COMMANDS ---
-        function executeSearch(input) {
-            const val = input.trim();
-            if(!val) return;
-            
-            // YouTube Prefix: "yt [query]"
-            if(val.toLowerCase().startsWith('yt ')) {
-                window.location.href = `https://youtube.com/results?search_query=${encodeURIComponent(val.substring(3))}`;
-            } 
-            // Google Prefix: "g [query]"
-            else if(val.toLowerCase().startsWith('g ')) {
-                window.location.href = `https://google.com/search?q=${encodeURIComponent(val.substring(2))}`;
-            }
-            // Subreddit Prefix: "r/[sub]"
-            else if(val.toLowerCase().startsWith('r/')) {
-                window.location.href = `https://reddit.com/${val}`;
-            }
-            // Default Search
-            else {
-                window.location.href = `https://duckduckgo.com/?q=${encodeURIComponent(val)}`;
-            }
+        function renderLinksOnly() {
+            const container = document.getElementById('links-container');
+            container.innerHTML = '';
+            config.links.forEach(link => {
+                const a = document.createElement('a');
+                a.href = link.url; a.target = "_blank"; a.innerText = `[ ${link.name} ]`;
+                a.onmouseenter = () => playSound('hover');
+                container.appendChild(a);
+            });
         }
 
         // --- UI LOGIC ---
-        const drawer = document.getElementById('settings-drawer');
-        const drawerTab = document.getElementById('drawer-tab');
-        drawerTab.onmouseenter = () => playSound('hover');
-        drawerTab.onclick = (e) => { e.stopPropagation(); playSound('click'); drawer.classList.toggle('open'); };
+        document.getElementById('toggle-status').onchange = (e) => {
+            config.showStatus = e.target.checked;
+            save(); renderAll();
+        };
 
-        document.querySelector('.btn-add').onmouseenter = () => playSound('hover');
-        document.querySelector('.btn-add').onclick = () => { playSound('click'); config.links.push({name: "NEW", url: "https://"}); save(); renderAll(); };
+        const drawer = document.getElementById('settings-drawer');
+        document.getElementById('drawer-tab').onclick = (e) => { e.stopPropagation(); playSound('click'); drawer.classList.toggle('open'); };
+
+        document.querySelector('.btn-add').onclick = () => { config.links.push({name: "NEW", url: "https://"}); save(); renderAll(); };
 
         const searchInput = document.getElementById('web-search');
-        const suggestionsBox = document.getElementById('suggestions-box');
-        let debounceTimer;
+        function executeSearch(val) {
+            if(!val) return;
+            if(val.startsWith('yt ')) window.location.href = `https://youtube.com/results?search_query=${encodeURIComponent(val.substring(3))}`;
+            else if(val.startsWith('g ')) window.location.href = `https://google.com/search?q=${encodeURIComponent(val.substring(2))}`;
+            else if(val.startsWith('r/')) window.location.href = `https://reddit.com/${val}`;
+            else window.location.href = `https://duckduckgo.com/?q=${encodeURIComponent(val)}`;
+        }
 
-        searchInput.oninput = (e) => {
-            playSound('type');
-            const query = e.target.value.trim();
-            if (query.length === 0 || query.includes(' ')) { suggestionsBox.style.display = 'none'; return; }
-
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                const script = document.createElement('script');
-                script.src = `https://duckduckgo.com/ac/?q=${encodeURIComponent(query)}&callback=autocompleteCallback`;
-                document.body.appendChild(script);
-            }, 150);
-        };
-
-        window.autocompleteCallback = (data) => {
-            suggestionsBox.innerHTML = '';
-            if (data && data.length > 0) {
-                data.slice(0, 5).forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'suggestion-item'; div.innerText = item.phrase;
-                    div.onmouseenter = () => playSound('hover');
-                    div.onclick = () => { playSound('click'); executeSearch(item.phrase); };
-                    suggestionsBox.appendChild(div);
-                });
-                suggestionsBox.style.display = 'flex';
-            } else { suggestionsBox.style.display = 'none'; }
-        };
-
-        document.addEventListener('click', (e) => {
-            if (e.target !== searchInput && !e.target.closest('#suggestions-box')) suggestionsBox.style.display = 'none';
-            if (!drawer.contains(e.target) && !drawerTab.contains(e.target) && drawer.classList.contains('open')) drawer.classList.remove('open');
-        });
-
-        searchInput.onkeydown = (e) => {
-            if(e.key === 'Enter') { playSound('click'); executeSearch(searchInput.value); }
-            if(e.key === 'Backspace') playSound('type');
-        };
+        searchInput.onkeydown = (e) => { if(e.key === 'Enter') executeSearch(searchInput.value); if(e.key === 'Backspace') playSound('type'); };
+        searchInput.oninput = () => playSound('type');
 
         // --- CLOCK & GREETING ---
         function updateUI() {
             const now = new Date();
-            // 12-Hour Clock
-            let hours = now.getHours();
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12 || 12;
-            document.getElementById('clock').innerText = `${hours}:${minutes}:${seconds} ${ampm}`;
+            let h = now.getHours();
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12 || 12;
+            document.getElementById('clock').innerText = `${h}:${m}:${s} ${ampm}`;
             
-            // Dynamic Greeting
-            const h = now.getHours();
-            let msg = "> SYSTEM READY. STANDING BY.";
-            if (h >= 5 && h < 12) msg = "> GOOD MORNING, OPERATOR. SYSTEM NOMINAL.";
-            else if (h >= 12 && h < 18) msg = "> GOOD AFTERNOON. NETWORK STATUS STABLE.";
-            else if (h >= 18 && h < 22) msg = "> GOOD EVENING. MAINTENANCE CYCLE DEFERRED.";
-            else msg = "> LATE NIGHT SESSION DETECTED. EYES ON THE VOID.";
-            
+            const hr = now.getHours();
+            let msg = "SYSTEM_ONLINE";
+            if (hr < 12) msg = "GOOD_MORNING";
+            else if (hr < 18) msg = "GOOD_AFTERNOON";
+            else msg = "GOOD_EVENING";
             document.getElementById('greeting').innerText = msg;
-            document.getElementById('date').innerText = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }).toUpperCase();
         }
         setInterval(updateUI, 1000);
         updateUI();
         renderAll();
 
+        window.onclick = (e) => { if (!drawer.contains(e.target) && drawer.classList.contains('open')) drawer.classList.remove('open'); };
     </script>
 </body>
 </html>
