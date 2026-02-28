@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="style.css">
     
     <style>
-        /* Centers everything perfectly on the screen */
         body {
             display: flex;
             flex-direction: column;
@@ -17,26 +16,39 @@
             justify-content: center;
             height: 100vh;
             margin: 0;
-            overflow: hidden; /* Prevents scrolling on the start page */
+            overflow: hidden; 
         }
 
         .start-container {
             text-align: center;
             width: 100%;
             max-width: 600px;
-            z-index: 10; /* Keeps it above the scanlines */
+            z-index: 10; 
+            position: relative;
         }
 
-        /* A sick little ASCII header */
-        .ascii-art {
-            font-family: monospace;
-            white-space: pre;
-            margin-bottom: 20px;
-            color: #555;
-            font-size: 14px;
+        /* The New Dashboard Clock */
+        .terminal-clock {
+            font-family: 'PixeloidSansBold', sans-serif;
+            font-size: 2rem;
+            color: white;
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+        }
+        
+        .terminal-date {
+            font-family: 'PixeloidSans', sans-serif;
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 1rem;
         }
 
-        /* The Search Box */
+        /* Search Infrastructure */
+        .search-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
         .search-box {
             width: 100%;
             background: black;
@@ -48,21 +60,56 @@
             outline: none;
             text-align: center;
             transition: 0.2s;
+            box-sizing: border-box;
         }
 
-        /* Makes it glow aggressive red when you click it */
         .search-box:focus {
             border-color: #ff0000;
-            box-shadow: 0 0 15px #ff0000;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
             color: #ff0000;
         }
 
-        /* Your bookmarks */
+        /* Predictive Autocomplete Dropdown */
+        #suggestions-box {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: black;
+            border: 2px solid #ff0000;
+            border-top: none;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.8);
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            z-index: 20;
+            box-sizing: border-box;
+        }
+
+        .suggestion-item {
+            padding: 12px;
+            color: white;
+            font-family: 'PixeloidSans', sans-serif;
+            text-align: left;
+            cursor: pointer;
+            border-bottom: 1px solid #333;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-item:hover, .suggestion-item.active {
+            background: #ff0000;
+            color: black;
+        }
+
+        /* Dynamic Hotlinks */
         .quick-links {
-            margin-top: 30px;
+            margin-top: 40px;
             display: flex;
             justify-content: center;
-            gap: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
         .quick-links a {
@@ -86,38 +133,163 @@
 
     <div class="start-container">
         
-        <div class="ascii-art">
-   _____ __  __ ____  
-  / ___/ \ \/ // __ \ 
-  \__ \   \  // /_/ / 
- ___/ /   / // ____/  
-/____/   /_//_/      
+        <div id="clock" class="terminal-clock">00:00:00</div>
+        <div id="date" class="terminal-date">LOADING SYSTEM...</div>
+        
+        <div class="search-wrapper">
+            <input type="text" id="web-search" class="search-box" placeholder="query network..." autofocus autocomplete="off">
+            <div id="suggestions-box"></div>
         </div>
         
-        <input type="text" id="web-search" class="search-box" placeholder="search the network..." autofocus autocomplete="off">
-        
-        <div class="quick-links">
-            <a href="/blog/">[ HUB ]</a>
-            <a href="https://youtube.com">[ YOUTUBE ]</a>
-            <a href="https://github.com">[ GITHUB ]</a>
-        </div>
+        <div id="links-container" class="quick-links"></div>
+
     </div>
 
     <script>
-        const searchInput = document.getElementById('web-search');
+        // ==========================================
+        // ⚙️ YOUR CONTROL PANEL ⚙️ 
+        // Edit anything in here to instantly change the page
+        // ==========================================
+        const CONFIG = {
+            // Options: "duckduckgo", "google", "bing", "youtube"
+            searchEngine: "duckduckgo", 
 
-        // Listens for you to hit the "Enter" key
-        searchInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && this.value.trim() !== '') {
-                // Encodes your text so it works in a URL (turns spaces into %20)
-                const query = encodeURIComponent(this.value.trim());
-                
-                // Routes the search to DuckDuckGo. 
-                // If you want Google instead, change the URL to:
-                // "https://www.google.com/search?q=" + query;
-                window.location.href = "https://duckduckgo.com/?q=" + query;
+            // Make sure these match the actual names of your sound files
+            typingSounds: [
+                "sounds/type1.mp3",
+                "sounds/type2.mp3",
+                "sounds/type3.mp3",
+                "sounds/type4.mp3"
+            ],
+
+            // Add, remove, or re-arrange these easily
+            hotlinks: [
+                { name: "HUB", url: "/blog/" },
+                { name: "YOUTUBE", url: "https://youtube.com" },
+                { name: "GITHUB", url: "https://github.com" },
+                { name: "REDDIT", url: "https://reddit.com" }
+            ]
+        };
+        // ==========================================
+
+
+        const searchInput = document.getElementById('web-search');
+        const suggestionsBox = document.getElementById('suggestions-box');
+        const linksContainer = document.getElementById('links-container');
+
+        // --- 1. RENDER HOTLINKS ---
+        // Automatically builds your buttons from the Control Panel list
+        CONFIG.hotlinks.forEach(link => {
+            const a = document.createElement('a');
+            a.href = link.url;
+            a.innerText = `[ ${link.name} ]`;
+            linksContainer.appendChild(a);
+        });
+
+        // --- 2. TYPING SOUNDS ---
+        const playTypeSound = () => {
+            if (CONFIG.typingSounds.length > 0) {
+                const randomSound = CONFIG.typingSounds[Math.floor(Math.random() * CONFIG.typingSounds.length)];
+                const audio = new Audio(randomSound);
+                audio.volume = 0.5; // Adjust volume here if it's too loud
+                audio.play().catch(e => {}); // Catch prevents errors if browser blocks autoplay
+            }
+        };
+
+        // --- 3. DYNAMIC CLOCK ---
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString('en-US', { hour12: false });
+            document.getElementById('date').innerText = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase();
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // --- 4. PREDICTIVE SEARCH (AUTOCOMPLETE) ---
+        let debounceTimer;
+        
+        searchInput.addEventListener('input', (e) => {
+            playTypeSound(); // Play noise on every keystroke
+            
+            const query = e.target.value.trim();
+            if (query.length === 0) {
+                suggestionsBox.style.display = 'none';
+                return;
+            }
+
+            // Wait a split second before fetching so we don't spam the API
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                // Using DuckDuckGo's public autocomplete API via JSONP
+                const script = document.createElement('script');
+                script.src = `https://duckduckgo.com/ac/?q=${encodeURIComponent(query)}&callback=autocompleteCallback`;
+                document.body.appendChild(script);
+            }, 150);
+        });
+
+        // The function DuckDuckGo's API talks back to
+        window.autocompleteCallback = function(data) {
+            suggestionsBox.innerHTML = ''; // Clear old suggestions
+            
+            if (data && data.length > 0) {
+                data.slice(0, 5).forEach(item => { // Only show top 5
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item';
+                    div.innerText = item.phrase;
+                    
+                    // If you click a suggestion, it instantly searches
+                    div.addEventListener('click', () => {
+                        searchInput.value = item.phrase;
+                        executeSearch(item.phrase);
+                    });
+                    
+                    suggestionsBox.appendChild(div);
+                });
+                suggestionsBox.style.display = 'flex';
+            } else {
+                suggestionsBox.style.display = 'none';
+            }
+        };
+
+        // --- 5. SEARCH EXECUTION ENGINE ---
+        function executeSearch(query) {
+            const encoded = encodeURIComponent(query);
+            let searchUrl = "";
+
+            switch (CONFIG.searchEngine.toLowerCase()) {
+                case "google":
+                    searchUrl = `https://www.google.com/search?q=${encoded}`;
+                    break;
+                case "youtube":
+                    searchUrl = `https://www.youtube.com/results?search_query=${encoded}`;
+                    break;
+                case "bing":
+                    searchUrl = `https://www.bing.com/search?q=${encoded}`;
+                    break;
+                case "duckduckgo":
+                default:
+                    searchUrl = `https://duckduckgo.com/?q=${encoded}`;
+                    break;
+            }
+            window.location.href = searchUrl;
+        }
+
+        searchInput.addEventListener('keydown', (e) => {
+            // Also play sound on backspace/enter
+            if (e.key === 'Backspace' || e.key === 'Enter') playTypeSound();
+
+            if (e.key === 'Enter' && searchInput.value.trim() !== '') {
+                executeSearch(searchInput.value.trim());
             }
         });
+
+        // Hide suggestions if you click away
+        document.addEventListener('click', (e) => {
+            if (e.target !== searchInput && e.target.className !== 'suggestion-item') {
+                suggestionsBox.style.display = 'none';
+            }
+        });
+
     </script>
 
 </body>
