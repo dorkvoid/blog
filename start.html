@@ -87,7 +87,10 @@
         .handle { padding: 0 5px; color: #333; font-size: 1rem; }
         .btn-del { background: #111; color: #f00; border: 1px solid #300; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-family: 'PixeloidSansBold', sans-serif; }
         .btn-del:hover { background: #f00; color: #000; box-shadow: 0 0 10px #f00; border-color: #f00; }
+        
+        /* FIXED: Text turns black on hover */
         .btn-add { width: 100%; background: #000; color: #fff; border: 1px solid #333; padding: 10px; font-family: 'PixeloidSansBold', sans-serif; margin-top: 5px; transition: 0.2s; }
+        .btn-add:hover { background: #fff; color: #000; border-color: white; }
 
         .option-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .toggle-input { display: none; }
@@ -104,7 +107,6 @@
         .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 3rem; color: white; margin-bottom: 5px; }
         #greeting { font-family: 'PixeloidSans', sans-serif; color: #444; margin-bottom: 30px; font-size: 1rem; letter-spacing: 2px;}
         
-        /* --- BEEFED UP STATUS BAR --- */
         .status-bar { 
             position: fixed; bottom: 20px; left: 30px; 
             font-family: 'PixeloidSansBold', sans-serif; font-size: 0.85rem; 
@@ -156,7 +158,7 @@
             <div class="setting-section">
                 <span class="section-label">Link Manager</span>
                 <div id="manager-list"></div>
-                <button class="btn-add">+ ADD NEW_ENTRY</button>
+                <button class="btn-add" id="addNewBtn">+ ADD NEW_ENTRY</button>
             </div>
         </div>
     </div>
@@ -208,25 +210,17 @@
 
         window.addEventListener('mousedown', () => playSound('mouse'));
 
-        // --- FIXED WEATHER ENGINE ---
         async function fetchWeather() {
             try {
-                // Step 1: Get user coordinates via IP (No API key needed)
                 const ipRes = await fetch("https://ipapi.co/json/");
                 const location = await ipRes.json();
                 const lat = location.latitude;
                 const lon = location.longitude;
-
-                // Step 2: Fetch weather using coords
                 const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&temperature_unit=fahrenheit`);
                 const data = await res.json();
-                
                 const temp = Math.round(data.current.temperature_2m);
                 const code = data.current.weather_code;
-                
                 document.getElementById('temp-val').innerText = `${temp}°F`;
-                
-                // Map codes to your files
                 let icon = "sunny.png";
                 if (code === 0) icon = "sunny.png";
                 else if (code >= 1 && code <= 3) icon = "partly cloudy.png";
@@ -236,19 +230,17 @@
                 else if (code >= 80 && code <= 82) icon = "rainy.png";
                 else if (code >= 95 && code <= 99) icon = "thunderstorm.png";
                 else icon = "cloudy.png";
-
                 const hour = new Date().getHours();
                 if (hour >= 20 || hour <= 5) icon = "night.png";
-
                 document.getElementById('weather-img').src = `images/${icon}`;
             } catch (e) {
                 document.getElementById('temp-val').innerText = "ERROR";
             }
         }
 
-        // --- ICON/FAVICON LOGIC ---
         function getFavicon(url) {
             try {
+                if (!url.startsWith('http')) return 'images/plxeyestiny.png';
                 const domain = new URL(url).hostname;
                 return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
             } catch(e) { return 'images/plxeyestiny.png'; }
@@ -271,8 +263,8 @@
                 item.className = 'link-manager-item';
                 item.innerHTML = `
                     <span class="handle">::</span>
-                    <input type="text" value="${link.name}" class="manager-input edit-name" style="width:60px">
-                    <input type="text" value="${link.url}" class="manager-input edit-url" style="flex-grow:1">
+                    <input type="text" value="${link.name}" class="manager-input edit-name" data-idx="${index}" style="width:60px">
+                    <input type="text" value="${link.url}" class="manager-input edit-url" data-idx="${index}" style="flex-grow:1">
                     <button class="btn-del" onclick="deleteLink(${index})">X</button>
                 `;
                 manager.appendChild(item);
@@ -284,12 +276,13 @@
             document.getElementById('engine-select').value = config.engine;
             if(config.lowPower) document.body.classList.add('low-power');
             else document.body.classList.remove('low-power');
-            attachSortable();
+            attachEvents();
         }
 
         function deleteLink(idx) { playSound('click'); config.links.splice(idx, 1); save(); renderAll(); }
 
-        function attachSortable() {
+        function attachEvents() {
+            // Re-order Logic
             Sortable.create(document.getElementById('manager-list'), {
                 handle: '.handle', animation: 150,
                 onEnd: () => {
@@ -299,6 +292,16 @@
                     });
                     config.links = nl; save(); renderLinksOnly();
                 }
+            });
+
+            // Update Logic
+            document.querySelectorAll('.manager-input').forEach((input) => {
+                input.addEventListener('change', (e) => {
+                    const idx = e.target.dataset.idx;
+                    if(e.target.classList.contains('edit-name')) config.links[idx].name = e.target.value;
+                    else config.links[idx].url = e.target.value;
+                    save(); renderLinksOnly();
+                });
             });
         }
 
@@ -314,7 +317,7 @@
             });
         }
 
-        // --- SEARCH ---
+        // Search logic
         const searchInput = document.getElementById('web-search');
         const suggestionsBox = document.getElementById('suggestions-box');
         let debounceTimer;
@@ -364,7 +367,14 @@
         const drawer = document.getElementById('settings-drawer');
         const drawerTab = document.getElementById('drawer-tab');
         drawerTab.onclick = (e) => { e.stopPropagation(); playSound('click'); drawer.classList.toggle('open'); };
-        document.querySelector('.btn-add').onclick = () => { config.links.push({name: "NEW", url: "https://"}); save(); renderAll(); };
+        
+        // FIXED: ADD NEW ENTRY BUTTON LOGIC
+        document.getElementById('addNewBtn').onclick = () => { 
+            playSound('click'); 
+            config.links.push({name: "NEW", url: "https://"}); 
+            save(); 
+            renderAll(); 
+        };
 
         searchInput.onkeydown = (e) => { if(e.key === 'Enter') { playSound('click'); executeSearch(searchInput.value); } if(e.key === 'Backspace') playSound('type'); };
         window.onclick = (e) => { 
