@@ -33,7 +33,7 @@
             cursor: url('images/link-select.png'), pointer !important;
         }
 
-        /* FIXED: Added clicking state for the selection hand */
+        /* Selection hand clicking state */
         a:active, button:active, .suggestion-item:active, #drawer-tab:active, select:active {
             cursor: url('images/link-select-click.png'), pointer !important;
         }
@@ -57,10 +57,11 @@
 
         #settings-drawer.open { right: 0; }
 
+        /* MOVED TO BOTTOM RIGHT */
         #drawer-tab {
             position: absolute;
             left: -42px;
-            top: 20px;
+            bottom: 40px; /* Sitting near the bottom now */
             width: 40px;
             height: 40px;
             background: #000;
@@ -74,11 +75,9 @@
         #drawer-tab img { 
             width: 24px; 
             height: 24px; 
-            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
             pointer-events: none;
+            /* Rotation code removed entirely */
         }
-
-        .slight-spin { transform: rotate(90deg); }
 
         .drawer-content { padding: 25px; flex-grow: 1; overflow-y: auto; }
         .drawer-header { font-family: 'PixeloidSansBold', sans-serif; color: white; margin-bottom: 20px; font-size: 1.2rem; border-bottom: 1px solid #333; padding-bottom: 10px;}
@@ -96,7 +95,7 @@
             outline: none;
         }
 
-        /* Link Manager Items */
+        /* Manager List */
         .link-manager-item { display: flex; gap: 5px; margin-bottom: 10px; }
         .btn-del {
             background: #200;
@@ -118,7 +117,7 @@
         }
         .btn-add:hover { background: #fff; color: #000; }
 
-        /* Search Infrastructure */
+        /* Predictive Search */
         .search-wrapper { position: relative; width: 100%; max-width: 600px; }
         #suggestions-box {
             position: absolute;
@@ -142,14 +141,14 @@
         }
         .suggestion-item:hover { background: white; color: black; }
 
-        /* Main Viewport */
+        /* Main Viewport Elements */
         .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 2.5rem; color: white; }
         .terminal-date { font-family: 'PixeloidSans', sans-serif; color: #444; margin-bottom: 30px; }
         
         .search-box { 
             width: 100%; 
             background: black; 
-            border: 2px solid #333; /* Default darker outline */
+            border: 2px solid #333; 
             color: white; 
             font-family: 'PixeloidSans', sans-serif; 
             font-size: 1.5rem; 
@@ -160,7 +159,7 @@
             transition: border-color 0.2s ease;
         }
         
-        /* FIXED: Search bar outline turns white when focused */
+        /* White outline on focus */
         .search-box:focus {
             border-color: white;
         }
@@ -305,7 +304,6 @@
         }
 
         // --- UI ELEMENTS ---
-        const gearImg = document.getElementById('gear-img');
         const drawerTab = document.getElementById('drawer-tab');
         const drawer = document.getElementById('settings-drawer');
 
@@ -313,7 +311,6 @@
         drawerTab.addEventListener('click', (e) => {
             e.stopPropagation(); 
             playSound('click');
-            gearImg.classList.toggle('slight-spin');
             drawer.classList.toggle('open');
         });
 
@@ -371,7 +368,6 @@
             }
             if (!drawer.contains(e.target) && !drawerTab.contains(e.target) && drawer.classList.contains('open')) {
                 drawer.classList.remove('open');
-                gearImg.classList.remove('slight-spin');
             }
         });
 
