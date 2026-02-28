@@ -9,7 +9,13 @@
     <link rel="stylesheet" href="style.css">
     
     <style>
-        /* Center the error message perfectly on the screen */
+        /* Force the void to be violently red */
+        body {
+            background-color: #ff0000 !important;
+            margin: 0;
+            overflow: hidden; /* Stops scrollbars from appearing during the glitch */
+        }
+
         .error-container {
             display: flex;
             flex-direction: column;
@@ -17,44 +23,96 @@
             justify-content: center;
             height: 100vh;
             text-align: center;
-            color: white; /* Or whatever your font color is */
         }
 
-        .error-code {
+        /* The Glitch Core */
+        .glitch {
+            position: relative;
             font-family: 'PixeloidSansBold', sans-serif;
-            font-size: 4rem;
+            font-size: 8rem;
+            color: white;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 0 #ff0000; /* Sick red glitch shadow */
         }
 
+        /* Creates two identical ghost copies of the text right on top of it */
+        .glitch::before, .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #ff0000; /* Hides the real text underneath */
+        }
+
+        /* The Black Ghost */
+        .glitch::before {
+            left: 3px;
+            text-shadow: -2px 0 black;
+            animation: glitch-anim-1 2s infinite linear alternate-reverse;
+        }
+
+        /* The White Ghost */
+        .glitch::after {
+            left: -3px;
+            text-shadow: 2px 0 white;
+            animation: glitch-anim-2 3s infinite linear alternate-reverse;
+        }
+
+        /* Violently slicing the text horizontally */
+        @keyframes glitch-anim-1 {
+            0% { clip-path: inset(20% 0 80% 0); transform: translate(-2px, 1px); }
+            20% { clip-path: inset(60% 0 10% 0); transform: translate(2px, -1px); }
+            40% { clip-path: inset(40% 0 50% 0); transform: translate(-2px, 2px); }
+            60% { clip-path: inset(80% 0 5% 0); transform: translate(2px, -2px); }
+            80% { clip-path: inset(10% 0 70% 0); transform: translate(-1px, 1px); }
+            100% { clip-path: inset(30% 0 50% 0); transform: translate(1px, -1px); }
+        }
+
+        @keyframes glitch-anim-2 {
+            0% { clip-path: inset(10% 0 60% 0); transform: translate(2px, 1px); }
+            20% { clip-path: inset(30% 0 20% 0); transform: translate(-2px, -1px); }
+            40% { clip-path: inset(70% 0 10% 0); transform: translate(2px, 2px); }
+            60% { clip-path: inset(20% 0 50% 0); transform: translate(-2px, -2px); }
+            80% { clip-path: inset(50% 0 30% 0); transform: translate(1px, 1px); }
+            100% { clip-path: inset(5% 0 80% 0); transform: translate(-1px, -1px); }
+        }
+
+        /* High-contrast inverted text box */
         .error-text {
             font-family: 'PixeloidSans', sans-serif;
             font-size: 1.2rem;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
+            color: black;
+            background: white;
+            padding: 5px 10px;
+            text-transform: uppercase;
         }
 
         .home-btn {
             background-color: transparent;
             color: white;
-            border: 2px solid white;
-            padding: 10px 20px;
+            border: 3px solid white;
+            padding: 12px 24px;
             font-family: 'PixeloidSansBold', sans-serif;
+            font-size: 1.2rem;
             cursor: url('images/link-select.png'), pointer;
             text-decoration: none;
-            transition: 0.2s;
+            transition: 0s; /* 0s transition makes hover instant and jarring */
         }
 
         .home-btn:hover {
-            background-color: white;
-            color: black;
+            background-color: black;
+            color: white;
+            border-color: black;
         }
     </style>
 </head>
 <body>
 
     <div class="error-container">
-        <div class="error-code">404</div>
-        <div class="error-text">> SYSTEM HALTED. DESTINATION NOT FOUND.</div>
+        <div class="glitch" data-text="404">404</div>
+        <div class="error-text">>> SYSTEM NOT FOUND. No destination!</div>
         <a href="/blog/" class="home-btn">[ RETURN TO HUB ]</a>
     </div>
 
