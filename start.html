@@ -22,9 +22,14 @@
             margin: 0;
             overflow: hidden; 
             background: black;
+            transition: filter 0.3s ease;
         }
 
-        a, button, .suggestion-item, #drawer-tab, select, .handle {
+        /* Low Power Mode: Dims screen and removes glow */
+        body.low-power { filter: brightness(0.7); }
+        body.low-power * { box-shadow: none !important; text-shadow: none !important; transition: none !important; }
+
+        a, button, .suggestion-item, #drawer-tab, select, .handle, .toggle-btn {
             cursor: url('images/link-select.png'), pointer !important;
         }
         a:active, button:active, .suggestion-item:active, #drawer-tab:active, select:active {
@@ -70,8 +75,6 @@
         .setting-group { margin-bottom: 25px; }
         .setting-group label { display: block; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.8rem; margin-bottom: 8px; color: #888; }
         
-        /* Drag and Drop Manager Styles */
-        #manager-list { margin-top: 10px; }
         .link-manager-item {
             display: flex;
             align-items: center;
@@ -81,40 +84,51 @@
             margin-bottom: 5px;
             gap: 5px;
         }
-        .handle { padding: 0 10px; color: #444; font-weight: bold; }
-        .manager-input { background: black; border: 1px solid #222; color: white; padding: 5px; font-family: 'PixeloidSans', sans-serif; }
+        .handle { padding: 0 10px; color: #444; }
+        .manager-input { background: black; border: 1px solid #222; color: white; padding: 5px; font-family: 'PixeloidSans', sans-serif; font-size: 0.8rem; }
 
         .btn-del { background: #200; color: #f00; border: 1px solid #f00; padding: 2px 8px; font-family: 'PixeloidSansBold', sans-serif; }
         .btn-add { width: 100%; background: #000; color: #fff; border: 1px solid #fff; padding: 8px; font-family: 'PixeloidSansBold', sans-serif; margin-top: 10px; }
 
         /* --- TOGGLES --- */
-        .toggle-wrap { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .toggle-wrap { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .toggle-input { display: none; }
-        .toggle-btn {
-            width: 40px; height: 20px; background: #333; position: relative; border: 1px solid #444;
-        }
-        .toggle-btn::after {
-            content: ''; position: absolute; width: 18px; height: 18px; background: white; top: 0; left: 0; transition: 0.2s;
-        }
+        .toggle-btn { width: 40px; height: 20px; background: #222; position: relative; border: 1px solid #444; }
+        .toggle-btn::after { content: ''; position: absolute; width: 18px; height: 18px; background: white; top: 0; left: 0; transition: 0.2s; }
         .toggle-input:checked + .toggle-btn { background: #fff; }
         .toggle-input:checked + .toggle-btn::after { left: 20px; background: black; }
+
+        /* --- PREDICTIVE SEARCH UI --- */
+        .search-wrapper { position: relative; width: 100%; max-width: 600px; }
+        #suggestions-box {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: black;
+            border: 2px solid white;
+            border-top: none;
+            display: none;
+            flex-direction: column;
+            z-index: 20;
+            box-sizing: border-box;
+        }
+        .suggestion-item { padding: 12px; color: white; font-family: 'PixeloidSans', sans-serif; text-align: left; border-bottom: 1px solid #222; }
+        .suggestion-item:hover { background: white; color: black; }
+
+        .search-box { width: 100%; background: black; border: 2px solid #333; color: white; font-family: 'PixeloidSans', sans-serif; font-size: 1.5rem; padding: 15px; outline: none; text-align: center; transition: 0.2s; }
+        .search-box:focus { border-color: white; }
 
         /* --- MAIN UI --- */
         .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 2.5rem; color: white; }
         #greeting { font-family: 'PixeloidSans', sans-serif; color: #444; margin-bottom: 30px; font-size: 0.9rem; }
-        .search-box { width: 100%; max-width: 600px; background: black; border: 2px solid #333; color: white; font-family: 'PixeloidSans', sans-serif; font-size: 1.5rem; padding: 15px; outline: none; text-align: center; transition: 0.2s; }
-        .search-box:focus { border-color: white; }
-        
         .quick-links { margin-top: 40px; display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
         .quick-links a { color: white; text-decoration: none; font-family: 'PixeloidSansBold', sans-serif; border: 1px solid #333; padding: 10px 20px; }
-        .quick-links a:hover { background: white; color: black; }
+        .quick-links a:hover { background: white; color: black; border-color: white; }
 
-        /* Status Bar */
         .status-bar { position: fixed; bottom: 10px; left: 20px; font-family: 'PixeloidSans', sans-serif; font-size: 0.7rem; color: #222; letter-spacing: 1px; }
 
-        #suggestions-box { position: absolute; top: 100%; left: 0; width: 100%; background: black; border: 2px solid white; display: none; flex-direction: column; z-index: 20; }
-        .suggestion-item { padding: 12px; color: white; font-family: 'PixeloidSans', sans-serif; }
-        .suggestion-item:hover { background: white; color: black; }
+        .cheat-sheet { font-size: 0.7rem; color: #555; line-height: 1.5; background: #080808; padding: 10px; border: 1px solid #1a1a1a; }
     </style>
 </head>
 <body>
@@ -127,11 +141,26 @@
             <div class="drawer-header">SETTINGS</div>
             
             <div class="setting-group">
-                <label>INTERFACE</label>
+                <label>SYSTEM</label>
+                <div class="toggle-wrap">
+                    <span>Low Power Mode</span>
+                    <input type="checkbox" id="toggle-power" class="toggle-input">
+                    <label for="toggle-power" class="toggle-btn"></label>
+                </div>
                 <div class="toggle-wrap">
                     <span>Show Status Bar</span>
                     <input type="checkbox" id="toggle-status" class="toggle-input" checked>
                     <label for="toggle-status" class="toggle-btn"></label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label>SEARCH COMMANDS</label>
+                <div class="cheat-sheet">
+                    yt [query] &nbsp;-> YouTube<br>
+                    g  [query] &nbsp;-> Google<br>
+                    r/[sub] &nbsp;&nbsp;&nbsp;&nbsp;-> Subreddit<br>
+                    Default &nbsp;&nbsp;&nbsp;-> DuckDuckGo
                 </div>
             </div>
 
@@ -145,9 +174,9 @@
 
     <div class="start-container" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
         <div id="clock" class="terminal-clock">00:00:00</div>
-        <div id="greeting">SYSTEM_READY</div>
+        <div id="greeting">SYSTEM_ONLINE</div>
         
-        <div class="search-wrapper" style="position: relative; width: 100%; max-width: 600px;">
+        <div class="search-wrapper">
             <input type="text" id="web-search" class="search-box" placeholder="Search..." autofocus autocomplete="off">
             <div id="suggestions-box"></div>
         </div>
@@ -163,11 +192,12 @@
         // --- DATA ---
         let config = JSON.parse(localStorage.getItem('startConfig')) || {
             showStatus: true,
+            lowPower: false,
             links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}]
         };
         const save = () => localStorage.setItem('startConfig', JSON.stringify(config));
 
-        // --- AUDIO (Mouse sounds quieted to 0.05) ---
+        // --- AUDIO ---
         const audioAssets = {
             hover: new Audio('sounds/hoverbutton.wav'), 
             click: new Audio('sounds/buttonclick.mp3'),
@@ -199,8 +229,8 @@
             config.links.forEach((link, index) => {
                 const a = document.createElement('a');
                 a.href = link.url; a.target = "_blank"; a.innerText = `[ ${link.name} ]`;
-                a.addEventListener('mouseenter', () => playSound('hover'));
-                a.addEventListener('click', () => playSound('click'));
+                a.onmouseenter = () => playSound('hover');
+                a.onclick = () => playSound('click');
                 container.appendChild(a);
 
                 const item = document.createElement('div');
@@ -216,33 +246,27 @@
             
             document.getElementById('status-bar').style.display = config.showStatus ? 'block' : 'none';
             document.getElementById('toggle-status').checked = config.showStatus;
+            document.getElementById('toggle-power').checked = config.lowPower;
+            if(config.lowPower) document.body.classList.add('low-power');
+            else document.body.classList.remove('low-power');
             
             attachEvents();
         }
 
         function attachEvents() {
-            const list = document.getElementById('manager-list');
-            // DRAG AND DROP LOGIC
-            Sortable.create(list, {
-                handle: '.handle',
-                animation: 150,
+            Sortable.create(document.getElementById('manager-list'), {
+                handle: '.handle', animation: 150,
                 onEnd: () => {
                     const newLinks = [];
                     document.querySelectorAll('.link-manager-item').forEach(el => {
-                        newLinks.push({
-                            name: el.querySelector('.edit-name').value,
-                            url: el.querySelector('.edit-url').value
-                        });
+                        newLinks.push({ name: el.querySelector('.edit-name').value, url: el.querySelector('.edit-url').value });
                     });
-                    config.links = newLinks;
-                    save(); renderLinksOnly();
+                    config.links = newLinks; save(); renderLinksOnly();
                 }
             });
-
             document.querySelectorAll('.btn-del').forEach((btn, idx) => {
                 btn.onclick = () => { playSound('click'); config.links.splice(idx, 1); save(); renderAll(); };
             });
-
             document.querySelectorAll('.manager-input').forEach((input, idx) => {
                 input.onchange = () => {
                     const i = Math.floor(idx / 2);
@@ -264,18 +288,38 @@
             });
         }
 
-        // --- UI LOGIC ---
-        document.getElementById('toggle-status').onchange = (e) => {
-            config.showStatus = e.target.checked;
-            save(); renderAll();
+        // --- PREDICTIVE SEARCH LOGIC ---
+        const searchInput = document.getElementById('web-search');
+        const suggestionsBox = document.getElementById('suggestions-box');
+        let debounceTimer;
+
+        searchInput.oninput = () => {
+            playSound('type');
+            const query = searchInput.value.trim();
+            if (query.length === 0 || query.includes(' ')) { suggestionsBox.style.display = 'none'; return; }
+
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const script = document.createElement('script');
+                script.src = `https://duckduckgo.com/ac/?q=${encodeURIComponent(query)}&callback=autocompleteCallback`;
+                document.body.appendChild(script);
+            }, 150);
         };
 
-        const drawer = document.getElementById('settings-drawer');
-        document.getElementById('drawer-tab').onclick = (e) => { e.stopPropagation(); playSound('click'); drawer.classList.toggle('open'); };
+        window.autocompleteCallback = (data) => {
+            suggestionsBox.innerHTML = '';
+            if (data && data.length > 0) {
+                data.slice(0, 5).forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'suggestion-item'; div.innerText = item.phrase;
+                    div.onmouseenter = () => playSound('hover');
+                    div.onclick = () => { playSound('click'); executeSearch(item.phrase); };
+                    suggestionsBox.appendChild(div);
+                });
+                suggestionsBox.style.display = 'flex';
+            } else { suggestionsBox.style.display = 'none'; }
+        };
 
-        document.querySelector('.btn-add').onclick = () => { config.links.push({name: "NEW", url: "https://"}); save(); renderAll(); };
-
-        const searchInput = document.getElementById('web-search');
         function executeSearch(val) {
             if(!val) return;
             if(val.startsWith('yt ')) window.location.href = `https://youtube.com/results?search_query=${encodeURIComponent(val.substring(3))}`;
@@ -284,11 +328,21 @@
             else window.location.href = `https://duckduckgo.com/?q=${encodeURIComponent(val)}`;
         }
 
-        searchInput.onkeydown = (e) => { if(e.key === 'Enter') executeSearch(searchInput.value); if(e.key === 'Backspace') playSound('type'); };
-        searchInput.oninput = () => playSound('type');
+        // --- UI LOGIC ---
+        document.getElementById('toggle-status').onchange = (e) => { config.showStatus = e.target.checked; save(); renderAll(); };
+        document.getElementById('toggle-power').onchange = (e) => { config.lowPower = e.target.checked; save(); renderAll(); };
 
-        // --- CLOCK & GREETING ---
-        function updateUI() {
+        const drawer = document.getElementById('settings-drawer');
+        document.getElementById('drawer-tab').onclick = (e) => { e.stopPropagation(); playSound('click'); drawer.classList.toggle('open'); };
+        document.querySelector('.btn-add').onclick = () => { config.links.push({name: "NEW", url: "https://"}); save(); renderAll(); };
+
+        searchInput.onkeydown = (e) => { if(e.key === 'Enter') { playSound('click'); executeSearch(searchInput.value); } if(e.key === 'Backspace') playSound('type'); };
+        window.onclick = (e) => { 
+            if (e.target !== searchInput && !e.target.closest('#suggestions-box')) suggestionsBox.style.display = 'none';
+            if (!drawer.contains(e.target) && !document.getElementById('drawer-tab').contains(e.target) && drawer.classList.contains('open')) drawer.classList.remove('open'); 
+        };
+
+        function updateClock() {
             const now = new Date();
             let h = now.getHours();
             const m = String(now.getMinutes()).padStart(2, '0');
@@ -296,19 +350,10 @@
             const ampm = h >= 12 ? 'PM' : 'AM';
             h = h % 12 || 12;
             document.getElementById('clock').innerText = `${h}:${m}:${s} ${ampm}`;
-            
             const hr = now.getHours();
-            let msg = "SYSTEM_ONLINE";
-            if (hr < 12) msg = "GOOD_MORNING";
-            else if (hr < 18) msg = "GOOD_AFTERNOON";
-            else msg = "GOOD_EVENING";
-            document.getElementById('greeting').innerText = msg;
+            document.getElementById('greeting').innerText = hr < 12 ? "GOOD_MORNING" : hr < 18 ? "GOOD_AFTERNOON" : "GOOD_EVENING";
         }
-        setInterval(updateUI, 1000);
-        updateUI();
-        renderAll();
-
-        window.onclick = (e) => { if (!drawer.contains(e.target) && drawer.classList.contains('open')) drawer.classList.remove('open'); };
+        setInterval(updateClock, 1000); updateClock(); renderAll();
     </script>
 </body>
 </html>
