@@ -41,7 +41,7 @@
         .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 3.5rem; color: white; margin-bottom: 0px; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,255,255,0.1); }
         #greeting { font-family: 'PixeloidSansBold', sans-serif; color: #444; margin-bottom: 25px; font-size: 0.8rem; letter-spacing: 4px; text-transform: uppercase; }
 
-        /* --- ANIMATED SEARCH BAR (Separate Boxes with Gap) --- */
+        /* --- ANIMATED SEARCH BAR (Tight Gap, Perfect Alignment) --- */
         .search-wrapper { 
             position: relative; 
             width: 100%; 
@@ -53,8 +53,8 @@
             margin: 0 auto;
         }
         
-        /* Expands symmetrically: 650px bar + 15px gap + 60px button = 725px total width */
-        .search-wrapper.has-text { max-width: 725px; }
+        /* Expands symmetrically: 650px bar + 8px gap + 60px button = 718px total width */
+        .search-wrapper.has-text { max-width: 718px; }
 
         .search-wrapper::before {
             content: '>'; position: absolute; left: 25px; top: 50%; transform: translateY(-54%);
@@ -87,9 +87,10 @@
         /* --- THE DETACHED "X" BOX --- */
         .clear-btn {
             width: 0px; height: 60px; 
-            background: #000; /* Idle: Black background */
-            border: 2px solid transparent; /* Hidden by default */
-            color: #f00; /* Red X */
+            flex-shrink: 0; /* CRITICAL: Stops the browser from squishing the button */
+            background: #000; 
+            border: 2px solid transparent; 
+            color: #f00; 
             font-family: 'PixeloidSansBold', sans-serif; font-size: 1.4rem; 
             display: flex; align-items: center; justify-content: center;
             opacity: 0; pointer-events: none; overflow: hidden;
@@ -98,21 +99,20 @@
             margin-left: 0px;
             cursor: pointer;
             z-index: 1;
-            outline: none !important; /* Defeats browser focus rings */
+            outline: none !important; 
             text-decoration: none !important;
-            transform: translateY(-2px); /* Optically nudged UP for perfect alignment */
         }
         
-        /* THIS KILLS YOUR EXTERNAL CSS FROM INJECTING BRACKETS */
+        /* Kills your external CSS from injecting brackets */
         .clear-btn::before, .clear-btn::after {
             content: none !important;
             display: none !important;
         }
         
-        /* Box slides out, gets its red outline, and establishes the 15px gap */
+        /* Box slides out with an 8px gap */
         .search-wrapper.has-text .clear-btn {
-            width: 60px; /* Snaps to a square */
-            margin-left: 15px; /* Creates the distinct physical gap */
+            width: 60px; 
+            margin-left: 8px; /* Tighter physical gap */
             border-color: #f00; /* Red outline when idle */
             opacity: 1; pointer-events: auto;
         }
@@ -128,7 +128,7 @@
         /* QOL Autocomplete Styling */
         #suggestions-box {
             position: absolute; top: calc(100% - 2px); 
-            left: 0; width: 650px; /* Locked to the search box width, ignores the X box */
+            left: 0; width: 650px; /* Locked to the search box width */
             background: #050505; border: 2px solid #fff; border-top: none; 
             display: none; flex-direction: column; z-index: 20; box-sizing: border-box;
             box-shadow: 0 10px 20px rgba(0,0,0,0.8);
@@ -423,7 +423,7 @@
             e.preventDefault(); 
             playSound('click');
             searchInput.value = '';
-            searchWrapper.classList.remove('has-text'); // Retract box
+            searchWrapper.classList.remove('has-text'); 
             suggestionsBox.style.display = 'none';
             searchInput.focus();
         };
