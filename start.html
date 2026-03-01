@@ -32,7 +32,7 @@
         }
         body.low-power { filter: brightness(0.7); }
 
-        /* --- COMMAND CENTER --- */
+        /* --- COMMAND CENTER (Unifies core components for perfect centering) --- */
         .command-center {
             width: 100%; display: flex; flex-direction: column; align-items: center;
             margin-bottom: 20px;
@@ -41,19 +41,19 @@
         .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 3.5rem; color: white; margin-bottom: 0px; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,255,255,0.1); }
         #greeting { font-family: 'PixeloidSansBold', sans-serif; color: #444; margin-bottom: 25px; font-size: 0.8rem; letter-spacing: 4px; text-transform: uppercase; }
 
-        /* --- ANIMATED SEARCH BAR (Seamless Fusion) --- */
+        /* --- ANIMATED SEARCH BAR (Handles Symmetrical Expansion from center) --- */
         .search-wrapper { 
             position: relative; 
             width: 100%; 
-            max-width: 650px; 
+            max-width: 650px; /* Original Base Size, remains centered */
             display: flex; 
-            align-items: stretch; /* Forces children to match height perfectly */
-            justify-content: center;
-            transition: max-width 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
+            align-items: center; /* Vertically center the text and button */
+            justify-content: center; /* combined width is centered within wrapper */
+            transition: max-width 0.3s cubic-bezier(0.25, 1, 0.5, 1); /* Smooth Symmetrical Expansion */
             margin: 0 auto;
         }
         
-        /* Expands symmetrically to 710px to accommodate the 60px X box */
+        /* Expands only when text exists, pushing the whole command center unit symmetrically */
         .search-wrapper.has-text { max-width: 710px; }
 
         .search-wrapper::before {
@@ -64,54 +64,55 @@
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
         .search-box { 
-            flex: 1; 
-            min-width: 0;
+            flex: 0 0 650px; /* Locked at original 650px width, does NOT change size */
             background: #050505; border: 2px solid #222; color: white; 
             font-family: 'PixeloidSans', sans-serif; font-size: 1.3rem; 
             padding: 0 20px 0 50px; 
             height: 60px; line-height: 56px; 
             outline: none; text-align: left; box-sizing: border-box; 
             transition: all 0.2s ease-in-out; 
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.02);
             background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.02));
             background-size: 100% 4px, 3px 100%;
             cursor: text !important;
             z-index: 2;
         }
         
-        /* Stitching: remove the right border when the X box is out */
-        .search-wrapper.has-text .search-box { border-right: none; }
+        .search-box:focus { 
+            border-color: #fff; background-color: #0a0a0a; 
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.15), inset 0 0 15px rgba(255,255,255,0.05); 
+        }
 
-        /* Sync Focus Glow across both elements */
-        .search-box:focus { border-color: #fff; background-color: #0a0a0a; }
-        .search-box:focus + .clear-btn { border-color: #fff; background-color: #0a0a0a; }
-
-        /* --- THE SEAMLESS "X" BOX --- */
+        /* --- THE APPENDED, RED-OUTLINED "X" BOX --- */
         .clear-btn {
-            width: 0px; height: 60px; 
-            background: #050505; /* Matches search bar idling */
-            border: 2px solid #222; 
-            border-left: none; /* Prevents double border */
-            color: #f00; /* Red X */
+            width: 0px; height: 60px; /* Starts completely collapsed, matches search height precisely */
+            background: #000; /* Distinct Black Box */
+            border: 2px solid #f00; /* Distinct RED Outline when idle (No brackets) */
+            color: #f00; /* Red 'X' text */
             font-family: 'PixeloidSansBold', sans-serif; font-size: 1.4rem; 
             display: flex; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none; overflow: hidden;
+            opacity: 0; pointer-events: none; overflow: hidden; /* Hidden by default */
             transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
             box-sizing: border-box; padding: 0; margin: 0;
+            cursor: pointer;
+            z-index: 1; /* Button sits under search box just in case of pixel alignment thrashes */
         }
         
+        /* Clear button extrudes physically to the right edge symmetrically with wrapper grow */
         .search-wrapper.has-text .clear-btn {
-            width: 60px; /* Snaps to a perfect square */
+            width: 60px; /* Snaps to a perfect square next to the 650px bar */
             opacity: 1; pointer-events: auto;
         }
         
-        /* The Exact Hover State You Wanted */
+        /* The exact hover state: Entirely Red Box, Black X (No Outline change needed, border fits Red bg) */
         .clear-btn:hover { 
             background: #f00 !important; 
             color: #000 !important; 
             border-color: #f00 !important;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 1);
         }
 
-        /* QOL Autocomplete Styling */
+        /* QOL Autocomplete Styling (Seemless dropdown for whole component) */
         #suggestions-box {
             position: absolute; top: calc(100% - 2px); left: 0; width: 100%; 
             background: #050505; border: 2px solid #fff; border-top: none; 
@@ -180,7 +181,6 @@
         
         select { background: #080808; border: 1px solid #333; color: #ccc; padding: 0 10px; height: 36px; box-sizing: border-box; font-family: 'PixeloidSans', sans-serif; width: 100%; outline: none; font-size: 0.8rem; }
 
-        /* --- VISIBLE STATUS BAR --- */
         .status-bar { position: fixed; bottom: 20px; left: 30px; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.85rem; color: #444; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; gap: 15px; z-index: 5; }
         .weather-module { display: flex; align-items: center; gap: 10px; color: #666; }
         .weather-icon { width: 24px; height: 24px; image-rendering: pixelated; }
@@ -258,10 +258,12 @@
     </div>
 
     <script>
+        // --- 1. CORE STATE & CONFIG ---
         const DEFAULT_CONFIG = { showStatus: true, lowPower: false, engine: "duckduckgo", links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}] };
         let config = JSON.parse(localStorage.getItem('startConfig')) || DEFAULT_CONFIG;
         const saveConfig = () => localStorage.setItem('startConfig', JSON.stringify(config));
 
+        // --- 2. AUDIO SYSTEM (SPLIT MOUSE SOUNDS LOGIC) ---
         const audioAssets = {
             hover: new Audio('sounds/hoverbutton.wav'), 
             click: new Audio('sounds/buttonclick.mp3'),
@@ -297,11 +299,13 @@
             }
         };
 
+        // --- 3. WEATHER SYSTEM (WITH CACHING) ---
         async function fetchWeather() {
             const cacheKey = 'weatherCache';
             const cachedData = JSON.parse(localStorage.getItem(cacheKey));
             const now = new Date().getTime();
 
+            // Use cache if it's less than 15 minutes old
             if (cachedData && (now - cachedData.timestamp < 900000)) {
                 applyWeatherUI(cachedData.temp, cachedData.code);
                 return;
@@ -335,6 +339,7 @@
             document.getElementById('weather-img').src = `images/${icon}`;
         }
 
+        // --- 4. UI RENDERER ---
         function getFavicon(url) {
             try { return url.startsWith('http') ? `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=64` : 'images/plxeyestiny.png'; } 
             catch { return 'images/plxeyestiny.png'; }
@@ -346,12 +351,14 @@
             container.innerHTML = ''; manager.innerHTML = '';
 
             config.links.forEach((link, index) => {
+                // Main Dash Links
                 const card = document.createElement('a');
                 card.className = 'link-card'; card.href = link.url; card.target = "_blank";
                 card.innerHTML = `<div class="icon-box"><img src="${getFavicon(link.url)}" onerror="this.src='images/plxeyestiny.png'"></div><div class="link-label">${link.name}</div>`;
                 card.onmouseenter = () => playSound('hover'); card.onclick = () => playSound('click');
                 container.appendChild(card);
 
+                // Manager Items
                 const item = document.createElement('div');
                 item.className = 'link-manager-item';
                 item.innerHTML = `
@@ -373,6 +380,7 @@
             config.lowPower ? document.body.classList.add('low-power') : document.body.classList.remove('low-power');
         }
 
+        // --- 5. EVENT LISTENERS ---
         function attachManagerEvents() {
             Sortable.create(document.getElementById('manager-list'), {
                 handle: '.handle', animation: 150,
@@ -396,21 +404,23 @@
             });
         }
 
+        // Mouse Sounds
         window.addEventListener('mousedown', () => playSound('mouseDown'));
         window.addEventListener('mouseup', () => playSound('mouseUp'));
         
+        // Search & Clear Button Logic
         const searchInput = document.getElementById('web-search');
         const clearBtn = document.getElementById('clear-search');
         const searchWrapper = document.getElementById('search-wrapper');
         const suggestionsBox = document.getElementById('suggestions-box');
         let debounceTimer;
 
-        // Double Click Fix
+        // DOUBLE CLICK FIX: Use mousedown + preventDefault to stop focus loss before click fires
         clearBtn.onmousedown = (e) => {
             e.preventDefault(); 
             playSound('click');
             searchInput.value = '';
-            searchWrapper.classList.remove('has-text'); // Retract box, fuse borders back
+            searchWrapper.classList.remove('has-text'); // Instantly retracts the box
             suggestionsBox.style.display = 'none';
             searchInput.focus();
         };
@@ -419,6 +429,7 @@
             if (e.repeat) return; 
             if (e.key !== 'Enter') playSound('type'); 
             
+            // Auto-focus search on character typing
             if (document.activeElement !== searchInput && e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
                 searchInput.focus();
             }
@@ -427,7 +438,7 @@
         searchInput.oninput = () => {
             const query = searchInput.value.trim();
             
-            // Toggles the fused-box layout
+            // Toggles the has-text CSS class to trigger symmetrical outward grow of Command Center unit
             if (query.length > 0) {
                 searchWrapper.classList.add('has-text');
             } else {
@@ -472,6 +483,7 @@
         }
         searchInput.onkeydown = (e) => { if(e.key === 'Enter') { playSound('click'); executeSearch(searchInput.value); } };
 
+        // Settings Interactions
         document.getElementById('toggle-status').onchange = (e) => { config.showStatus = e.target.checked; saveConfig(); applySettings(); };
         document.getElementById('toggle-power').onchange = (e) => { config.lowPower = e.target.checked; saveConfig(); applySettings(); };
         document.getElementById('engine-select').onchange = (e) => { config.engine = e.target.value; saveConfig(); };
@@ -494,6 +506,7 @@
             }
         };
 
+        // --- 6. CLOCK ENGINE ---
         function updateClock() {
             const now = new Date();
             let h = now.getHours(), m = String(now.getMinutes()).padStart(2, '0'), s = String(now.getSeconds()).padStart(2, '0');
@@ -502,6 +515,7 @@
             document.getElementById('greeting').innerText = now.getHours() < 12 ? "GOOD_MORNING" : now.getHours() < 18 ? "GOOD_AFTERNOON" : "GOOD_EVENING";
         }
 
+        // --- INITIALIZATION ---
         function init() {
             renderLinks();
             applySettings();
