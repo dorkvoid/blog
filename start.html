@@ -41,16 +41,16 @@
         .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 3.5rem; color: white; margin-bottom: 0px; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,255,255,0.1); }
         #greeting { font-family: 'PixeloidSansBold', sans-serif; color: #444; margin-bottom: 25px; font-size: 0.8rem; letter-spacing: 4px; text-transform: uppercase; }
 
-        /* --- ANIMATED SEARCH BAR --- */
+        /* --- ANIMATED SEARCH BAR 2.0 (Keeps accidential flicker) --- */
         .search-wrapper { 
             position: relative; width: 100%; 
-            max-width: 450px; /* Starts compact */
+            max-width: 450px; /* Compact State */
             display: flex; align-items: center; 
-            transition: max-width 0.4s cubic-bezier(0.25, 1, 0.5, 1); /* Smooth Expansion */
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); /* Smooth Expansion */
         }
         
-        /* Expands when focused or has text */
-        .search-wrapper.active { max-width: 650px; }
+        /* Expands only when text exists */
+        .search-wrapper.has-text { max-width: 650px; }
 
         .search-wrapper::before {
             content: '>'; position: absolute; left: 25px; top: 50%; transform: translateY(-54%);
@@ -65,7 +65,7 @@
             padding: 0 20px 0 50px; 
             height: 60px; line-height: 56px; 
             outline: none; text-align: left; box-sizing: border-box; 
-            transition: all 0.2s ease-in-out; 
+            transition: all 0.2s ease-in-out; /* Tuned to keep the accidental "wake" effect snappier */
             box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.02);
             background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.02));
             background-size: 100% 4px, 3px 100%;
@@ -80,26 +80,32 @@
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.15), inset 0 0 15px rgba(255,255,255,0.05); 
         }
 
-        /* Animated Slide-In Clear Button */
+        /* QOL Clear Button (A red glowing multiplication cross from image) */
         .clear-btn {
-            position: absolute; right: 15px; top: 50%; 
-            width: 30px; height: 30px; box-sizing: border-box;
-            background: #111; border: 2px solid #333; color: #666; 
-            font-family: 'PixeloidSansBold', sans-serif; font-size: 0.9rem; 
+            position: absolute; right: 18px; top: 50%; 
+            background: none; border: none; padding: 0; line-height: 0;
+            color: red; font-family: 'PixeloidSansBold', sans-serif; font-size: 1.4rem; 
             display: flex; align-items: center; justify-content: center;
-            padding: 0; line-height: 0;
+            
             opacity: 0; pointer-events: none; /* Hidden by default */
             transform: translateY(-50%) translateX(20px); /* Pushed out to the right */
             transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
         }
         
+        /* Reveal Button when text is present */
         .search-wrapper.has-text .clear-btn {
             opacity: 1; pointer-events: auto;
-            transform: translateY(-50%) translateX(0); /* Slides perfectly into place */
+            transform: translateY(-50%) translateX(0); /* Slides into place */
         }
         
-        .clear-btn:hover { background: #f00; color: #000; border-color: #f00; box-shadow: 0 0 10px rgba(255,0,0,0.5); }
+        .clear-btn:hover { 
+            color: #ff3333; 
+            text-shadow: 0 0 15px rgba(255, 0, 0, 1);
+        }
 
+        /* QOL Autocomplete Styling */
         #suggestions-box {
             position: absolute; top: calc(100% - 2px); left: 0; width: 100%; 
             background: #050505; border: 2px solid #fff; border-top: none; 
@@ -111,7 +117,7 @@
             border-bottom: 1px solid #111; transition: 0.1s; display: flex; align-items: center;
         }
         .suggestion-item:last-child { border-bottom: none; }
-        .suggestion-item:hover { background: #1a1a1a; color: #fff; padding-left: 35px; }
+        .suggestion-item:hover { background: #1a1a1a; color: #fff; padding-left: 35px; /* Slides right on hover */ }
 
         /* --- ICON GRID --- */
         .quick-links { display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; max-width: 800px; }
@@ -120,7 +126,11 @@
         .icon-box { width: 54px; height: 54px; background: #111; border: 2px solid #333; display: flex; align-items: center; justify-content: center; transition: 0.2s; box-sizing: border-box; }
         .link-card:hover .icon-box { border-color: white; box-shadow: 0 0 15px rgba(255,255,255,0.1); }
         .icon-box img { width: 32px; height: 32px; image-rendering: pixelated; pointer-events: none; }
-        .link-label { color: #444; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; transition: color 0.2s; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .link-label { 
+            color: #444; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.65rem; 
+            text-transform: uppercase; letter-spacing: 1px; transition: color 0.2s; text-align: center;
+            width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; /* Keeps long names clean */
+        }
         .link-card:hover .link-label { color: white; }
 
         /* --- SETTINGS DRAWER --- */
@@ -149,6 +159,7 @@
         .cheat-sheet { font-size: 0.65rem; color: #444; line-height: 1.6; background: #050505; padding: 12px; border: 1px solid #111; margin-top: 10px; }
         .cheat-sheet b { color: #888; }
 
+        /* ALIGNED LINK MANAGER */
         .link-manager-item { display: flex; align-items: center; background: #080808; border: 1px solid #222; padding: 6px; margin-bottom: 8px; gap: 8px; box-sizing: border-box; }
         .handle { padding: 0 5px; color: #333; font-size: 1rem; line-height: 1; }
         .manager-input { background: black; border: 1px solid #333; color: #ccc; padding: 0 6px; margin: 0; height: 26px; line-height: 24px; box-sizing: border-box; font-family: 'PixeloidSans', sans-serif; font-size: 0.7rem; outline: none; flex-grow: 1; }
@@ -159,6 +170,7 @@
         .btn-add { width: 100%; background: #000; color: #fff; border: 1px solid #333; height: 36px; box-sizing: border-box; font-family: 'PixeloidSansBold', sans-serif; margin-top: 5px; transition: 0.2s; }
         .btn-add:hover { background: #fff; color: #000; border-color: white; }
 
+        /* TOGGLES & SELECTS */
         .option-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; min-height: 24px; }
         .toggle-input { display: none; }
         .toggle-btn { width: 34px; height: 18px; background: #1a1a1a; position: relative; border: 1px solid #333; box-sizing: border-box; }
@@ -168,6 +180,7 @@
         
         select { background: #080808; border: 1px solid #333; color: #ccc; padding: 0 10px; height: 36px; box-sizing: border-box; font-family: 'PixeloidSans', sans-serif; width: 100%; outline: none; font-size: 0.8rem; }
 
+        /* --- VISIBLE STATUS BAR --- */
         .status-bar { position: fixed; bottom: 20px; left: 30px; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.85rem; color: #444; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; gap: 15px; z-index: 5; }
         .weather-module { display: flex; align-items: center; gap: 10px; color: #666; }
         .weather-icon { width: 24px; height: 24px; image-rendering: pixelated; }
@@ -225,8 +238,8 @@
         <div id="greeting">SYSTEM_ONLINE</div>
         
         <div class="search-wrapper" id="search-wrapper">
-            <input type="text" id="web-search" class="search-box" placeholder="type command..." autocomplete="off">
-            <button id="clear-search" class="clear-btn">X</button>
+            <input type="text" id="web-search" class="search-box" placeholder="type command..." autofocus autocomplete="off">
+            <button id="clear-search" class="clear-btn">&times;</button>
             <div id="suggestions-box"></div>
         </div>
     </div>
@@ -245,10 +258,12 @@
     </div>
 
     <script>
+        // --- 1. CORE STATE & CONFIG ---
         const DEFAULT_CONFIG = { showStatus: true, lowPower: false, engine: "duckduckgo", links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}] };
         let config = JSON.parse(localStorage.getItem('startConfig')) || DEFAULT_CONFIG;
         const saveConfig = () => localStorage.setItem('startConfig', JSON.stringify(config));
 
+        // --- 2. AUDIO SYSTEM (SPLIT LOGIC KEPT INTACT) ---
         const audioAssets = {
             hover: new Audio('sounds/hoverbutton.wav'), 
             click: new Audio('sounds/buttonclick.mp3'),
@@ -284,11 +299,13 @@
             }
         };
 
+        // --- 3. WEATHER SYSTEM (WITH CACHING) ---
         async function fetchWeather() {
             const cacheKey = 'weatherCache';
             const cachedData = JSON.parse(localStorage.getItem(cacheKey));
             const now = new Date().getTime();
 
+            // Use cache if it's less than 15 minutes old
             if (cachedData && (now - cachedData.timestamp < 900000)) {
                 applyWeatherUI(cachedData.temp, cachedData.code);
                 return;
@@ -322,6 +339,7 @@
             document.getElementById('weather-img').src = `images/${icon}`;
         }
 
+        // --- 4. UI RENDERER ---
         function getFavicon(url) {
             try { return url.startsWith('http') ? `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=64` : 'images/plxeyestiny.png'; } 
             catch { return 'images/plxeyestiny.png'; }
@@ -333,12 +351,14 @@
             container.innerHTML = ''; manager.innerHTML = '';
 
             config.links.forEach((link, index) => {
+                // Main Dash Links
                 const card = document.createElement('a');
                 card.className = 'link-card'; card.href = link.url; card.target = "_blank";
                 card.innerHTML = `<div class="icon-box"><img src="${getFavicon(link.url)}" onerror="this.src='images/plxeyestiny.png'"></div><div class="link-label">${link.name}</div>`;
                 card.onmouseenter = () => playSound('hover'); card.onclick = () => playSound('click');
                 container.appendChild(card);
 
+                // Manager Items
                 const item = document.createElement('div');
                 item.className = 'link-manager-item';
                 item.innerHTML = `
@@ -360,6 +380,7 @@
             config.lowPower ? document.body.classList.add('low-power') : document.body.classList.remove('low-power');
         }
 
+        // --- 5. EVENT LISTENERS ---
         function attachManagerEvents() {
             Sortable.create(document.getElementById('manager-list'), {
                 handle: '.handle', animation: 150,
@@ -383,36 +404,32 @@
             });
         }
 
+        // Mouse Sounds
         window.addEventListener('mousedown', () => playSound('mouseDown'));
         window.addEventListener('mouseup', () => playSound('mouseUp'));
         
+        // Search & Clear Button Logic
         const searchInput = document.getElementById('web-search');
         const clearBtn = document.getElementById('clear-search');
         const searchWrapper = document.getElementById('search-wrapper');
         const suggestionsBox = document.getElementById('suggestions-box');
         let debounceTimer;
 
-        // EXPAND ON FOCUS
-        searchInput.addEventListener('focus', () => searchWrapper.classList.add('active'));
-        
-        // SHRINK ON BLUR (Only if empty)
-        searchInput.addEventListener('blur', () => {
-            if (searchInput.value.trim().length === 0) searchWrapper.classList.remove('active');
-        });
-
-        // DOUBLE CLICK FIX: Use mousedown + preventDefault to stop focus loss
+        // DOUBLE CLICK FIX: Use mousedown + preventDefault to stop focus loss before click fires
         clearBtn.onmousedown = (e) => {
             e.preventDefault(); 
             playSound('click');
             searchInput.value = '';
-            searchWrapper.classList.remove('has-text');
+            searchWrapper.classList.remove('has-text'); // Kills the expansion
             suggestionsBox.style.display = 'none';
+            searchInput.focus();
         };
 
         window.addEventListener('keydown', (e) => {
             if (e.repeat) return; 
             if (e.key !== 'Enter') playSound('type'); 
             
+            // Auto-focus search on character typing
             if (document.activeElement !== searchInput && e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
                 searchInput.focus();
             }
@@ -421,7 +438,7 @@
         searchInput.oninput = () => {
             const query = searchInput.value.trim();
             
-            // Toggle CSS class instead of inline styles (Fixes flicker)
+            // Toggle CSS class instead of inline styles (Fixes expansion logic and flicker)
             if (query.length > 0) {
                 searchWrapper.classList.add('has-text');
             } else {
@@ -466,6 +483,7 @@
         }
         searchInput.onkeydown = (e) => { if(e.key === 'Enter') { playSound('click'); executeSearch(searchInput.value); } };
 
+        // Settings Interactions
         document.getElementById('toggle-status').onchange = (e) => { config.showStatus = e.target.checked; saveConfig(); applySettings(); };
         document.getElementById('toggle-power').onchange = (e) => { config.lowPower = e.target.checked; saveConfig(); applySettings(); };
         document.getElementById('engine-select').onchange = (e) => { config.engine = e.target.value; saveConfig(); };
@@ -488,6 +506,7 @@
             }
         };
 
+        // --- 6. CLOCK ENGINE ---
         function updateClock() {
             const now = new Date();
             let h = now.getHours(), m = String(now.getMinutes()).padStart(2, '0'), s = String(now.getSeconds()).padStart(2, '0');
@@ -496,13 +515,14 @@
             document.getElementById('greeting').innerText = now.getHours() < 12 ? "GOOD_MORNING" : now.getHours() < 18 ? "GOOD_AFTERNOON" : "GOOD_EVENING";
         }
 
+        // --- INITIALIZATION ---
         function init() {
             renderLinks();
             applySettings();
             updateClock();
             setInterval(updateClock, 1000);
             fetchWeather();
-            setInterval(fetchWeather, 300000); 
+            setInterval(fetchWeather, 300000); // Check weather every 5 mins
         }
         
         init();
