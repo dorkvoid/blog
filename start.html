@@ -20,28 +20,22 @@
             cursor: url('images/link-select-click.png'), pointer !important;
         }
 
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden; 
-            background: black;
-        }
+        /* --- CUSTOM SCROLLBARS --- */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #000; border-left: 1px solid #111; }
+        ::-webkit-scrollbar-thumb { background: #333; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
 
+        body {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 100vh; margin: 0; overflow: hidden; background: black;
+        }
         body.low-power { filter: brightness(0.7); }
 
         /* --- SEARCH BAR --- */
-        .search-wrapper { 
-            position: relative; width: 100%; max-width: 650px; padding: 10px; 
-            display: flex; align-items: center; 
-        }
-        
+        .search-wrapper { position: relative; width: 100%; max-width: 650px; padding: 10px; display: flex; align-items: center; }
         .search-wrapper::before {
-            content: '>'; position: absolute; left: 25px; 
-            top: 50%; transform: translateY(-54%);
+            content: '>'; position: absolute; left: 25px; top: 50%; transform: translateY(-54%);
             color: #fff; font-family: 'PixeloidSansBold', sans-serif; font-size: 1.5rem; z-index: 5;
             animation: blink 1s infinite;
         }
@@ -50,9 +44,7 @@
         .search-box { 
             width: 100%; background: #050505; border: 2px solid #222; color: white; 
             font-family: 'PixeloidSans', sans-serif; font-size: 1.3rem; 
-            padding: 0 18px 0 50px; 
-            height: 60px; 
-            line-height: 56px; 
+            padding: 0 18px 0 50px; height: 60px; line-height: 56px; 
             outline: none; text-align: left; box-sizing: border-box; transition: 0.3s;
             box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.02);
             background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.02));
@@ -80,53 +72,34 @@
         #settings-drawer.open { right: 0; }
         
         #drawer-tab {
-            position: absolute; left: -52px; bottom: 40px; 
-            width: 50px; height: 50px; 
+            position: absolute; left: -52px; bottom: 40px; width: 50px; height: 50px; 
             background: #000; border: 2px solid #333; border-right: none;
             display: flex; align-items: center; justify-content: center;
         }
-        #drawer-tab img { 
-            width: 36px; height: 36px; 
-            pointer-events: none; 
-            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1); 
-        }
+        #drawer-tab img { width: 36px; height: 36px; pointer-events: none; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1); }
         .gear-spin { transform: rotate(180deg); }
 
-        .drawer-content { padding: 25px; flex-grow: 1; overflow-y: auto; scrollbar-width: none; }
+        .drawer-content { padding: 25px; flex-grow: 1; overflow-y: auto; }
         .drawer-header { font-family: 'PixeloidSansBold', sans-serif; color: white; margin-bottom: 25px; font-size: 1.1rem; border-bottom: 1px solid #222; padding-bottom: 10px; letter-spacing: 2px;}
 
         .setting-section { margin-bottom: 30px; }
         .section-label { display: block; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.7rem; color: #555; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1.5px; }
         
-        /* CHEAT SHEET RESTORED */
         .cheat-sheet { font-size: 0.65rem; color: #444; line-height: 1.6; background: #050505; padding: 12px; border: 1px solid #111; margin-top: 10px; }
         .cheat-sheet b { color: #888; }
 
-        /* STRICTLY ALIGNED LINK MANAGER */
-        .link-manager-item { 
-            display: flex; align-items: center; background: #080808; border: 1px solid #222; 
-            padding: 6px; margin-bottom: 8px; gap: 8px; box-sizing: border-box; 
-        }
+        /* ALIGNED LINK MANAGER */
+        .link-manager-item { display: flex; align-items: center; background: #080808; border: 1px solid #222; padding: 6px; margin-bottom: 8px; gap: 8px; box-sizing: border-box; }
         .handle { padding: 0 5px; color: #333; font-size: 1rem; line-height: 1; }
-        .manager-input { 
-            background: black; border: 1px solid #333; color: #ccc; 
-            padding: 0 6px; margin: 0; height: 26px; line-height: 24px; box-sizing: border-box; 
-            font-family: 'PixeloidSans', sans-serif; font-size: 0.7rem; outline: none; 
-            flex-grow: 1; /* Auto fill space */
-        }
+        .manager-input { background: black; border: 1px solid #333; color: #ccc; padding: 0 6px; margin: 0; height: 26px; line-height: 24px; box-sizing: border-box; font-family: 'PixeloidSans', sans-serif; font-size: 0.7rem; outline: none; flex-grow: 1; }
         .manager-input.edit-name { flex-grow: 0; width: 60px; }
-        .btn-del { 
-            background: #111; color: #f00; border: 1px solid #300; 
-            width: 26px; height: 26px; padding: 0; margin: 0; box-sizing: border-box; 
-            display: flex; align-items: center; justify-content: center; 
-            transition: 0.2s; font-family: 'PixeloidSansBold', sans-serif; 
-        }
+        .btn-del { background: #111; color: #f00; border: 1px solid #300; width: 26px; height: 26px; padding: 0; margin: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-family: 'PixeloidSansBold', sans-serif; }
         .btn-del:hover { background: #f00; color: #000; box-shadow: 0 0 10px #f00; border-color: #f00; }
         
         .btn-add { width: 100%; background: #000; color: #fff; border: 1px solid #333; height: 36px; box-sizing: border-box; font-family: 'PixeloidSansBold', sans-serif; margin-top: 5px; transition: 0.2s; }
         .btn-add:hover { background: #fff; color: #000; border-color: white; }
 
-        /* STRICTLY ALIGNED TOGGLES & SELECTS */
+        /* TOGGLES & SELECTS */
         .option-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; min-height: 24px; }
         .toggle-input { display: none; }
         .toggle-btn { width: 34px; height: 18px; background: #1a1a1a; position: relative; border: 1px solid #333; box-sizing: border-box; }
@@ -134,23 +107,13 @@
         .toggle-input:checked + .toggle-btn { background: #fff; border-color: #fff; }
         .toggle-input:checked + .toggle-btn::after { left: 17px; background: black; }
         
-        select { 
-            background: #080808; border: 1px solid #333; color: #ccc; 
-            padding: 0 10px; height: 36px; box-sizing: border-box; 
-            font-family: 'PixeloidSans', sans-serif; width: 100%; outline: none; font-size: 0.8rem; 
-        }
+        select { background: #080808; border: 1px solid #333; color: #ccc; padding: 0 10px; height: 36px; box-sizing: border-box; font-family: 'PixeloidSans', sans-serif; width: 100%; outline: none; font-size: 0.8rem; }
 
-        /* Main UI Bits */
+        /* MAIN DASHBOARD */
         .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 3rem; color: white; margin-bottom: 5px; }
         #greeting { font-family: 'PixeloidSans', sans-serif; color: #444; margin-bottom: 30px; font-size: 1rem; letter-spacing: 2px;}
         
-        .status-bar { 
-            position: fixed; bottom: 20px; left: 30px; 
-            font-family: 'PixeloidSansBold', sans-serif; font-size: 0.85rem; 
-            color: #444; letter-spacing: 2px; text-transform: uppercase; 
-            display: flex; align-items: center; gap: 15px;
-            z-index: 5;
-        }
+        .status-bar { position: fixed; bottom: 20px; left: 30px; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.85rem; color: #444; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; gap: 15px; z-index: 5; }
         .weather-module { display: flex; align-items: center; gap: 10px; color: #666; }
         .weather-icon { width: 24px; height: 24px; image-rendering: pixelated; }
         #temp-val { color: #888; }
@@ -202,7 +165,7 @@
         </div>
     </div>
 
-    <div class="start-container" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+    <div class="start-container">
         <div id="clock" class="terminal-clock">00:00:00</div>
         <div id="greeting">SYSTEM_ONLINE</div>
         
@@ -226,12 +189,12 @@
     </div>
 
     <script>
-        let config = JSON.parse(localStorage.getItem('startConfig')) || {
-            showStatus: true, lowPower: false, engine: "duckduckgo",
-            links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}]
-        };
-        const save = () => localStorage.setItem('startConfig', JSON.stringify(config));
+        // --- 1. CORE STATE & CONFIG ---
+        const DEFAULT_CONFIG = { showStatus: true, lowPower: false, engine: "duckduckgo", links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}] };
+        let config = JSON.parse(localStorage.getItem('startConfig')) || DEFAULT_CONFIG;
+        const saveConfig = () => localStorage.setItem('startConfig', JSON.stringify(config));
 
+        // --- 2. AUDIO SYSTEM ---
         const audioAssets = {
             hover: new Audio('sounds/hoverbutton.wav'), click: new Audio('sounds/buttonclick.mp3'),
             types: [new Audio('sounds/type1.mp3'), new Audio('sounds/type2.mp3'), new Audio('sounds/type3.mp3'), new Audio('sounds/type4.mp3')],
@@ -239,7 +202,7 @@
         };
 
         const playSound = (type) => {
-            let sound; let vol = 0.4;
+            let sound, vol = 0.4;
             if (type === 'hover') sound = audioAssets.hover;
             else if (type === 'click') sound = audioAssets.click;
             else if (type === 'mouse') { sound = audioAssets.mouseClicks[Math.floor(Math.random()*4)]; vol = 0.05; }
@@ -247,120 +210,126 @@
             const clone = sound.cloneNode(); clone.volume = vol; clone.play().catch(()=>{});
         };
 
-        window.addEventListener('mousedown', () => playSound('mouse'));
-
-        // Global Keydown Sound with Anti-Spam
-        window.addEventListener('keydown', (e) => {
-            if (e.repeat) return; 
-            if (e.key !== 'Enter') playSound('type'); 
-        });
-
-        // --- WEATHER ENGINE ---
+        // --- 3. WEATHER SYSTEM (WITH CACHING) ---
         async function fetchWeather() {
+            const cacheKey = 'weatherCache';
+            const cachedData = JSON.parse(localStorage.getItem(cacheKey));
+            const now = new Date().getTime();
+
+            // Use cache if it's less than 15 minutes old
+            if (cachedData && (now - cachedData.timestamp < 900000)) {
+                applyWeatherUI(cachedData.temp, cachedData.code);
+                return;
+            }
+
             try {
                 const ipRes = await fetch("https://ipapi.co/json/");
                 const location = await ipRes.json();
                 const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,weather_code&temperature_unit=fahrenheit`);
                 const data = await res.json();
                 
-                document.getElementById('temp-val').innerText = `${Math.round(data.current.temperature_2m)}°F`;
-                const code = data.current.weather_code;
-                
-                let icon = "sunny.png";
-                if (code >= 1 && code <= 3) icon = "partly cloudy.png";
-                else if (code >= 45 && code <= 48) icon = "foggy.png";
-                else if (code >= 51 && code <= 67) icon = "rainy.png";
-                else if (code >= 71 && code <= 77) icon = "cold.png"; 
-                else if (code >= 80 && code <= 82) icon = "rainy.png";
-                else if (code >= 95 && code <= 99) icon = "thunderstorm.png";
-                else if (code > 3) icon = "cloudy.png";
-
-                if (new Date().getHours() >= 20 || new Date().getHours() <= 5) icon = "night.png";
-                document.getElementById('weather-img').src = `images/${icon}`;
+                const weatherInfo = { temp: Math.round(data.current.temperature_2m), code: data.current.weather_code, timestamp: now };
+                localStorage.setItem(cacheKey, JSON.stringify(weatherInfo));
+                applyWeatherUI(weatherInfo.temp, weatherInfo.code);
             } catch (e) {
                 document.getElementById('temp-val').innerText = "ERROR";
             }
         }
 
-        function getFavicon(url) {
-            try {
-                if (!url.startsWith('http')) return 'images/plxeyestiny.png';
-                const domain = new URL(url).hostname;
-                return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
-            } catch(e) { return 'images/plxeyestiny.png'; }
+        function applyWeatherUI(temp, code) {
+            document.getElementById('temp-val').innerText = `${temp}°F`;
+            let icon = "sunny.png";
+            if (code >= 1 && code <= 3) icon = "partly cloudy.png";
+            else if (code >= 45 && code <= 48) icon = "foggy.png";
+            else if (code >= 51 && code <= 67) icon = "rainy.png";
+            else if (code >= 71 && code <= 77) icon = "cold.png"; 
+            else if (code >= 80 && code <= 82) icon = "rainy.png";
+            else if (code >= 95 && code <= 99) icon = "thunderstorm.png";
+            else if (code > 3) icon = "cloudy.png";
+            if (new Date().getHours() >= 20 || new Date().getHours() <= 5) icon = "night.png";
+            document.getElementById('weather-img').src = `images/${icon}`;
         }
 
-        function renderAll() {
+        // --- 4. UI RENDERER ---
+        function getFavicon(url) {
+            try { return url.startsWith('http') ? `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=64` : 'images/plxeyestiny.png'; } 
+            catch { return 'images/plxeyestiny.png'; }
+        }
+
+        function renderLinks() {
             const container = document.getElementById('links-container');
             const manager = document.getElementById('manager-list');
             container.innerHTML = ''; manager.innerHTML = '';
 
             config.links.forEach((link, index) => {
+                // Main Dash Links
                 const card = document.createElement('a');
                 card.className = 'link-card'; card.href = link.url; card.target = "_blank";
                 card.innerHTML = `<div class="icon-box"><img src="${getFavicon(link.url)}" onerror="this.src='images/plxeyestiny.png'"></div><div class="link-label">${link.name}</div>`;
-                card.onmouseenter = () => playSound('hover');
-                card.onclick = () => playSound('click');
+                card.onmouseenter = () => playSound('hover'); card.onclick = () => playSound('click');
                 container.appendChild(card);
 
+                // Manager Items
                 const item = document.createElement('div');
                 item.className = 'link-manager-item';
                 item.innerHTML = `
                     <span class="handle">::</span>
                     <input type="text" value="${link.name}" class="manager-input edit-name" data-idx="${index}">
                     <input type="text" value="${link.url}" class="manager-input edit-url" data-idx="${index}">
-                    <button class="btn-del" onclick="deleteLink(${index})">X</button>
+                    <button class="btn-del" data-idx="${index}">X</button>
                 `;
                 manager.appendChild(item);
             });
-            
+            attachManagerEvents();
+        }
+
+        function applySettings() {
             document.getElementById('status-bar').style.display = config.showStatus ? 'flex' : 'none';
             document.getElementById('toggle-status').checked = config.showStatus;
             document.getElementById('toggle-power').checked = config.lowPower;
             document.getElementById('engine-select').value = config.engine;
-            
-            if(config.lowPower) document.body.classList.add('low-power');
-            else document.body.classList.remove('low-power');
-            attachEvents();
+            config.lowPower ? document.body.classList.add('low-power') : document.body.classList.remove('low-power');
         }
 
-        function deleteLink(idx) { playSound('click'); config.links.splice(idx, 1); save(); renderAll(); }
-
-        function attachEvents() {
+        // --- 5. EVENT LISTENERS ---
+        function attachManagerEvents() {
             Sortable.create(document.getElementById('manager-list'), {
                 handle: '.handle', animation: 150,
                 onEnd: () => {
                     const nl = [];
-                    document.querySelectorAll('.link-manager-item').forEach(el => {
-                        nl.push({ name: el.querySelector('.edit-name').value, url: el.querySelector('.edit-url').value });
-                    });
-                    config.links = nl; save(); renderLinksOnly();
+                    document.querySelectorAll('.link-manager-item').forEach(el => nl.push({ name: el.querySelector('.edit-name').value, url: el.querySelector('.edit-url').value }));
+                    config.links = nl; saveConfig(); renderLinks();
                 }
             });
 
-            document.querySelectorAll('.manager-input').forEach((input) => {
+            document.querySelectorAll('.manager-input').forEach(input => {
                 input.addEventListener('change', (e) => {
                     const idx = e.target.dataset.idx;
-                    if(e.target.classList.contains('edit-name')) config.links[idx].name = e.target.value;
-                    else config.links[idx].url = e.target.value;
-                    save(); renderLinksOnly();
+                    e.target.classList.contains('edit-name') ? config.links[idx].name = e.target.value : config.links[idx].url = e.target.value;
+                    saveConfig(); renderLinks();
                 });
             });
-        }
 
-        function renderLinksOnly() {
-            const container = document.getElementById('links-container');
-            container.innerHTML = '';
-            config.links.forEach(link => {
-                const card = document.createElement('a');
-                card.className = 'link-card'; card.href = link.url; card.target = "_blank";
-                card.innerHTML = `<div class="icon-box"><img src="${getFavicon(link.url)}" onerror="this.src='images/plxeyestiny.png'"></div><div class="link-label">${link.name}</div>`;
-                card.onmouseenter = () => playSound('hover');
-                container.appendChild(card);
+            document.querySelectorAll('.btn-del').forEach(btn => {
+                btn.onclick = (e) => { playSound('click'); config.links.splice(e.target.dataset.idx, 1); saveConfig(); renderLinks(); };
             });
         }
 
+        // Global Events
+        window.addEventListener('mousedown', () => playSound('mouse'));
+        
         const searchInput = document.getElementById('web-search');
+        window.addEventListener('keydown', (e) => {
+            if (e.repeat) return; 
+            if (e.key !== 'Enter') playSound('type'); 
+            
+            // Auto-focus search on character typing
+            if (document.activeElement !== searchInput && e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+                searchInput.focus();
+            }
+        });
+
+        // Search Autocomplete & Execution
         const suggestionsBox = document.getElementById('suggestions-box');
         let debounceTimer;
 
@@ -402,53 +371,49 @@
                 else window.location.href = `https://duckduckgo.com/?q=${q}`;
             }
         }
+        searchInput.onkeydown = (e) => { if(e.key === 'Enter') { playSound('click'); executeSearch(searchInput.value); } };
 
-        document.getElementById('toggle-status').onchange = (e) => { config.showStatus = e.target.checked; save(); renderAll(); };
-        document.getElementById('toggle-power').onchange = (e) => { config.lowPower = e.target.checked; save(); renderAll(); };
-        document.getElementById('engine-select').onchange = (e) => { config.engine = e.target.value; save(); };
+        // Settings Interactions
+        document.getElementById('toggle-status').onchange = (e) => { config.showStatus = e.target.checked; saveConfig(); applySettings(); };
+        document.getElementById('toggle-power').onchange = (e) => { config.lowPower = e.target.checked; saveConfig(); applySettings(); };
+        document.getElementById('engine-select').onchange = (e) => { config.engine = e.target.value; saveConfig(); };
+        document.getElementById('addNewBtn').onclick = () => { playSound('click'); config.links.push({name: "NEW", url: "https://"}); saveConfig(); renderLinks(); };
 
         const drawer = document.getElementById('settings-drawer');
         const gearIcon = document.getElementById('gear-icon');
         
         document.getElementById('drawer-tab').onclick = (e) => { 
-            e.stopPropagation(); 
-            playSound('click'); 
-            drawer.classList.toggle('open'); 
-            gearIcon.classList.toggle('gear-spin');
-        };
-        
-        document.getElementById('addNewBtn').onclick = () => { 
-            playSound('click'); 
-            config.links.push({name: "NEW", url: "https://"}); 
-            save(); 
-            renderAll(); 
-        };
-
-        searchInput.onkeydown = (e) => { 
-            if(e.key === 'Enter') { playSound('click'); executeSearch(searchInput.value); } 
+            e.stopPropagation(); playSound('click'); 
+            drawer.classList.toggle('open'); gearIcon.classList.toggle('gear-spin');
         };
         
         window.onclick = (e) => { 
             if (e.target !== searchInput && !e.target.closest('#suggestions-box')) suggestionsBox.style.display = 'none';
             if (!drawer.contains(e.target) && !document.getElementById('drawer-tab').contains(e.target) && drawer.classList.contains('open')) {
-                drawer.classList.remove('open'); 
-                gearIcon.classList.remove('gear-spin');
+                drawer.classList.remove('open'); gearIcon.classList.remove('gear-spin');
             }
         };
 
+        // --- 6. CLOCK ENGINE ---
         function updateClock() {
             const now = new Date();
-            let h = now.getHours(); const m = String(now.getMinutes()).padStart(2, '0'); const s = String(now.getSeconds()).padStart(2, '0');
+            let h = now.getHours(), m = String(now.getMinutes()).padStart(2, '0'), s = String(now.getSeconds()).padStart(2, '0');
             const ampm = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12;
             document.getElementById('clock').innerText = `${h}:${m}:${s} ${ampm}`;
-            const hr = now.getHours();
-            document.getElementById('greeting').innerText = hr < 12 ? "GOOD_MORNING" : hr < 18 ? "GOOD_AFTERNOON" : "GOOD_EVENING";
+            document.getElementById('greeting').innerText = now.getHours() < 12 ? "GOOD_MORNING" : now.getHours() < 18 ? "GOOD_AFTERNOON" : "GOOD_EVENING";
         }
-        setInterval(updateClock, 1000); 
-        updateClock(); 
-        renderAll();
-        fetchWeather(); 
-        setInterval(fetchWeather, 600000); 
+
+        // --- INITIALIZATION ---
+        function init() {
+            renderLinks();
+            applySettings();
+            updateClock();
+            setInterval(updateClock, 1000);
+            fetchWeather();
+            setInterval(fetchWeather, 300000); // Check weather every 5 mins
+        }
+        
+        init();
     </script>
 </body>
 </html>
