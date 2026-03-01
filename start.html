@@ -41,17 +41,20 @@
         .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 3.5rem; color: white; margin-bottom: 0px; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,255,255,0.1); }
         #greeting { font-family: 'PixeloidSansBold', sans-serif; color: #444; margin-bottom: 25px; font-size: 0.8rem; letter-spacing: 4px; text-transform: uppercase; }
 
-        /* --- ANIMATED SEARCH BAR 3.0 --- */
+        /* --- ANIMATED SEARCH BAR (Symmetrical Expansion) --- */
         .search-wrapper { 
-            position: relative; width: 100%; 
+            position: relative; 
+            width: 100%; 
             max-width: 650px; /* Original Base Size */
-            display: flex; align-items: center; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
             transition: max-width 0.3s cubic-bezier(0.25, 1, 0.5, 1); /* Smooth Expansion */
             margin: 0 auto;
         }
         
-        /* Expands symmetrically ONLY when text is present */
-        .search-wrapper.has-text { max-width: 690px; }
+        /* Expands symmetrically ONLY when text is present to make room for the 60px appended box */
+        .search-wrapper.has-text { max-width: 710px; }
 
         .search-wrapper::before {
             content: '>'; position: absolute; left: 25px; top: 50%; transform: translateY(-54%);
@@ -61,7 +64,9 @@
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
         .search-box { 
-            width: 100%; background: #050505; border: 2px solid #222; color: white; 
+            flex: 1; /* Automatically takes remaining space */
+            min-width: 0;
+            background: #050505; border: 2px solid #222; color: white; 
             font-family: 'PixeloidSans', sans-serif; font-size: 1.3rem; 
             padding: 0 20px 0 50px; 
             height: 60px; line-height: 56px; 
@@ -70,39 +75,35 @@
             box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.02);
             background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.02));
             background-size: 100% 4px, 3px 100%;
-            cursor: text !important; /* Fixes cursor flicker */
+            cursor: text !important;
+            z-index: 2;
         }
         
-        /* Make room for the button when text is present so text doesn't hide under X */
-        .search-wrapper.has-text .search-box { padding-right: 50px; }
-
         .search-box:focus { 
             border-color: #fff; background-color: #0a0a0a; 
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.15), inset 0 0 15px rgba(255,255,255,0.05); 
         }
 
-        /* Pure Text, Centered Clear Button */
+        /* --- THE APPENDED "X" BOX --- */
         .clear-btn {
-            position: absolute; right: 20px; top: 50%; 
-            background: transparent; border: none; padding: 0; margin: 0;
-            color: #ff3333; font-family: 'PixeloidSansBold', sans-serif; font-size: 1.2rem; 
+            width: 0px; height: 60px; /* Starts completely collapsed */
+            background: #111; border: 2px solid #333; border-left: none; /* Attaches to search box */
+            color: #f00; font-family: 'PixeloidSansBold', sans-serif; font-size: 1.4rem; 
             display: flex; align-items: center; justify-content: center;
-            
-            opacity: 0; pointer-events: none; /* Hidden by default */
-            transform: translateY(-50%) translateX(20px); /* Pushed out to the right */
+            opacity: 0; pointer-events: none; overflow: hidden;
             transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-            
+            box-sizing: border-box; padding: 0; margin: 0;
             text-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
         }
         
-        /* Slide in exactly when text is typed */
+        /* Expands and slides out physically from the right edge */
         .search-wrapper.has-text .clear-btn {
+            width: 60px; /* Perfect square */
             opacity: 1; pointer-events: auto;
-            transform: translateY(-50%) translateX(0); /* Slides perfectly into place */
         }
         
         .clear-btn:hover { 
-            color: #ff0000; 
+            background: #200; border-color: #f00; color: #fff;
             text-shadow: 0 0 15px rgba(255, 0, 0, 1);
         }
 
@@ -175,6 +176,7 @@
         
         select { background: #080808; border: 1px solid #333; color: #ccc; padding: 0 10px; height: 36px; box-sizing: border-box; font-family: 'PixeloidSans', sans-serif; width: 100%; outline: none; font-size: 0.8rem; }
 
+        /* --- VISIBLE STATUS BAR --- */
         .status-bar { position: fixed; bottom: 20px; left: 30px; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.85rem; color: #444; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; gap: 15px; z-index: 5; }
         .weather-module { display: flex; align-items: center; gap: 10px; color: #666; }
         .weather-icon { width: 24px; height: 24px; image-rendering: pixelated; }
@@ -232,7 +234,7 @@
         <div id="greeting">SYSTEM_ONLINE</div>
         
         <div class="search-wrapper" id="search-wrapper">
-            <input type="text" id="web-search" class="search-box" placeholder="type command..." autocomplete="off">
+            <input type="text" id="web-search" class="search-box" placeholder="type command..." autofocus autocomplete="off">
             <button id="clear-search" class="clear-btn">X</button>
             <div id="suggestions-box"></div>
         </div>
@@ -399,12 +401,12 @@
         const suggestionsBox = document.getElementById('suggestions-box');
         let debounceTimer;
 
-        // DOUBLE CLICK FIX: Use mousedown + preventDefault to stop focus loss before click fires
+        // Uses mousedown to clear text before losing focus
         clearBtn.onmousedown = (e) => {
             e.preventDefault(); 
             playSound('click');
             searchInput.value = '';
-            searchWrapper.classList.remove('has-text'); // Kills the expansion
+            searchWrapper.classList.remove('has-text'); // Instantly retracts the box
             suggestionsBox.style.display = 'none';
             searchInput.focus();
         };
@@ -422,7 +424,7 @@
         searchInput.oninput = () => {
             const query = searchInput.value.trim();
             
-            // Toggle CSS class instead of inline styles
+            // Toggle CSS class to expand the wrapper & extrude the X box symmetrically
             if (query.length > 0) {
                 searchWrapper.classList.add('has-text');
             } else {
