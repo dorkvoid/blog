@@ -47,7 +47,7 @@
             width: 100%; 
             max-width: 650px; 
             display: flex; 
-            align-items: center; /* Forces total vertical alignment for bar + button */
+            align-items: center; 
             justify-content: center; 
             transition: max-width 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
             margin: 0 auto;
@@ -66,7 +66,8 @@
         .search-box-container {
             position: relative;
             flex: 0 0 650px;
-            height: 60px; /* Locked height */
+            height: 60px;
+            z-index: 10; /* Keep bar above the sliding suggestions */
         }
 
         .search-box { 
@@ -81,7 +82,6 @@
             background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.02));
             background-size: 100% 4px, 3px 100%;
             cursor: text !important;
-            z-index: 2;
         }
         
         .search-box.flicker {
@@ -107,11 +107,9 @@
             transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
             box-sizing: border-box; padding: 0; margin: 0;
             cursor: pointer;
-            z-index: 1;
-            line-height: 1; /* Center the X vertically */
+            line-height: 1;
         }
         
-        /* Remove pseudo-elements that might inject brackets */
         .clear-btn::before, .clear-btn::after { content: none !important; display: none !important; }
         
         .search-wrapper.has-text .clear-btn {
@@ -128,16 +126,35 @@
             box-shadow: 0 0 15px rgba(255, 0, 0, 0.6);
         }
 
-        /* --- PREDICTIVE SEARCH --- */
+        /* --- PREDICTIVE SEARCH SLIDE ANIMATION --- */
         #suggestions-box {
             position: absolute; 
-            top: 100%; /* Sits flush with bottom of search bar */
+            top: 100%; 
             left: 0; 
             width: 100%; 
-            background: #050505; border: 2px solid #fff; border-top: none; 
-            display: none; flex-direction: column; z-index: 20; box-sizing: border-box;
+            background: #050505; 
+            border: 2px solid #fff; 
+            border-top: none; 
+            display: flex; /* Always flex but hidden via transform */
+            flex-direction: column; 
+            z-index: -1; /* Sits behind the search box for the slide effect */
+            box-sizing: border-box;
             box-shadow: 0 10px 20px rgba(0,0,0,0.8);
+            
+            /* Slide Logic */
+            transform-origin: top;
+            transform: translateY(-100%); 
+            opacity: 0;
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s ease-in-out;
+            pointer-events: none;
         }
+
+        #suggestions-box.visible {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
         .suggestion-item {
             padding: 15px 25px; color: #ccc; font-family: 'PixeloidSans', sans-serif; font-size: 1rem;
             border-bottom: 1px solid #111; transition: 0.1s; display: flex; align-items: center;
@@ -145,7 +162,7 @@
         .suggestion-item:last-child { border-bottom: none; }
         .suggestion-item:hover { background: #1a1a1a; color: #fff; padding-left: 35px; }
 
-        /* --- ICON GRID --- */
+        /* --- REST OF UI --- */
         .quick-links { display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; max-width: 800px; }
         .link-card { display: flex; flex-direction: column; align-items: center; gap: 10px; text-decoration: none; width: 80px; transition: transform 0.1s; }
         .link-card:hover { transform: scale(1.1); }
@@ -155,41 +172,6 @@
         .link-label { color: #444; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; transition: color 0.2s; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .link-card:hover .link-label { color: white; }
 
-        #settings-drawer {
-            position: fixed; top: 0; right: -350px; width: 350px; height: 100vh;
-            background: #000; border-left: 2px solid #333; z-index: 100;
-            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            color: white; font-family: 'PixeloidSans', sans-serif; display: flex; flex-direction: column;
-        }
-        #settings-drawer.open { right: 0; }
-        
-        #drawer-tab {
-            position: absolute; left: -52px; bottom: 40px; width: 50px; height: 50px; 
-            background: #000; border: 2px solid #333; border-right: none;
-            display: flex; align-items: center; justify-content: center;
-        }
-        #drawer-tab img { width: 36px; height: 36px; pointer-events: none; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1); }
-        .gear-spin { transform: rotate(180deg); }
-
-        .drawer-content { padding: 25px; flex-grow: 1; overflow-y: auto; }
-        .drawer-header { font-family: 'PixeloidSansBold', sans-serif; color: white; margin-bottom: 25px; font-size: 1.1rem; border-bottom: 1px solid #222; padding-bottom: 10px; letter-spacing: 2px;}
-
-        .setting-section { margin-bottom: 30px; }
-        .section-label { display: block; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.7rem; color: #555; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1.5px; }
-        
-        .cheat-sheet { font-size: 0.65rem; color: #444; line-height: 1.6; background: #050505; padding: 12px; border: 1px solid #111; margin-top: 10px; }
-        .cheat-sheet b { color: #888; }
-
-        .link-manager-item { display: flex; align-items: center; background: #080808; border: 1px solid #222; padding: 6px; margin-bottom: 8px; gap: 8px; box-sizing: border-box; }
-        .handle { padding: 0 5px; color: #333; font-size: 1rem; line-height: 1; }
-        .manager-input { background: black; border: 1px solid #333; color: #ccc; padding: 0 6px; margin: 0; height: 26px; line-height: 24px; box-sizing: border-box; font-family: 'PixeloidSans', sans-serif; font-size: 0.7rem; outline: none; flex-grow: 1; }
-        .manager-input.edit-name { flex-grow: 0; width: 60px; }
-        .btn-del { background: #111; color: #f00; border: 1px solid #300; width: 26px; height: 26px; padding: 0; margin: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-family: 'PixeloidSansBold', sans-serif; }
-        .btn-del:hover { background: #f00; color: #000; box-shadow: 0 0 10px #f00; border-color: #f00; }
-        
-        .btn-add { width: 100%; background: #000; color: #fff; border: 1px solid #333; height: 36px; box-sizing: border-box; font-family: 'PixeloidSansBold', sans-serif; margin-top: 5px; transition: 0.2s; }
-        .btn-add:hover { background: #fff; color: #000; border-color: white; }
-
         .status-bar { position: fixed; bottom: 20px; left: 30px; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.85rem; color: #444; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; gap: 15px; z-index: 5; }
         .weather-module { display: flex; align-items: center; gap: 10px; color: #666; }
         .weather-icon { width: 24px; height: 24px; image-rendering: pixelated; }
@@ -198,46 +180,24 @@
 </head>
 <body>
 
-    <div id="settings-drawer">
-        <div id="drawer-tab">
-            <img src="images/gear.png" id="gear-icon" alt="Settings">
+    <div id="settings-drawer" style="position: fixed; top: 0; right: -350px; width: 350px; height: 100vh; background: #000; border-left: 2px solid #333; z-index: 100; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: white; font-family: 'PixeloidSans', sans-serif; display: flex; flex-direction: column;">
+        <div id="drawer-tab" style="position: absolute; left: -52px; bottom: 40px; width: 50px; height: 50px; background: #000; border: 2px solid #333; border-right: none; display: flex; align-items: center; justify-content: center;">
+            <img src="images/gear.png" id="gear-icon" style="width: 36px; height: 36px; pointer-events: none; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);">
         </div>
-        <div class="drawer-content">
-            <div class="drawer-header">CORE_SYSTEM</div>
-            
-            <div class="setting-section">
-                <span class="section-label">Search Config</span>
-                <select id="engine-select">
+        <div class="drawer-content" style="padding: 25px; flex-grow: 1; overflow-y: auto;">
+            <div class="drawer-header" style="font-family: 'PixeloidSansBold', sans-serif; color: white; margin-bottom: 25px; font-size: 1.1rem; border-bottom: 1px solid #222; padding-bottom: 10px; letter-spacing: 2px;">CORE_SYSTEM</div>
+            <div class="setting-section" style="margin-bottom: 30px;">
+                <span style="display: block; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.7rem; color: #555; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1.5px;">Search Config</span>
+                <select id="engine-select" style="background: #080808; border: 1px solid #333; color: #ccc; padding: 0 10px; height: 36px; box-sizing: border-box; font-family: 'PixeloidSans', sans-serif; width: 100%; outline: none; font-size: 0.8rem;">
                     <option value="duckduckgo">DuckDuckGo</option>
                     <option value="google">Google</option>
                     <option value="youtube">YouTube</option>
                 </select>
-                <div class="cheat-sheet">
-                    <b>yt [query]</b> -> YouTube<br>
-                    <b>g  [query]</b> -> Google<br>
-                    <b>r/[sub]</b> &nbsp;&nbsp;&nbsp;-> Subreddit<br>
-                    <b>Default</b> &nbsp;&nbsp;-> Selected Engine
-                </div>
             </div>
-
-            <div class="setting-section">
-                <span class="section-label">Interface</span>
-                <div class="option-row">
-                    <span>Low Power Mode</span>
-                    <input type="checkbox" id="toggle-power" class="toggle-input">
-                    <label for="toggle-power" class="toggle-btn"></label>
-                </div>
-                <div class="option-row">
-                    <span>Show Status Bar</span>
-                    <input type="checkbox" id="toggle-status" class="toggle-input" checked>
-                    <label for="toggle-status" class="toggle-btn"></label>
-                </div>
-            </div>
-
-            <div class="setting-section">
-                <span class="section-label">Link Manager</span>
+            <div class="setting-section" style="margin-bottom: 30px;">
+                <span style="display: block; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.7rem; color: #555; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1.5px;">Link Manager</span>
                 <div id="manager-list"></div>
-                <button class="btn-add" id="addNewBtn">+ ADD NEW_ENTRY</button>
+                <button id="addNewBtn" style="width: 100%; background: #000; color: #fff; border: 1px solid #333; height: 36px; box-sizing: border-box; font-family: 'PixeloidSansBold', sans-serif; margin-top: 5px; cursor: pointer;">+ ADD NEW_ENTRY</button>
             </div>
         </div>
     </div>
@@ -281,185 +241,81 @@
             mouseUp: [new Audio('sounds/mouseup1.mp3'), new Audio('sounds/mouseup2.mp3'), new Audio('sounds/mouseup3.mp3'), new Audio('sounds/mouseup4.mp3')]
         };
 
-        let lastMouseIdx = 0; 
-
         const playSound = (type) => {
             let sound, vol = 0.4;
-            if (type === 'hover') { sound = audioAssets.hover; } 
-            else if (type === 'click') { sound = audioAssets.click; } 
-            else if (type === 'mouseDown') {
-                lastMouseIdx = Math.floor(Math.random() * 4); 
-                sound = audioAssets.mouseDown[lastMouseIdx];
-                vol = 0.05;
-            } 
-            else if (type === 'mouseUp') {
-                sound = audioAssets.mouseUp[lastMouseIdx]; 
-                vol = 0.05;
-            } 
-            else { sound = audioAssets.types[Math.floor(Math.random() * 4)]; }
-            
-            if (sound) {
-                const clone = sound.cloneNode(); 
-                clone.volume = vol; 
-                clone.play().catch(()=>{});
-            }
+            if (type === 'hover') sound = audioAssets.hover;
+            else if (type === 'click') sound = audioAssets.click;
+            else if (type === 'mouseDown') sound = audioAssets.mouseDown[Math.floor(Math.random() * 4)], vol = 0.05;
+            else if (type === 'mouseUp') sound = audioAssets.mouseUp[Math.floor(Math.random() * 4)], vol = 0.05;
+            else sound = audioAssets.types[Math.floor(Math.random() * 4)];
+            if (sound) { const clone = sound.cloneNode(); clone.volume = vol; clone.play().catch(()=>{}); }
         };
 
         async function fetchWeather() {
-            const cacheKey = 'weatherCache';
-            const cachedData = JSON.parse(localStorage.getItem(cacheKey));
-            const now = new Date().getTime();
-            if (cachedData && (now - cachedData.timestamp < 900000)) {
-                applyWeatherUI(cachedData.temp, cachedData.code);
-                return;
-            }
             try {
                 const ipRes = await fetch("https://ipapi.co/json/");
                 const location = await ipRes.json();
                 const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,weather_code&temperature_unit=fahrenheit`);
                 const data = await res.json();
-                const weatherInfo = { temp: Math.round(data.current.temperature_2m), code: data.current.weather_code, timestamp: now };
-                localStorage.setItem(cacheKey, JSON.stringify(weatherInfo));
-                applyWeatherUI(weatherInfo.temp, weatherInfo.code);
+                document.getElementById('temp-val').innerText = `${Math.round(data.current.temperature_2m)}°F`;
+                let icon = data.current.weather_code === 0 ? "sunny.png" : "cloudy.png";
+                document.getElementById('weather-img').src = `images/${icon}`;
             } catch (e) { document.getElementById('temp-val').innerText = "ERROR"; }
-        }
-
-        function applyWeatherUI(temp, code) {
-            document.getElementById('temp-val').innerText = `${temp}°F`;
-            let icon = "sunny.png";
-            if (code >= 1 && code <= 3) icon = "partly cloudy.png";
-            else if (code >= 45 && code <= 48) icon = "foggy.png";
-            else if (code >= 51 && code <= 67) icon = "rainy.png";
-            else if (code >= 71 && code <= 77) icon = "cold.png"; 
-            else if (code >= 80 && code <= 82) icon = "rainy.png";
-            else if (code >= 95 && code <= 99) icon = "thunderstorm.png";
-            else if (code > 3) icon = "cloudy.png";
-            if (new Date().getHours() >= 20 || new Date().getHours() <= 5) icon = "night.png";
-            document.getElementById('weather-img').src = `images/${icon}`;
-        }
-
-        function getFavicon(url) {
-            try { return url.startsWith('http') ? `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=64` : 'images/plxeyestiny.png'; } 
-            catch { return 'images/plxeyestiny.png'; }
         }
 
         function renderLinks() {
             const container = document.getElementById('links-container');
-            const manager = document.getElementById('manager-list');
-            container.innerHTML = ''; manager.innerHTML = '';
-            config.links.forEach((link, index) => {
+            container.innerHTML = '';
+            config.links.forEach((link) => {
                 const card = document.createElement('a');
                 card.className = 'link-card'; card.href = link.url; card.target = "_blank";
-                card.innerHTML = `<div class="icon-box"><img src="${getFavicon(link.url)}" onerror="this.src='images/plxeyestiny.png'"></div><div class="link-label">${link.name}</div>`;
+                card.innerHTML = `<div class="icon-box"><img src="https://www.google.com/s2/favicons?domain=${new URL(link.url).hostname}&sz=64"></div><div class="link-label">${link.name}</div>`;
                 card.onmouseenter = () => playSound('hover'); card.onclick = () => playSound('click');
                 container.appendChild(card);
-                const item = document.createElement('div');
-                item.className = 'link-manager-item';
-                item.innerHTML = `
-                    <span class="handle">::</span>
-                    <input type="text" value="${link.name}" class="manager-input edit-name" data-idx="${index}">
-                    <input type="text" value="${link.url}" class="manager-input edit-url" data-idx="${index}">
-                    <button class="btn-del" data-idx="${index}">X</button>
-                `;
-                manager.appendChild(item);
-            });
-            attachManagerEvents();
-        }
-
-        function applySettings() {
-            document.getElementById('status-bar').style.display = config.showStatus ? 'flex' : 'none';
-            document.getElementById('toggle-status').checked = config.showStatus;
-            document.getElementById('toggle-power').checked = config.lowPower;
-            document.getElementById('engine-select').value = config.engine;
-            config.lowPower ? document.body.classList.add('low-power') : document.body.classList.remove('low-power');
-        }
-
-        function attachManagerEvents() {
-            Sortable.create(document.getElementById('manager-list'), {
-                handle: '.handle', animation: 150,
-                onEnd: () => {
-                    const nl = [];
-                    document.querySelectorAll('.link-manager-item').forEach(el => nl.push({ name: el.querySelector('.edit-name').value, url: el.querySelector('.edit-url').value }));
-                    config.links = nl; saveConfig(); renderLinks();
-                }
-            });
-            document.querySelectorAll('.manager-input').forEach(input => {
-                input.addEventListener('change', (e) => {
-                    const idx = e.target.dataset.idx;
-                    e.target.classList.contains('edit-name') ? config.links[idx].name = e.target.value : config.links[idx].url = e.target.value;
-                    saveConfig(); renderLinks();
-                });
-            });
-            document.querySelectorAll('.btn-del').forEach(btn => {
-                btn.onclick = (e) => { playSound('click'); config.links.splice(e.target.dataset.idx, 1); saveConfig(); renderLinks(); };
             });
         }
 
-        window.addEventListener('mousedown', () => playSound('mouseDown'));
-        window.addEventListener('mouseup', () => playSound('mouseUp'));
-        
         const searchInput = document.getElementById('web-search');
         const clearBtn = document.getElementById('clear-search');
         const searchWrapper = document.getElementById('search-wrapper');
         const suggestionsBox = document.getElementById('suggestions-box');
         let debounceTimer;
 
-        function triggerFlicker() {
-            searchInput.classList.remove('flicker');
-            void searchInput.offsetWidth; 
+        searchInput.addEventListener('focus', () => {
             searchInput.classList.add('flicker');
             setTimeout(() => searchInput.classList.remove('flicker'), 200);
-        }
-
-        searchInput.addEventListener('focus', triggerFlicker);
+        });
 
         clearBtn.onmousedown = (e) => {
             e.preventDefault(); 
             playSound('click');
             searchInput.value = '';
             searchWrapper.classList.remove('has-text'); 
-            suggestionsBox.style.display = 'none';
+            suggestionsBox.classList.remove('visible');
             searchInput.focus();
         };
 
         window.addEventListener('keydown', (e) => {
-            if (e.repeat) return; 
+            if (e.repeat) return;
             if (e.key === 'Escape') {
-                if(searchInput.value) {
-                    playSound('click');
-                    searchInput.value = '';
-                    searchWrapper.classList.remove('has-text');
-                    suggestionsBox.style.display = 'none';
-                }
+                searchInput.value = '';
+                searchWrapper.classList.remove('has-text');
+                suggestionsBox.classList.remove('visible');
                 searchInput.blur();
-                return;
             }
-
-            if (e.key !== 'Enter' && e.key !== 'Escape' && e.key.length === 1) { playSound('type'); }
-            if (e.key === 'Backspace') { playSound('type'); }
-
-            if (document.activeElement !== searchInput) {
-                if (e.key === 'Backspace') {
-                    e.preventDefault();
-                    if (searchInput.value.length > 0) {
-                        searchInput.value = searchInput.value.slice(0, -1);
-                        searchInput.focus();
-                        searchInput.dispatchEvent(new Event('input')); 
-                    }
-                    if (searchInput.value.length === 0) searchWrapper.classList.remove('has-text');
-                } 
-                else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-                    searchInput.focus();
-                }
-            }
+            if (e.key.length === 1 && document.activeElement !== searchInput) searchInput.focus();
+            if (e.key.length === 1 || e.key === 'Backspace') playSound('type');
         });
 
         searchInput.oninput = () => {
             const query = searchInput.value.trim();
             if (query.length > 0) searchWrapper.classList.add('has-text');
-            else searchWrapper.classList.remove('has-text');
+            else {
+                searchWrapper.classList.remove('has-text');
+                suggestionsBox.classList.remove('visible');
+            }
 
-            if (query.length === 0 || query.includes(' ')) { suggestionsBox.style.display = 'none'; return; }
+            if (query.length === 0 || query.includes(' ')) { suggestionsBox.classList.remove('visible'); return; }
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
                 const script = document.createElement('script');
@@ -469,59 +325,39 @@
         };
 
         window.autocompleteCallback = (data) => {
-            if (searchInput.value.trim().length === 0) { suggestionsBox.style.display = 'none'; return; }
+            if (searchInput.value.trim().length === 0) return;
             suggestionsBox.innerHTML = '';
             if (data && data.length > 0) {
                 data.slice(0, 5).forEach(item => {
                     const div = document.createElement('div');
                     div.className = 'suggestion-item'; div.innerText = item.phrase;
-                    div.onmouseenter = () => playSound('hover');
-                    div.onclick = () => { playSound('click'); executeSearch(item.phrase); };
+                    div.onclick = () => {
+                        window.location.href = `https://duckduckgo.com/?q=${encodeURIComponent(item.phrase)}`;
+                    };
                     suggestionsBox.appendChild(div);
                 });
-                suggestionsBox.style.display = 'flex';
-            } else { suggestionsBox.style.display = 'none'; }
+                suggestionsBox.classList.add('visible');
+            } else suggestionsBox.classList.remove('visible');
         };
-
-        function executeSearch(val) {
-            if(!val) return;
-            const lowerVal = val.toLowerCase();
-            if(lowerVal.startsWith('yt ')) window.location.href = `https://youtube.com/results?search_query=${encodeURIComponent(val.substring(3))}`;
-            else if(lowerVal.startsWith('g ')) window.location.href = `https://google.com/search?q=${encodeURIComponent(val.substring(2))}`;
-            else if(lowerVal.startsWith('r/')) window.location.href = `https://reddit.com/${val}`;
-            else {
-                const q = encodeURIComponent(val);
-                if(config.engine === 'google') window.location.href = `https://google.com/search?q=${q}`;
-                else if(config.engine === 'youtube') window.location.href = `https://youtube.com/results?search_query=${q}`;
-                else window.location.href = `https://duckduckgo.com/?q=${q}`;
-            }
-        }
-
-        searchInput.onkeydown = (e) => { if(e.key === 'Enter') { playSound('click'); executeSearch(searchInput.value); } };
-        document.getElementById('toggle-status').onchange = (e) => { config.showStatus = e.target.checked; saveConfig(); applySettings(); };
-        document.getElementById('toggle-power').onchange = (e) => { config.lowPower = e.target.checked; saveConfig(); applySettings(); };
-        document.getElementById('engine-select').onchange = (e) => { config.engine = e.target.value; saveConfig(); };
-        document.getElementById('addNewBtn').onclick = () => { playSound('click'); config.links.push({name: "NEW", url: "https://"}); saveConfig(); renderLinks(); };
 
         const drawer = document.getElementById('settings-drawer');
         const gearIcon = document.getElementById('gear-icon');
-        document.getElementById('drawer-tab').onclick = (e) => { e.stopPropagation(); playSound('click'); drawer.classList.toggle('open'); gearIcon.classList.toggle('gear-spin'); };
-        
-        window.onclick = (e) => { 
-            if (e.target !== searchInput && e.target !== clearBtn && !e.target.closest('#suggestions-box')) suggestionsBox.style.display = 'none';
-            if (!drawer.contains(e.target) && !document.getElementById('drawer-tab').contains(e.target) && drawer.classList.contains('open')) { drawer.classList.remove('open'); gearIcon.classList.remove('gear-spin'); }
+        document.getElementById('drawer-tab').onclick = (e) => {
+            e.stopPropagation();
+            playSound('click');
+            const isOpen = drawer.style.right === '0px';
+            drawer.style.right = isOpen ? '-350px' : '0px';
+            gearIcon.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
         };
 
         function updateClock() {
             const now = new Date();
-            let h = now.getHours(), m = String(now.getMinutes()).padStart(2, '0'), s = String(now.getSeconds()).padStart(2, '0');
-            const ampm = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12;
-            document.getElementById('clock').innerText = `${h}:${m}:${s} ${ampm}`;
-            document.getElementById('greeting').innerText = now.getHours() < 12 ? "GOOD_MORNING" : now.getHours() < 18 ? "GOOD_AFTERNOON" : "GOOD_EVENING";
+            document.getElementById('clock').innerText = now.toLocaleTimeString();
         }
 
-        function init() { renderLinks(); applySettings(); updateClock(); setInterval(updateClock, 1000); fetchWeather(); setInterval(fetchWeather, 300000); }
-        init();
+        setInterval(updateClock, 1000);
+        renderLinks();
+        fetchWeather();
     </script>
 </body>
 </html>
