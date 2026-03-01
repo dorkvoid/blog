@@ -47,7 +47,7 @@
             width: 100%; 
             max-width: 650px; 
             display: flex; 
-            align-items: center; /* Forces total vertical alignment for bar + button */
+            align-items: center; 
             justify-content: center; 
             transition: max-width 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
             margin: 0 auto;
@@ -66,7 +66,7 @@
         .search-box-container {
             position: relative;
             flex: 0 0 650px;
-            height: 60px; /* Locked height */
+            height: 60px;
         }
 
         .search-box { 
@@ -108,10 +108,9 @@
             box-sizing: border-box; padding: 0; margin: 0;
             cursor: pointer;
             z-index: 1;
-            line-height: 1; /* Center the X vertically */
+            line-height: 1;
         }
         
-        /* Remove pseudo-elements that might inject brackets */
         .clear-btn::before, .clear-btn::after { content: none !important; display: none !important; }
         
         .search-wrapper.has-text .clear-btn {
@@ -128,34 +127,31 @@
             box-shadow: 0 0 15px rgba(255, 0, 0, 0.6);
         }
 
-        /* --- PREDICTIVE SEARCH (Animated Slide) --- */
+        /* --- SLIDING PREDICTIVE SEARCH --- */
         #suggestions-box {
             position: absolute; 
-            top: 100%; /* Sits flush with bottom of search bar */
+            top: 100%; 
             left: 0; 
             width: 100%; 
             background: #050505; border: 2px solid #fff; border-top: none; 
-            display: flex; flex-direction: column; z-index: 20; box-sizing: border-box;
+            display: flex; flex-direction: column; 
+            z-index: 20; box-sizing: border-box;
             box-shadow: 0 10px 20px rgba(0,0,0,0.8);
-            
-            /* Slide Animation Defaults */
+
+            transform: translateY(-20px);
             opacity: 0;
             visibility: hidden;
             pointer-events: none;
-            transform: translateY(-15px); /* Start tucked up slightly */
-            clip-path: inset(0 -50px 100% -50px); /* Masks the bottom edge but allows side shadows */
-            transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), 
-                        opacity 0.2s ease, 
-                        visibility 0.2s, 
-                        clip-path 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s, visibility 0.2s;
+            clip-path: inset(0 0 100% 0); 
         }
-        
+
         #suggestions-box.show {
+            transform: translateY(0);
             opacity: 1;
             visibility: visible;
             pointer-events: auto;
-            transform: translateY(0);
-            clip-path: inset(0 -50px -50px -50px); /* Unmasks downwards */
+            clip-path: inset(0 -50px -50px -50px); 
         }
 
         .suggestion-item {
@@ -175,6 +171,7 @@
         .link-label { color: #444; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; transition: color 0.2s; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .link-card:hover .link-label { color: white; }
 
+        /* --- SETTINGS DRAWER --- */
         #settings-drawer {
             position: fixed; top: 0; right: -350px; width: 350px; height: 100vh;
             background: #000; border-left: 2px solid #333; z-index: 100;
@@ -209,6 +206,54 @@
         
         .btn-add { width: 100%; background: #000; color: #fff; border: 1px solid #333; height: 36px; box-sizing: border-box; font-family: 'PixeloidSansBold', sans-serif; margin-top: 5px; transition: 0.2s; }
         .btn-add:hover { background: #fff; color: #000; border-color: white; }
+
+        /* --- FIXED UI COMPONENTS --- */
+        .option-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; min-height: 24px; }
+        
+        /* Fixed Sliders */
+        .toggle-input { display: none; }
+        .toggle-btn { 
+            display: block; 
+            width: 36px; 
+            height: 18px; 
+            background: #111; 
+            position: relative; 
+            border: 2px solid #333; 
+            box-sizing: border-box; 
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .toggle-btn::after { 
+            content: ''; 
+            position: absolute; 
+            width: 12px; 
+            height: 12px; 
+            background: #444; 
+            top: 1px; 
+            left: 1px; 
+            transition: 0.2s cubic-bezier(0.25, 1, 0.5, 1); 
+        }
+        .toggle-input:checked + .toggle-btn { background: #fff; border-color: #fff; }
+        .toggle-input:checked + .toggle-btn::after { left: 19px; background: #000; }
+        
+        /* Fixed Dropdown */
+        select { 
+            appearance: none; 
+            -webkit-appearance: none; 
+            background: #080808 url('data:image/svg+xml;utf8,<svg fill="%23555555" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>') no-repeat right 8px center;
+            border: 1px solid #333; 
+            color: #ccc; 
+            padding: 0 30px 0 10px; 
+            height: 36px; 
+            box-sizing: border-box; 
+            font-family: 'PixeloidSans', sans-serif; 
+            width: 100%; 
+            outline: none; 
+            font-size: 0.8rem; 
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        select:hover, select:focus { border-color: #fff; color: #fff; }
 
         .status-bar { position: fixed; bottom: 20px; left: 30px; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.85rem; color: #444; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; gap: 15px; z-index: 5; }
         .weather-module { display: flex; align-items: center; gap: 10px; color: #666; }
@@ -252,6 +297,11 @@
                     <input type="checkbox" id="toggle-status" class="toggle-input" checked>
                     <label for="toggle-status" class="toggle-btn"></label>
                 </div>
+                <div class="option-row">
+                    <span>Open Links in New Tab</span>
+                    <input type="checkbox" id="toggle-newtab" class="toggle-input" checked>
+                    <label for="toggle-newtab" class="toggle-btn"></label>
+                </div>
             </div>
 
             <div class="setting-section">
@@ -289,8 +339,12 @@
     </div>
 
     <script>
-        const DEFAULT_CONFIG = { showStatus: true, lowPower: false, engine: "duckduckgo", links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}] };
-        let config = JSON.parse(localStorage.getItem('startConfig')) || DEFAULT_CONFIG;
+        // Default Config includes the newTab setting safely
+        const DEFAULT_CONFIG = { showStatus: true, lowPower: false, newTab: true, engine: "duckduckgo", links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}] };
+        
+        // Safely merge old configurations with new defaults so updates don't wipe data
+        let savedConfig = JSON.parse(localStorage.getItem('startConfig')) || {};
+        let config = { ...DEFAULT_CONFIG, ...savedConfig }; 
         const saveConfig = () => localStorage.setItem('startConfig', JSON.stringify(config));
 
         const audioAssets = {
@@ -369,10 +423,15 @@
             container.innerHTML = ''; manager.innerHTML = '';
             config.links.forEach((link, index) => {
                 const card = document.createElement('a');
-                card.className = 'link-card'; card.href = link.url; card.target = "_blank";
+                card.className = 'link-card'; 
+                card.href = link.url; 
+                // Applies the new tab logic instantly
+                card.target = config.newTab ? "_blank" : "_self";
+                
                 card.innerHTML = `<div class="icon-box"><img src="${getFavicon(link.url)}" onerror="this.src='images/plxeyestiny.png'"></div><div class="link-label">${link.name}</div>`;
                 card.onmouseenter = () => playSound('hover'); card.onclick = () => playSound('click');
                 container.appendChild(card);
+                
                 const item = document.createElement('div');
                 item.className = 'link-manager-item';
                 item.innerHTML = `
@@ -390,6 +449,7 @@
             document.getElementById('status-bar').style.display = config.showStatus ? 'flex' : 'none';
             document.getElementById('toggle-status').checked = config.showStatus;
             document.getElementById('toggle-power').checked = config.lowPower;
+            document.getElementById('toggle-newtab').checked = config.newTab; // Load toggle state
             document.getElementById('engine-select').value = config.engine;
             config.lowPower ? document.body.classList.add('low-power') : document.body.classList.remove('low-power');
         }
@@ -518,8 +578,11 @@
         }
 
         searchInput.onkeydown = (e) => { if(e.key === 'Enter') { playSound('click'); executeSearch(searchInput.value); } };
+        
+        // --- NEW SETTINGS LOGIC ---
         document.getElementById('toggle-status').onchange = (e) => { config.showStatus = e.target.checked; saveConfig(); applySettings(); };
         document.getElementById('toggle-power').onchange = (e) => { config.lowPower = e.target.checked; saveConfig(); applySettings(); };
+        document.getElementById('toggle-newtab').onchange = (e) => { config.newTab = e.target.checked; saveConfig(); renderLinks(); };
         document.getElementById('engine-select').onchange = (e) => { config.engine = e.target.value; saveConfig(); };
         document.getElementById('addNewBtn').onclick = () => { playSound('click'); config.links.push({name: "NEW", url: "https://"}); saveConfig(); renderLinks(); };
 
