@@ -13,10 +13,10 @@
         * { cursor: url('images/cursor.png'), auto !important; }
         *:active { cursor: url('images/cursor-click.png'), auto !important; }
 
-        a, button, .suggestion-item, #drawer-tab, select, .handle, .toggle-btn, .link-card, .link-card *, .clear-btn {
+        a, button, .suggestion-item, #drawer-tab, select, .handle, .toggle-btn, .link-card, .link-card *, .clear-btn, #incognito-btn {
             cursor: url('images/link-select.png'), pointer !important;
         }
-        a:active, button:active, .suggestion-item:active, #drawer-tab:active, select:active, .link-card:active, .clear-btn:active {
+        a:active, button:active, .suggestion-item:active, #drawer-tab:active, select:active, .link-card:active, .clear-btn:active, #incognito-btn:active {
             cursor: url('images/link-select-click.png'), pointer !important;
         }
 
@@ -31,6 +31,16 @@
             height: 100vh; margin: 0; overflow: hidden; background: black;
         }
         body.low-power { filter: brightness(0.7); }
+
+        /* --- BOSS MODE --- */
+        #boss-screen {
+            display: none;
+            position: absolute; top: 20px; left: 20px;
+            color: #ccc; font-family: 'PixeloidSans', sans-serif; font-size: 1rem;
+        }
+        #boss-screen::after { content: '_'; animation: blink 1s infinite; }
+        body.boss-mode > *:not(#boss-screen) { display: none !important; }
+        body.boss-mode #boss-screen { display: block; }
 
         /* --- COMMAND CENTER --- */
         .command-center {
@@ -210,7 +220,6 @@
         /* --- FIXED UI COMPONENTS --- */
         .option-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; min-height: 24px; }
         
-        /* Fixed Sliders */
         .toggle-input { display: none; }
         .toggle-btn { 
             display: block; 
@@ -236,7 +245,6 @@
         .toggle-input:checked + .toggle-btn { background: #fff; border-color: #fff; }
         .toggle-input:checked + .toggle-btn::after { left: 19px; background: #000; }
         
-        /* Fixed Dropdown */
         select { 
             appearance: none; 
             -webkit-appearance: none; 
@@ -259,9 +267,14 @@
         .weather-module { display: flex; align-items: center; gap: 10px; color: #666; }
         .weather-icon { width: 24px; height: 24px; image-rendering: pixelated; }
         #temp-val { color: #888; }
+        
+        #incognito-btn { transition: filter 0.2s; filter: grayscale(100%) opacity(0.5); display: flex; align-items: center; }
+        #incognito-btn:hover { filter: grayscale(0%) opacity(1); }
     </style>
 </head>
 <body>
+
+    <div id="boss-screen">C:\&gt; </div>
 
     <div id="settings-drawer">
         <div id="drawer-tab">
@@ -302,12 +315,34 @@
                     <input type="checkbox" id="toggle-newtab" class="toggle-input" checked>
                     <label for="toggle-newtab" class="toggle-btn"></label>
                 </div>
+                <div class="option-row">
+                    <span>24-Hour Time</span>
+                    <input type="checkbox" id="toggle-military" class="toggle-input">
+                    <label for="toggle-military" class="toggle-btn"></label>
+                </div>
+            </div>
+
+            <div class="setting-section">
+                <span class="section-label">Weather Override</span>
+                <div style="display: flex; gap: 5px;">
+                    <input type="text" id="weather-loc-input" class="manager-input" placeholder="City or ZIP (Blank for IP)">
+                    <button id="save-weather-btn" class="btn-add" style="margin: 0; width: 60px;">SET</button>
+                </div>
             </div>
 
             <div class="setting-section">
                 <span class="section-label">Link Manager</span>
                 <div id="manager-list"></div>
-                <button class="btn-add" id="addNewBtn">+ ADD NEW_ENTRY</button>
+                <button class="btn-add" id="addNewBtn" style="margin-bottom: 20px;">+ ADD NEW_ENTRY</button>
+            </div>
+
+            <div class="setting-section" style="border-top: 1px solid #222; padding-top: 20px;">
+                <span class="section-label">System Backup</span>
+                <div style="display: flex; gap: 10px;">
+                    <button id="export-btn" class="btn-add" style="margin:0;">EXPORT JSON</button>
+                    <button id="import-btn" class="btn-add" style="margin:0;">IMPORT JSON</button>
+                    <input type="file" id="import-file" style="display: none;" accept=".json">
+                </div>
             </div>
         </div>
     </div>
@@ -335,14 +370,19 @@
             <span id="temp-val">LOADING...</span>
         </div>
         <span>//</span>
+        <div id="incognito-btn" title="Incognito Mode">
+            <img src="images/incognito.png" style="width: 32px; height: 32px; image-rendering: pixelated;">
+        </div>
+        <span>//</span>
         <span id="sys-status">STATUS: NOMINAL</span>
     </div>
 
     <script>
-        // Default Config includes the newTab setting safely
-        const DEFAULT_CONFIG = { showStatus: true, lowPower: false, newTab: true, engine: "duckduckgo", links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}] };
+        const DEFAULT_CONFIG = { 
+            showStatus: true, lowPower: false, newTab: true, militaryTime: false, weatherLoc: "", engine: "duckduckgo", 
+            links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}] 
+        };
         
-        // Safely merge old configurations with new defaults so updates don't wipe data
         let savedConfig = JSON.parse(localStorage.getItem('startConfig')) || {};
         let config = { ...DEFAULT_CONFIG, ...savedConfig }; 
         const saveConfig = () => localStorage.setItem('startConfig', JSON.stringify(config));
@@ -361,36 +401,39 @@
             let sound, vol = 0.4;
             if (type === 'hover') { sound = audioAssets.hover; } 
             else if (type === 'click') { sound = audioAssets.click; } 
-            else if (type === 'mouseDown') {
-                lastMouseIdx = Math.floor(Math.random() * 4); 
-                sound = audioAssets.mouseDown[lastMouseIdx];
-                vol = 0.05;
-            } 
-            else if (type === 'mouseUp') {
-                sound = audioAssets.mouseUp[lastMouseIdx]; 
-                vol = 0.05;
-            } 
+            else if (type === 'mouseDown') { lastMouseIdx = Math.floor(Math.random() * 4); sound = audioAssets.mouseDown[lastMouseIdx]; vol = 0.05; } 
+            else if (type === 'mouseUp') { sound = audioAssets.mouseUp[lastMouseIdx]; vol = 0.05; } 
             else { sound = audioAssets.types[Math.floor(Math.random() * 4)]; }
             
-            if (sound) {
-                const clone = sound.cloneNode(); 
-                clone.volume = vol; 
-                clone.play().catch(()=>{});
-            }
+            if (sound) { const clone = sound.cloneNode(); clone.volume = vol; clone.play().catch(()=>{}); }
         };
 
-        async function fetchWeather() {
+        async function fetchWeather(force = false) {
             const cacheKey = 'weatherCache';
             const cachedData = JSON.parse(localStorage.getItem(cacheKey));
             const now = new Date().getTime();
-            if (cachedData && (now - cachedData.timestamp < 900000)) {
+            
+            if (!force && cachedData && (now - cachedData.timestamp < 900000)) {
                 applyWeatherUI(cachedData.temp, cachedData.code);
                 return;
             }
             try {
-                const ipRes = await fetch("https://ipapi.co/json/");
-                const location = await ipRes.json();
-                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,weather_code&temperature_unit=fahrenheit`);
+                let lat, lon;
+                if (config.weatherLoc && config.weatherLoc.trim() !== "") {
+                    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(config.weatherLoc)}&count=1`);
+                    const geoData = await geoRes.json();
+                    if (geoData.results && geoData.results.length > 0) {
+                        lat = geoData.results[0].latitude;
+                        lon = geoData.results[0].longitude;
+                    } else throw new Error("Location not found");
+                } else {
+                    const ipRes = await fetch("https://ipapi.co/json/");
+                    const location = await ipRes.json();
+                    lat = location.latitude;
+                    lon = location.longitude;
+                }
+
+                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&temperature_unit=fahrenheit`);
                 const data = await res.json();
                 const weatherInfo = { temp: Math.round(data.current.temperature_2m), code: data.current.weather_code, timestamp: now };
                 localStorage.setItem(cacheKey, JSON.stringify(weatherInfo));
@@ -425,7 +468,6 @@
                 const card = document.createElement('a');
                 card.className = 'link-card'; 
                 card.href = link.url; 
-                // Applies the new tab logic instantly
                 card.target = config.newTab ? "_blank" : "_self";
                 
                 card.innerHTML = `<div class="icon-box"><img src="${getFavicon(link.url)}" onerror="this.src='images/plxeyestiny.png'"></div><div class="link-label">${link.name}</div>`;
@@ -449,8 +491,10 @@
             document.getElementById('status-bar').style.display = config.showStatus ? 'flex' : 'none';
             document.getElementById('toggle-status').checked = config.showStatus;
             document.getElementById('toggle-power').checked = config.lowPower;
-            document.getElementById('toggle-newtab').checked = config.newTab; // Load toggle state
+            document.getElementById('toggle-newtab').checked = config.newTab; 
+            document.getElementById('toggle-military').checked = config.militaryTime; 
             document.getElementById('engine-select').value = config.engine;
+            document.getElementById('weather-loc-input').value = config.weatherLoc;
             config.lowPower ? document.body.classList.add('low-power') : document.body.classList.remove('low-power');
         }
 
@@ -504,6 +548,16 @@
 
         window.addEventListener('keydown', (e) => {
             if (e.repeat) return; 
+            
+            // The Boss Key
+            if (e.key === '`' || e.key === '~') {
+                e.preventDefault();
+                playSound('click');
+                document.body.classList.toggle('boss-mode');
+                return;
+            }
+            if (document.body.classList.contains('boss-mode')) return;
+
             if (e.key === 'Escape') {
                 if(searchInput.value) {
                     playSound('click');
@@ -579,12 +633,54 @@
 
         searchInput.onkeydown = (e) => { if(e.key === 'Enter') { playSound('click'); executeSearch(searchInput.value); } };
         
-        // --- NEW SETTINGS LOGIC ---
+        // --- SETTINGS LOGIC ---
         document.getElementById('toggle-status').onchange = (e) => { config.showStatus = e.target.checked; saveConfig(); applySettings(); };
         document.getElementById('toggle-power').onchange = (e) => { config.lowPower = e.target.checked; saveConfig(); applySettings(); };
         document.getElementById('toggle-newtab').onchange = (e) => { config.newTab = e.target.checked; saveConfig(); renderLinks(); };
+        document.getElementById('toggle-military').onchange = (e) => { config.militaryTime = e.target.checked; saveConfig(); updateClock(); };
         document.getElementById('engine-select').onchange = (e) => { config.engine = e.target.value; saveConfig(); };
         document.getElementById('addNewBtn').onclick = () => { playSound('click'); config.links.push({name: "NEW", url: "https://"}); saveConfig(); renderLinks(); };
+        
+        // Weather Save Button
+        document.getElementById('save-weather-btn').onclick = () => {
+            playSound('click');
+            config.weatherLoc = document.getElementById('weather-loc-input').value;
+            saveConfig();
+            document.getElementById('temp-val').innerText = "UPDATING...";
+            fetchWeather(true); // Force update bypassing cache
+        };
+
+        // Incognito Mock Button
+        document.getElementById('incognito-btn').onclick = () => {
+            playSound('click');
+            alert("SYSTEM NOTE: Browsers block websites from forcing incognito windows to open for security.\n\nPRO TIP: Right-click any link or press Ctrl+Shift+N!");
+        };
+
+        // Import / Export JSON
+        document.getElementById('export-btn').onclick = () => {
+            playSound('click');
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(config));
+            const dl = document.createElement('a');
+            dl.setAttribute("href", dataStr);
+            dl.setAttribute("download", "mikevoid_os_backup.json");
+            dl.click();
+        };
+        
+        document.getElementById('import-btn').onclick = () => { playSound('click'); document.getElementById('import-file').click(); };
+        
+        document.getElementById('import-file').onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const importedConfig = JSON.parse(event.target.result);
+                    localStorage.setItem('startConfig', JSON.stringify(importedConfig));
+                    location.reload();
+                } catch (err) { alert("ERROR: Invalid config file structure."); }
+            };
+            reader.readAsText(file);
+        };
 
         const drawer = document.getElementById('settings-drawer');
         const gearIcon = document.getElementById('gear-icon');
@@ -598,8 +694,16 @@
         function updateClock() {
             const now = new Date();
             let h = now.getHours(), m = String(now.getMinutes()).padStart(2, '0'), s = String(now.getSeconds()).padStart(2, '0');
-            const ampm = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12;
-            document.getElementById('clock').innerText = `${h}:${m}:${s} ${ampm}`;
+            
+            if (!config.militaryTime) {
+                const ampm = h >= 12 ? 'PM' : 'AM'; 
+                h = h % 12 || 12;
+                document.getElementById('clock').innerText = `${h}:${m}:${s} ${ampm}`;
+            } else {
+                h = String(h).padStart(2, '0');
+                document.getElementById('clock').innerText = `${h}:${m}:${s}`;
+            }
+            
             document.getElementById('greeting').innerText = now.getHours() < 12 ? "GOOD_MORNING" : now.getHours() < 18 ? "GOOD_AFTERNOON" : "GOOD_EVENING";
         }
 
