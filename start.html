@@ -13,10 +13,10 @@
         * { cursor: url('images/cursor.png'), auto !important; }
         *:active { cursor: url('images/cursor-click.png'), auto !important; }
 
-        a, button, .suggestion-item, #drawer-tab, select, .handle, .toggle-btn, .link-card, .link-card *, .clear-btn, #incognito-btn {
+        a, button, .suggestion-item, #drawer-tab, select, .handle, .toggle-btn, .link-card, .link-card *, .clear-btn {
             cursor: url('images/link-select.png'), pointer !important;
         }
-        a:active, button:active, .suggestion-item:active, #drawer-tab:active, select:active, .link-card:active, .clear-btn:active, #incognito-btn:active {
+        a:active, button:active, .suggestion-item:active, #drawer-tab:active, select:active, .link-card:active, .clear-btn:active {
             cursor: url('images/link-select-click.png'), pointer !important;
         }
 
@@ -121,8 +121,6 @@
             line-height: 1;
         }
         
-        .clear-btn::before, .clear-btn::after { content: none !important; display: none !important; }
-        
         .search-wrapper.has-text .clear-btn {
             width: 60px; 
             margin-left: 8px; 
@@ -135,6 +133,14 @@
             color: #000 !important; 
             border-color: #f00 !important;
             box-shadow: 0 0 15px rgba(255, 0, 0, 0.6);
+        }
+
+        /* --- BRACKET KILLSWITCH --- */
+        /* Stops global CSS from injecting brackets on specific buttons */
+        .clear-btn::before, .clear-btn::after, 
+        .btn-del::before, .btn-del::after, 
+        #save-weather-btn::before, #save-weather-btn::after { 
+            content: none !important; display: none !important; 
         }
 
         /* --- SLIDING PREDICTIVE SEARCH --- */
@@ -267,9 +273,6 @@
         .weather-module { display: flex; align-items: center; gap: 10px; color: #666; }
         .weather-icon { width: 24px; height: 24px; image-rendering: pixelated; }
         #temp-val { color: #888; }
-        
-        #incognito-btn { transition: filter 0.2s; filter: grayscale(100%) opacity(0.5); display: flex; align-items: center; }
-        #incognito-btn:hover { filter: grayscale(0%) opacity(1); }
     </style>
 </head>
 <body>
@@ -324,9 +327,9 @@
 
             <div class="setting-section">
                 <span class="section-label">Weather Override</span>
-                <div style="display: flex; gap: 5px;">
-                    <input type="text" id="weather-loc-input" class="manager-input" placeholder="City or ZIP (Blank for IP)">
-                    <button id="save-weather-btn" class="btn-add" style="margin: 0; width: 60px;">SET</button>
+                <div style="display: flex; gap: 5px; align-items: center;">
+                    <input type="text" id="weather-loc-input" class="manager-input" placeholder="City or ZIP (Blank for IP)" style="flex-grow: 1;">
+                    <button id="save-weather-btn" class="btn-add" style="margin: 0; width: 60px; height: 26px; font-size: 0.7rem; line-height: 1;">SET</button>
                 </div>
             </div>
 
@@ -368,10 +371,6 @@
         <div class="weather-module" id="weather-display">
             <img src="images/sunny.png" class="weather-icon" id="weather-img">
             <span id="temp-val">LOADING...</span>
-        </div>
-        <span>//</span>
-        <div id="incognito-btn" title="Incognito Mode">
-            <img src="images/incognito.png" style="width: 32px; height: 32px; image-rendering: pixelated;">
         </div>
         <span>//</span>
         <span id="sys-status">STATUS: NOMINAL</span>
@@ -551,6 +550,9 @@
             
             // The Boss Key
             if (e.key === '`' || e.key === '~') {
+                // Prevent trigger if typing in an input box
+                if(document.activeElement.tagName === 'INPUT') return;
+                
                 e.preventDefault();
                 playSound('click');
                 document.body.classList.toggle('boss-mode');
@@ -572,7 +574,8 @@
             if (e.key !== 'Enter' && e.key !== 'Escape' && e.key.length === 1) { playSound('type'); }
             if (e.key === 'Backspace') { playSound('type'); }
 
-            if (document.activeElement !== searchInput) {
+            // FIXED: Do not hijack keystrokes if the user is focused on ANY input box
+            if (document.activeElement !== searchInput && document.activeElement.tagName !== 'INPUT') {
                 if (e.key === 'Backspace') {
                     e.preventDefault();
                     if (searchInput.value.length > 0) {
@@ -648,12 +651,6 @@
             saveConfig();
             document.getElementById('temp-val').innerText = "UPDATING...";
             fetchWeather(true); // Force update bypassing cache
-        };
-
-        // Incognito Mock Button
-        document.getElementById('incognito-btn').onclick = () => {
-            playSound('click');
-            alert("SYSTEM NOTE: Browsers block websites from forcing incognito windows to open for security.\n\nPRO TIP: Right-click any link or press Ctrl+Shift+N!");
         };
 
         // Import / Export JSON
