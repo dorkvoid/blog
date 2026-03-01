@@ -136,10 +136,11 @@
         }
 
         /* --- BRACKET KILLSWITCH --- */
-        /* Stops global CSS from injecting brackets on specific buttons */
         .clear-btn::before, .clear-btn::after, 
         .btn-del::before, .btn-del::after, 
-        #save-weather-btn::before, #save-weather-btn::after { 
+        #save-weather-btn::before, #save-weather-btn::after,
+        #export-btn::before, #export-btn::after,
+        #import-btn::before, #import-btn::after { 
             content: none !important; display: none !important; 
         }
 
@@ -217,10 +218,16 @@
         .handle { padding: 0 5px; color: #333; font-size: 1rem; line-height: 1; }
         .manager-input { background: black; border: 1px solid #333; color: #ccc; padding: 0 6px; margin: 0; height: 26px; line-height: 24px; box-sizing: border-box; font-family: 'PixeloidSans', sans-serif; font-size: 0.7rem; outline: none; flex-grow: 1; }
         .manager-input.edit-name { flex-grow: 0; width: 60px; }
+        
         .btn-del { background: #111; color: #f00; border: 1px solid #300; width: 26px; height: 26px; padding: 0; margin: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-family: 'PixeloidSansBold', sans-serif; }
         .btn-del:hover { background: #f00; color: #000; box-shadow: 0 0 10px #f00; border-color: #f00; }
         
-        .btn-add { width: 100%; background: #000; color: #fff; border: 1px solid #333; height: 36px; box-sizing: border-box; font-family: 'PixeloidSansBold', sans-serif; margin-top: 5px; transition: 0.2s; }
+        /* Flex alignment added here to globally center text in all .btn-add instances */
+        .btn-add { 
+            width: 100%; background: #000; color: #fff; border: 1px solid #333; height: 36px; box-sizing: border-box; 
+            font-family: 'PixeloidSansBold', sans-serif; margin-top: 5px; transition: 0.2s; 
+            display: flex; align-items: center; justify-content: center;
+        }
         .btn-add:hover { background: #fff; color: #000; border-color: white; }
 
         /* --- FIXED UI COMPONENTS --- */
@@ -329,7 +336,7 @@
                 <span class="section-label">Weather Override</span>
                 <div style="display: flex; gap: 5px; align-items: center;">
                     <input type="text" id="weather-loc-input" class="manager-input" placeholder="City or ZIP (Blank for IP)" style="flex-grow: 1;">
-                    <button id="save-weather-btn" class="btn-add" style="margin: 0; width: 60px; height: 26px; font-size: 0.7rem; line-height: 1;">SET</button>
+                    <button id="save-weather-btn" class="btn-add" style="margin: 0; width: 60px; height: 26px; font-size: 0.7rem;">SET</button>
                 </div>
             </div>
 
@@ -342,8 +349,8 @@
             <div class="setting-section" style="border-top: 1px solid #222; padding-top: 20px;">
                 <span class="section-label">System Backup</span>
                 <div style="display: flex; gap: 10px;">
-                    <button id="export-btn" class="btn-add" style="margin:0;">EXPORT JSON</button>
-                    <button id="import-btn" class="btn-add" style="margin:0;">IMPORT JSON</button>
+                    <button id="export-btn" class="btn-add" style="margin:0; font-size: 0.65rem; white-space: nowrap;">EXPORT JSON</button>
+                    <button id="import-btn" class="btn-add" style="margin:0; font-size: 0.65rem; white-space: nowrap;">IMPORT JSON</button>
                     <input type="file" id="import-file" style="display: none;" accept=".json">
                 </div>
             </div>
@@ -548,9 +555,7 @@
         window.addEventListener('keydown', (e) => {
             if (e.repeat) return; 
             
-            // The Boss Key
             if (e.key === '`' || e.key === '~') {
-                // Prevent trigger if typing in an input box
                 if(document.activeElement.tagName === 'INPUT') return;
                 
                 e.preventDefault();
@@ -574,7 +579,6 @@
             if (e.key !== 'Enter' && e.key !== 'Escape' && e.key.length === 1) { playSound('type'); }
             if (e.key === 'Backspace') { playSound('type'); }
 
-            // FIXED: Do not hijack keystrokes if the user is focused on ANY input box
             if (document.activeElement !== searchInput && document.activeElement.tagName !== 'INPUT') {
                 if (e.key === 'Backspace') {
                     e.preventDefault();
