@@ -69,13 +69,16 @@
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.15), inset 0 0 15px rgba(255,255,255,0.05); 
         }
 
-        /* QOL Clear Button */
+        /* QOL Clear Button - Now looks like a physical keycap */
         .clear-btn {
-            position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
-            background: none; border: none; color: #555; font-family: 'PixeloidSansBold', sans-serif;
-            font-size: 1rem; display: none; padding: 10px; transition: 0.2s;
+            position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+            background: #111; border: 2px solid #333; color: #666; 
+            font-family: 'PixeloidSansBold', sans-serif; font-size: 1rem; 
+            display: none; width: 30px; height: 30px; box-sizing: border-box;
+            align-items: center; justify-content: center; transition: 0.2s;
+            padding: 0; line-height: 1;
         }
-        .clear-btn:hover { color: #f00; text-shadow: 0 0 5px red; }
+        .clear-btn:hover { background: #f00; color: #000; border-color: #f00; box-shadow: 0 0 10px rgba(255,0,0,0.5); }
 
         /* QOL Autocomplete Styling */
         #suggestions-box {
@@ -211,7 +214,7 @@
         
         <div class="search-wrapper">
             <input type="text" id="web-search" class="search-box" placeholder="type command..." autofocus autocomplete="off">
-            <button id="clear-search" class="clear-btn">X</button>
+            <button id="clear-search" class="clear-btn">&times;</button>
             <div id="suggestions-box"></div>
         </div>
     </div>
@@ -400,11 +403,19 @@
             }
         });
 
+        clearBtn.onclick = () => {
+            playSound('click');
+            searchInput.value = '';
+            clearBtn.style.display = 'none';
+            suggestionsBox.style.display = 'none';
+            searchInput.focus();
+        };
+
         searchInput.oninput = () => {
             const query = searchInput.value.trim();
             
-            // Toggle Clear Button
-            clearBtn.style.display = query.length > 0 ? 'block' : 'none';
+            // Toggle Clear Button using FLEX so it stays centered
+            clearBtn.style.display = query.length > 0 ? 'flex' : 'none';
 
             if (query.length === 0 || query.includes(' ')) { suggestionsBox.style.display = 'none'; return; }
             clearTimeout(debounceTimer);
