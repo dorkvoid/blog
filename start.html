@@ -13,10 +13,10 @@
         * { cursor: url('images/cursor.png'), auto !important; }
         *:active { cursor: url('images/cursor-click.png'), auto !important; }
 
-        a, button, .suggestion-item, #drawer-tab, select, .handle, .toggle-btn, .link-card, .link-card * {
+        a, button, .suggestion-item, #drawer-tab, select, .handle, .toggle-btn, .link-card, .link-card *, .clear-btn {
             cursor: url('images/link-select.png'), pointer !important;
         }
-        a:active, button:active, .suggestion-item:active, #drawer-tab:active, select:active, .link-card:active {
+        a:active, button:active, .suggestion-item:active, #drawer-tab:active, select:active, .link-card:active, .clear-btn:active {
             cursor: url('images/link-select-click.png'), pointer !important;
         }
 
@@ -32,34 +32,77 @@
         }
         body.low-power { filter: brightness(0.7); }
 
-        /* --- SEARCH BAR --- */
-        .search-wrapper { position: relative; width: 100%; max-width: 650px; padding: 10px; display: flex; align-items: center; }
+        /* --- COMMAND CENTER (Unifies Clock & Search) --- */
+        .command-center {
+            width: 100%; max-width: 650px; 
+            display: flex; flex-direction: column; align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 3.5rem; color: white; margin-bottom: 0px; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,255,255,0.1); }
+        #greeting { font-family: 'PixeloidSansBold', sans-serif; color: #444; margin-bottom: 25px; font-size: 0.8rem; letter-spacing: 4px; text-transform: uppercase; }
+
+        /* --- SEARCH BAR 2.0 --- */
+        .search-wrapper { position: relative; width: 100%; display: flex; align-items: center; }
         .search-wrapper::before {
             content: '>'; position: absolute; left: 25px; top: 50%; transform: translateY(-54%);
             color: #fff; font-family: 'PixeloidSansBold', sans-serif; font-size: 1.5rem; z-index: 5;
-            animation: blink 1s infinite;
+            animation: blink 1s infinite; text-shadow: 0 0 5px rgba(255,255,255,0.3);
         }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
         .search-box { 
             width: 100%; background: #050505; border: 2px solid #222; color: white; 
             font-family: 'PixeloidSans', sans-serif; font-size: 1.3rem; 
-            padding: 0 18px 0 50px; height: 60px; line-height: 56px; 
-            outline: none; text-align: left; box-sizing: border-box; transition: 0.3s;
+            padding: 0 50px 0 50px; /* Space for both > and X */
+            height: 60px; line-height: 56px; 
+            outline: none; text-align: left; box-sizing: border-box; 
+            transition: all 0.15s ease-in-out; /* Tuned to make the "wake" effect snappier */
             box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.02);
             background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.02));
             background-size: 100% 4px, 3px 100%;
         }
-        .search-box:focus { border-color: #fff; background: #0a0a0a; box-shadow: 0 0 20px rgba(255, 255, 255, 0.1); }
+        
+        /* The Wake Effect */
+        .search-box:focus { 
+            border-color: #fff; background-color: #0a0a0a; 
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.15), inset 0 0 15px rgba(255,255,255,0.05); 
+        }
+
+        /* QOL Clear Button */
+        .clear-btn {
+            position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; color: #555; font-family: 'PixeloidSansBold', sans-serif;
+            font-size: 1rem; display: none; padding: 10px; transition: 0.2s;
+        }
+        .clear-btn:hover { color: #f00; text-shadow: 0 0 5px red; }
+
+        /* QOL Autocomplete Styling */
+        #suggestions-box {
+            position: absolute; top: calc(100% - 2px); left: 0; width: 100%; 
+            background: #050505; border: 2px solid #fff; border-top: none; 
+            display: none; flex-direction: column; z-index: 20; box-sizing: border-box;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.8);
+        }
+        .suggestion-item {
+            padding: 15px 25px; color: #ccc; font-family: 'PixeloidSans', sans-serif; font-size: 1rem;
+            border-bottom: 1px solid #111; transition: 0.1s; display: flex; align-items: center;
+        }
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item:hover { background: #1a1a1a; color: #fff; padding-left: 35px; /* Slides right on hover */ }
 
         /* --- ICON GRID --- */
-        .quick-links { margin-top: 50px; display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; max-width: 800px; }
+        .quick-links { display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; max-width: 800px; }
         .link-card { display: flex; flex-direction: column; align-items: center; gap: 10px; text-decoration: none; width: 80px; transition: transform 0.1s; }
         .link-card:hover { transform: scale(1.1); }
         .icon-box { width: 54px; height: 54px; background: #111; border: 2px solid #333; display: flex; align-items: center; justify-content: center; transition: 0.2s; box-sizing: border-box; }
         .link-card:hover .icon-box { border-color: white; box-shadow: 0 0 15px rgba(255,255,255,0.1); }
         .icon-box img { width: 32px; height: 32px; image-rendering: pixelated; pointer-events: none; }
-        .link-label { color: #444; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; transition: color 0.2s; text-align: center; }
+        .link-label { 
+            color: #444; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.65rem; 
+            text-transform: uppercase; letter-spacing: 1px; transition: color 0.2s; text-align: center;
+            width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; /* Keeps long names clean */
+        }
         .link-card:hover .link-label { color: white; }
 
         /* --- SETTINGS DRAWER --- */
@@ -109,10 +152,7 @@
         
         select { background: #080808; border: 1px solid #333; color: #ccc; padding: 0 10px; height: 36px; box-sizing: border-box; font-family: 'PixeloidSans', sans-serif; width: 100%; outline: none; font-size: 0.8rem; }
 
-        /* MAIN DASHBOARD */
-        .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 3rem; color: white; margin-bottom: 5px; }
-        #greeting { font-family: 'PixeloidSans', sans-serif; color: #444; margin-bottom: 30px; font-size: 1rem; letter-spacing: 2px;}
-        
+        /* --- VISIBLE STATUS BAR --- */
         .status-bar { position: fixed; bottom: 20px; left: 30px; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.85rem; color: #444; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; gap: 15px; z-index: 5; }
         .weather-module { display: flex; align-items: center; gap: 10px; color: #666; }
         .weather-icon { width: 24px; height: 24px; image-rendering: pixelated; }
@@ -165,17 +205,18 @@
         </div>
     </div>
 
-    <div class="start-container">
+    <div class="command-center">
         <div id="clock" class="terminal-clock">00:00:00</div>
         <div id="greeting">SYSTEM_ONLINE</div>
         
         <div class="search-wrapper">
             <input type="text" id="web-search" class="search-box" placeholder="type command..." autofocus autocomplete="off">
-            <div id="suggestions-box" style="position: absolute; top: 100%; left: 10px; width: calc(100% - 20px); background: black; border: 2px solid white; border-top: none; display: none; flex-direction: column; z-index: 20;"></div>
+            <button id="clear-search" class="clear-btn">X</button>
+            <div id="suggestions-box"></div>
         </div>
-
-        <div id="links-container" class="quick-links"></div>
     </div>
+
+    <div id="links-container" class="quick-links"></div>
 
     <div class="status-bar" id="status-bar">
         <span>MIKEVOID_OS</span>
@@ -194,17 +235,16 @@
         let config = JSON.parse(localStorage.getItem('startConfig')) || DEFAULT_CONFIG;
         const saveConfig = () => localStorage.setItem('startConfig', JSON.stringify(config));
 
-        // --- 2. AUDIO SYSTEM ---
+        // --- 2. AUDIO SYSTEM (SPLIT LOGIC KEPT INTACT) ---
         const audioAssets = {
             hover: new Audio('sounds/hoverbutton.wav'), 
             click: new Audio('sounds/buttonclick.mp3'),
             types: [new Audio('sounds/type1.mp3'), new Audio('sounds/type2.mp3'), new Audio('sounds/type3.mp3'), new Audio('sounds/type4.mp3')],
-            // SPLIT MOUSE AUDIO ARRAYS (You need to create these files)
             mouseDown: [new Audio('sounds/mousedown1.mp3'), new Audio('sounds/mousedown2.mp3'), new Audio('sounds/mousedown3.mp3'), new Audio('sounds/mousedown4.mp3')],
             mouseUp: [new Audio('sounds/mouseup1.mp3'), new Audio('sounds/mouseup2.mp3'), new Audio('sounds/mouseup3.mp3'), new Audio('sounds/mouseup4.mp3')]
         };
 
-        let lastMouseIdx = 0; // Remembers which down-click played so it matches the up-click
+        let lastMouseIdx = 0; 
 
         const playSound = (type) => {
             let sound, vol = 0.4;
@@ -214,14 +254,13 @@
             } else if (type === 'click') {
                 sound = audioAssets.click;
             } else if (type === 'mouseDown') {
-                lastMouseIdx = Math.floor(Math.random() * 4); // Pick a random click variation
+                lastMouseIdx = Math.floor(Math.random() * 4); 
                 sound = audioAssets.mouseDown[lastMouseIdx];
                 vol = 0.05;
             } else if (type === 'mouseUp') {
-                sound = audioAssets.mouseUp[lastMouseIdx]; // Match the release to the press
+                sound = audioAssets.mouseUp[lastMouseIdx]; 
                 vol = 0.05;
             } else {
-                // Default to typing sound
                 sound = audioAssets.types[Math.floor(Math.random() * 4)];
             }
             
@@ -238,7 +277,6 @@
             const cachedData = JSON.parse(localStorage.getItem(cacheKey));
             const now = new Date().getTime();
 
-            // Use cache if it's less than 15 minutes old
             if (cachedData && (now - cachedData.timestamp < 900000)) {
                 applyWeatherUI(cachedData.temp, cachedData.code);
                 return;
@@ -284,14 +322,12 @@
             container.innerHTML = ''; manager.innerHTML = '';
 
             config.links.forEach((link, index) => {
-                // Main Dash Links
                 const card = document.createElement('a');
                 card.className = 'link-card'; card.href = link.url; card.target = "_blank";
                 card.innerHTML = `<div class="icon-box"><img src="${getFavicon(link.url)}" onerror="this.src='images/plxeyestiny.png'"></div><div class="link-label">${link.name}</div>`;
                 card.onmouseenter = () => playSound('hover'); card.onclick = () => playSound('click');
                 container.appendChild(card);
 
-                // Manager Items
                 const item = document.createElement('div');
                 item.className = 'link-manager-item';
                 item.innerHTML = `
@@ -337,27 +373,39 @@
             });
         }
 
-        // SEPARATED MOUSE SOUNDS
+        // Mouse Sounds
         window.addEventListener('mousedown', () => playSound('mouseDown'));
         window.addEventListener('mouseup', () => playSound('mouseUp'));
         
+        // Search & Clear Button Logic
         const searchInput = document.getElementById('web-search');
+        const clearBtn = document.getElementById('clear-search');
+        const suggestionsBox = document.getElementById('suggestions-box');
+        let debounceTimer;
+
+        clearBtn.onclick = () => {
+            playSound('click');
+            searchInput.value = '';
+            clearBtn.style.display = 'none';
+            suggestionsBox.style.display = 'none';
+            searchInput.focus();
+        };
+
         window.addEventListener('keydown', (e) => {
             if (e.repeat) return; 
             if (e.key !== 'Enter') playSound('type'); 
             
-            // Auto-focus search on character typing
             if (document.activeElement !== searchInput && e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
                 searchInput.focus();
             }
         });
 
-        // Search Autocomplete & Execution
-        const suggestionsBox = document.getElementById('suggestions-box');
-        let debounceTimer;
-
         searchInput.oninput = () => {
             const query = searchInput.value.trim();
+            
+            // Toggle Clear Button
+            clearBtn.style.display = query.length > 0 ? 'block' : 'none';
+
             if (query.length === 0 || query.includes(' ')) { suggestionsBox.style.display = 'none'; return; }
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
@@ -411,7 +459,9 @@
         };
         
         window.onclick = (e) => { 
-            if (e.target !== searchInput && !e.target.closest('#suggestions-box')) suggestionsBox.style.display = 'none';
+            if (e.target !== searchInput && e.target !== clearBtn && !e.target.closest('#suggestions-box')) {
+                suggestionsBox.style.display = 'none';
+            }
             if (!drawer.contains(e.target) && !document.getElementById('drawer-tab').contains(e.target) && drawer.classList.contains('open')) {
                 drawer.classList.remove('open'); gearIcon.classList.remove('gear-spin');
             }
@@ -433,7 +483,7 @@
             updateClock();
             setInterval(updateClock, 1000);
             fetchWeather();
-            setInterval(fetchWeather, 300000); // Check weather every 5 mins
+            setInterval(fetchWeather, 300000); 
         }
         
         init();
