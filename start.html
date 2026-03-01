@@ -41,7 +41,7 @@
         .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 3.5rem; color: white; margin-bottom: 0px; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,255,255,0.1); }
         #greeting { font-family: 'PixeloidSansBold', sans-serif; color: #444; margin-bottom: 25px; font-size: 0.8rem; letter-spacing: 4px; text-transform: uppercase; }
 
-        /* --- ANIMATED SEARCH BAR (Tight Gap, Perfect Alignment) --- */
+        /* --- ANIMATED SEARCH BAR --- */
         .search-wrapper { 
             position: relative; 
             width: 100%; 
@@ -63,14 +63,21 @@
         }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
+        /* The re-engineered CRT wake glitch */
+        @keyframes crt-flicker {
+            0% { box-shadow: inset 0 0 0 rgba(255,255,255,0); }
+            30% { box-shadow: inset 0 0 30px rgba(255,255,255,0.15), 0 0 30px rgba(255,255,255,0.25); }
+            100% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.15), inset 0 0 15px rgba(255,255,255,0.05); }
+        }
+
         .search-box { 
-            flex: 0 0 650px; /* Locked size, never morphs */
+            flex: 0 0 650px; 
             background: #050505; border: 2px solid #222; color: white; 
             font-family: 'PixeloidSans', sans-serif; font-size: 1.3rem; 
             padding: 0 20px 0 50px; 
             height: 60px; line-height: 56px; 
             outline: none; text-align: left; box-sizing: border-box; 
-            transition: all 0.2s ease-in-out; 
+            transition: border-color 0.2s, background-color 0.2s; 
             box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.02);
             background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.02));
             background-size: 100% 4px, 3px 100%;
@@ -81,13 +88,13 @@
         
         .search-box:focus { 
             border-color: #fff; background-color: #0a0a0a; 
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.15), inset 0 0 15px rgba(255,255,255,0.05); 
+            animation: crt-flicker 0.2s ease-out forwards; /* Deliberate flicker effect */
         }
 
         /* --- THE DETACHED "X" BOX --- */
         .clear-btn {
             width: 0px; height: 60px; 
-            flex-shrink: 0; /* CRITICAL: Stops the browser from squishing the button */
+            flex-shrink: 0; 
             background: #000; 
             border: 2px solid transparent; 
             color: #f00; 
@@ -103,21 +110,15 @@
             text-decoration: none !important;
         }
         
-        /* Kills your external CSS from injecting brackets */
-        .clear-btn::before, .clear-btn::after {
-            content: none !important;
-            display: none !important;
-        }
+        .clear-btn::before, .clear-btn::after { content: none !important; display: none !important; }
         
-        /* Box slides out with an 8px gap */
         .search-wrapper.has-text .clear-btn {
             width: 60px; 
-            margin-left: 8px; /* Tighter physical gap */
-            border-color: #f00; /* Red outline when idle */
+            margin-left: 8px; 
+            border-color: #f00; 
             opacity: 1; pointer-events: auto;
         }
         
-        /* Hover State: Solid Red, Black X */
         .clear-btn:hover { 
             background: #f00 !important; 
             color: #000 !important; 
@@ -128,7 +129,7 @@
         /* QOL Autocomplete Styling */
         #suggestions-box {
             position: absolute; top: calc(100% - 2px); 
-            left: 0; width: 650px; /* Locked to the search box width */
+            left: 0; width: 650px; 
             background: #050505; border: 2px solid #fff; border-top: none; 
             display: none; flex-direction: column; z-index: 20; box-sizing: border-box;
             box-shadow: 0 10px 20px rgba(0,0,0,0.8);
@@ -288,21 +289,18 @@
 
         const playSound = (type) => {
             let sound, vol = 0.4;
-            
-            if (type === 'hover') {
-                sound = audioAssets.hover;
-            } else if (type === 'click') {
-                sound = audioAssets.click;
-            } else if (type === 'mouseDown') {
+            if (type === 'hover') { sound = audioAssets.hover; } 
+            else if (type === 'click') { sound = audioAssets.click; } 
+            else if (type === 'mouseDown') {
                 lastMouseIdx = Math.floor(Math.random() * 4); 
                 sound = audioAssets.mouseDown[lastMouseIdx];
                 vol = 0.05;
-            } else if (type === 'mouseUp') {
+            } 
+            else if (type === 'mouseUp') {
                 sound = audioAssets.mouseUp[lastMouseIdx]; 
                 vol = 0.05;
-            } else {
-                sound = audioAssets.types[Math.floor(Math.random() * 4)];
-            }
+            } 
+            else { sound = audioAssets.types[Math.floor(Math.random() * 4)]; }
             
             if (sound) {
                 const clone = sound.cloneNode(); 
@@ -428,12 +426,41 @@
             searchInput.focus();
         };
 
+        // GLOBAL KEYDOWN: Handles Esc, Backspace, and auto-focusing
         window.addEventListener('keydown', (e) => {
             if (e.repeat) return; 
-            if (e.key !== 'Enter') playSound('type'); 
-            
-            if (document.activeElement !== searchInput && e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
-                searchInput.focus();
+
+            // Escape clears the search completely
+            if (e.key === 'Escape') {
+                if(searchInput.value) {
+                    playSound('click');
+                    searchInput.value = '';
+                    searchWrapper.classList.remove('has-text');
+                    suggestionsBox.style.display = 'none';
+                }
+                searchInput.blur();
+                return;
+            }
+
+            // Normal typing sounds (Exclude modifier keys so Ctrl/Shift don't click)
+            if (e.key !== 'Enter' && e.key !== 'Escape' && e.key.length === 1) { playSound('type'); }
+            if (e.key === 'Backspace') { playSound('type'); }
+
+            // If we are NOT focused on the search bar
+            if (document.activeElement !== searchInput) {
+                // Intercept global backspace so the browser doesn't go back a page
+                if (e.key === 'Backspace') {
+                    e.preventDefault();
+                    if (searchInput.value.length > 0) {
+                        searchInput.value = searchInput.value.slice(0, -1);
+                        searchInput.focus();
+                        searchInput.dispatchEvent(new Event('input')); // Triggers autocomplete & UI update
+                    }
+                } 
+                // Auto-focus on any normal letter/number keypress
+                else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                    searchInput.focus();
+                }
             }
         });
 
