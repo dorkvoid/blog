@@ -128,16 +128,36 @@
             box-shadow: 0 0 15px rgba(255, 0, 0, 0.6);
         }
 
-        /* --- PREDICTIVE SEARCH --- */
+        /* --- PREDICTIVE SEARCH (Animated Slide) --- */
         #suggestions-box {
             position: absolute; 
             top: 100%; /* Sits flush with bottom of search bar */
             left: 0; 
             width: 100%; 
             background: #050505; border: 2px solid #fff; border-top: none; 
-            display: none; flex-direction: column; z-index: 20; box-sizing: border-box;
+            display: flex; flex-direction: column; z-index: 20; box-sizing: border-box;
             box-shadow: 0 10px 20px rgba(0,0,0,0.8);
+            
+            /* Slide Animation Defaults */
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateY(-15px); /* Start tucked up slightly */
+            clip-path: inset(0 -50px 100% -50px); /* Masks the bottom edge but allows side shadows */
+            transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), 
+                        opacity 0.2s ease, 
+                        visibility 0.2s, 
+                        clip-path 0.25s cubic-bezier(0.25, 1, 0.5, 1);
         }
+        
+        #suggestions-box.show {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateY(0);
+            clip-path: inset(0 -50px -50px -50px); /* Unmasks downwards */
+        }
+
         .suggestion-item {
             padding: 15px 25px; color: #ccc; font-family: 'PixeloidSans', sans-serif; font-size: 1rem;
             border-bottom: 1px solid #111; transition: 0.1s; display: flex; align-items: center;
@@ -418,7 +438,7 @@
             playSound('click');
             searchInput.value = '';
             searchWrapper.classList.remove('has-text'); 
-            suggestionsBox.style.display = 'none';
+            suggestionsBox.classList.remove('show');
             searchInput.focus();
         };
 
@@ -429,7 +449,7 @@
                     playSound('click');
                     searchInput.value = '';
                     searchWrapper.classList.remove('has-text');
-                    suggestionsBox.style.display = 'none';
+                    suggestionsBox.classList.remove('show');
                 }
                 searchInput.blur();
                 return;
@@ -459,7 +479,7 @@
             if (query.length > 0) searchWrapper.classList.add('has-text');
             else searchWrapper.classList.remove('has-text');
 
-            if (query.length === 0 || query.includes(' ')) { suggestionsBox.style.display = 'none'; return; }
+            if (query.length === 0 || query.includes(' ')) { suggestionsBox.classList.remove('show'); return; }
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
                 const script = document.createElement('script');
@@ -469,7 +489,7 @@
         };
 
         window.autocompleteCallback = (data) => {
-            if (searchInput.value.trim().length === 0) { suggestionsBox.style.display = 'none'; return; }
+            if (searchInput.value.trim().length === 0) { suggestionsBox.classList.remove('show'); return; }
             suggestionsBox.innerHTML = '';
             if (data && data.length > 0) {
                 data.slice(0, 5).forEach(item => {
@@ -479,8 +499,8 @@
                     div.onclick = () => { playSound('click'); executeSearch(item.phrase); };
                     suggestionsBox.appendChild(div);
                 });
-                suggestionsBox.style.display = 'flex';
-            } else { suggestionsBox.style.display = 'none'; }
+                suggestionsBox.classList.add('show');
+            } else { suggestionsBox.classList.remove('show'); }
         };
 
         function executeSearch(val) {
@@ -508,7 +528,7 @@
         document.getElementById('drawer-tab').onclick = (e) => { e.stopPropagation(); playSound('click'); drawer.classList.toggle('open'); gearIcon.classList.toggle('gear-spin'); };
         
         window.onclick = (e) => { 
-            if (e.target !== searchInput && e.target !== clearBtn && !e.target.closest('#suggestions-box')) suggestionsBox.style.display = 'none';
+            if (e.target !== searchInput && e.target !== clearBtn && !e.target.closest('#suggestions-box')) suggestionsBox.classList.remove('show');
             if (!drawer.contains(e.target) && !document.getElementById('drawer-tab').contains(e.target) && drawer.classList.contains('open')) { drawer.classList.remove('open'); gearIcon.classList.remove('gear-spin'); }
         };
 
