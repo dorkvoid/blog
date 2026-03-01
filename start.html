@@ -128,11 +128,20 @@
 
         /* QOL Autocomplete Styling */
         #suggestions-box {
-            position: absolute; top: calc(100% - 2px); 
-            left: 0; width: 650px; 
-            background: #050505; border: 2px solid #fff; border-top: none; 
-            display: none; flex-direction: column; z-index: 20; box-sizing: border-box;
+            position: absolute; 
+            top: calc(100% - 2px); 
+            left: 50%; /* Force center alignment */
+            transform: translateX(-50%); /* Offset by half its own width */
+            width: 650px; /* Matches the static search-box width exactly */
+            background: #050505; 
+            border: 2px solid #fff; 
+            border-top: none; 
+            display: none; 
+            flex-direction: column; 
+            z-index: 20; 
+            box-sizing: border-box;
             box-shadow: 0 10px 20px rgba(0,0,0,0.8);
+            pointer-events: auto;
         }
         .suggestion-item {
             padding: 15px 25px; color: #ccc; font-family: 'PixeloidSans', sans-serif; font-size: 1rem;
@@ -454,7 +463,11 @@
                     if (searchInput.value.length > 0) {
                         searchInput.value = searchInput.value.slice(0, -1);
                         searchInput.focus();
-                        searchInput.dispatchEvent(new Event('input')); // Triggers autocomplete & UI update
+                        searchInput.dispatchEvent(new Event('input')); 
+                    }
+                    // Safety retract: if it's empty, force the wrapper to shrink
+                    if (searchInput.value.length === 0) {
+                        searchWrapper.classList.remove('has-text');
                     }
                 } 
                 // Auto-focus on any normal letter/number keypress
@@ -483,17 +496,28 @@
         };
 
         window.autocompleteCallback = (data) => {
+            const query = searchInput.value.trim();
+            
+            // If user backspaced everything, kill the box immediately
+            if (query.length === 0) {
+                suggestionsBox.style.display = 'none';
+                return;
+            }
+
             suggestionsBox.innerHTML = '';
             if (data && data.length > 0) {
                 data.slice(0, 5).forEach(item => {
                     const div = document.createElement('div');
-                    div.className = 'suggestion-item'; div.innerText = item.phrase;
+                    div.className = 'suggestion-item'; 
+                    div.innerText = item.phrase;
                     div.onmouseenter = () => playSound('hover');
                     div.onclick = () => { playSound('click'); executeSearch(item.phrase); };
                     suggestionsBox.appendChild(div);
                 });
                 suggestionsBox.style.display = 'flex';
-            } else { suggestionsBox.style.display = 'none'; }
+            } else { 
+                suggestionsBox.style.display = 'none'; 
+            }
         };
 
         function executeSearch(val) {
