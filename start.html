@@ -196,18 +196,40 @@
 
         // --- 2. AUDIO SYSTEM ---
         const audioAssets = {
-            hover: new Audio('sounds/hoverbutton.wav'), click: new Audio('sounds/buttonclick.mp3'),
+            hover: new Audio('sounds/hoverbutton.wav'), 
+            click: new Audio('sounds/buttonclick.mp3'),
             types: [new Audio('sounds/type1.mp3'), new Audio('sounds/type2.mp3'), new Audio('sounds/type3.mp3'), new Audio('sounds/type4.mp3')],
-            mouseClicks: [new Audio('sounds/mouse1.mp3'), new Audio('sounds/mouse2.mp3'), new Audio('sounds/mouse3.mp3'), new Audio('sounds/mouse4.mp3')]
+            // SPLIT MOUSE AUDIO ARRAYS (You need to create these files)
+            mouseDown: [new Audio('sounds/mousedown1.mp3'), new Audio('sounds/mousedown2.mp3'), new Audio('sounds/mousedown3.mp3'), new Audio('sounds/mousedown4.mp3')],
+            mouseUp: [new Audio('sounds/mouseup1.mp3'), new Audio('sounds/mouseup2.mp3'), new Audio('sounds/mouseup3.mp3'), new Audio('sounds/mouseup4.mp3')]
         };
+
+        let lastMouseIdx = 0; // Remembers which down-click played so it matches the up-click
 
         const playSound = (type) => {
             let sound, vol = 0.4;
-            if (type === 'hover') sound = audioAssets.hover;
-            else if (type === 'click') sound = audioAssets.click;
-            else if (type === 'mouse') { sound = audioAssets.mouseClicks[Math.floor(Math.random()*4)]; vol = 0.05; }
-            else sound = audioAssets.types[Math.floor(Math.random()*4)];
-            const clone = sound.cloneNode(); clone.volume = vol; clone.play().catch(()=>{});
+            
+            if (type === 'hover') {
+                sound = audioAssets.hover;
+            } else if (type === 'click') {
+                sound = audioAssets.click;
+            } else if (type === 'mouseDown') {
+                lastMouseIdx = Math.floor(Math.random() * 4); // Pick a random click variation
+                sound = audioAssets.mouseDown[lastMouseIdx];
+                vol = 0.05;
+            } else if (type === 'mouseUp') {
+                sound = audioAssets.mouseUp[lastMouseIdx]; // Match the release to the press
+                vol = 0.05;
+            } else {
+                // Default to typing sound
+                sound = audioAssets.types[Math.floor(Math.random() * 4)];
+            }
+            
+            if (sound) {
+                const clone = sound.cloneNode(); 
+                clone.volume = vol; 
+                clone.play().catch(()=>{});
+            }
         };
 
         // --- 3. WEATHER SYSTEM (WITH CACHING) ---
@@ -315,8 +337,9 @@
             });
         }
 
-        // Global Events
-        window.addEventListener('mousedown', () => playSound('mouse'));
+        // SEPARATED MOUSE SOUNDS
+        window.addEventListener('mousedown', () => playSound('mouseDown'));
+        window.addEventListener('mouseup', () => playSound('mouseUp'));
         
         const searchInput = document.getElementById('web-search');
         window.addEventListener('keydown', (e) => {
