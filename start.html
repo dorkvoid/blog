@@ -41,19 +41,19 @@
         .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 3.5rem; color: white; margin-bottom: 0px; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,255,255,0.1); }
         #greeting { font-family: 'PixeloidSansBold', sans-serif; color: #444; margin-bottom: 25px; font-size: 0.8rem; letter-spacing: 4px; text-transform: uppercase; }
 
-        /* --- ANIMATED SEARCH BAR (Symmetrical Expansion) --- */
+        /* --- ANIMATED SEARCH BAR (Seamless Fusion) --- */
         .search-wrapper { 
             position: relative; 
             width: 100%; 
-            max-width: 650px; /* Original Base Size */
+            max-width: 650px; 
             display: flex; 
-            align-items: center; 
+            align-items: stretch; /* Forces children to match height perfectly */
             justify-content: center;
-            transition: max-width 0.3s cubic-bezier(0.25, 1, 0.5, 1); /* Smooth Expansion */
+            transition: max-width 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
             margin: 0 auto;
         }
         
-        /* Expands symmetrically ONLY when text is present to make room for the 60px appended box */
+        /* Expands symmetrically to 710px to accommodate the 60px X box */
         .search-wrapper.has-text { max-width: 710px; }
 
         .search-wrapper::before {
@@ -64,7 +64,7 @@
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
         .search-box { 
-            flex: 1; /* Automatically takes remaining space */
+            flex: 1; 
             min-width: 0;
             background: #050505; border: 2px solid #222; color: white; 
             font-family: 'PixeloidSans', sans-serif; font-size: 1.3rem; 
@@ -72,39 +72,43 @@
             height: 60px; line-height: 56px; 
             outline: none; text-align: left; box-sizing: border-box; 
             transition: all 0.2s ease-in-out; 
-            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.02);
             background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.02));
             background-size: 100% 4px, 3px 100%;
             cursor: text !important;
             z-index: 2;
         }
         
-        .search-box:focus { 
-            border-color: #fff; background-color: #0a0a0a; 
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.15), inset 0 0 15px rgba(255,255,255,0.05); 
-        }
+        /* Stitching: remove the right border when the X box is out */
+        .search-wrapper.has-text .search-box { border-right: none; }
 
-        /* --- THE APPENDED "X" BOX --- */
+        /* Sync Focus Glow across both elements */
+        .search-box:focus { border-color: #fff; background-color: #0a0a0a; }
+        .search-box:focus + .clear-btn { border-color: #fff; background-color: #0a0a0a; }
+
+        /* --- THE SEAMLESS "X" BOX --- */
         .clear-btn {
-            width: 0px; height: 60px; /* Starts completely collapsed */
-            background: #111; border: 2px solid #333; border-left: none; /* Attaches to search box */
-            color: #f00; font-family: 'PixeloidSansBold', sans-serif; font-size: 1.4rem; 
+            width: 0px; height: 60px; 
+            background: #050505; /* Matches search bar idling */
+            border: 2px solid #222; 
+            border-left: none; /* Prevents double border */
+            color: #f00; /* Red X */
+            font-family: 'PixeloidSansBold', sans-serif; font-size: 1.4rem; 
             display: flex; align-items: center; justify-content: center;
             opacity: 0; pointer-events: none; overflow: hidden;
             transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
             box-sizing: border-box; padding: 0; margin: 0;
-            text-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
         }
         
-        /* Expands and slides out physically from the right edge */
         .search-wrapper.has-text .clear-btn {
-            width: 60px; /* Perfect square */
+            width: 60px; /* Snaps to a perfect square */
             opacity: 1; pointer-events: auto;
         }
         
+        /* The Exact Hover State You Wanted */
         .clear-btn:hover { 
-            background: #200; border-color: #f00; color: #fff;
-            text-shadow: 0 0 15px rgba(255, 0, 0, 1);
+            background: #f00 !important; 
+            color: #000 !important; 
+            border-color: #f00 !important;
         }
 
         /* QOL Autocomplete Styling */
@@ -401,12 +405,12 @@
         const suggestionsBox = document.getElementById('suggestions-box');
         let debounceTimer;
 
-        // Uses mousedown to clear text before losing focus
+        // Double Click Fix
         clearBtn.onmousedown = (e) => {
             e.preventDefault(); 
             playSound('click');
             searchInput.value = '';
-            searchWrapper.classList.remove('has-text'); // Instantly retracts the box
+            searchWrapper.classList.remove('has-text'); // Retract box, fuse borders back
             suggestionsBox.style.display = 'none';
             searchInput.focus();
         };
@@ -415,7 +419,6 @@
             if (e.repeat) return; 
             if (e.key !== 'Enter') playSound('type'); 
             
-            // Auto-focus search on character typing
             if (document.activeElement !== searchInput && e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
                 searchInput.focus();
             }
@@ -424,7 +427,7 @@
         searchInput.oninput = () => {
             const query = searchInput.value.trim();
             
-            // Toggle CSS class to expand the wrapper & extrude the X box symmetrically
+            // Toggles the fused-box layout
             if (query.length > 0) {
                 searchWrapper.classList.add('has-text');
             } else {
