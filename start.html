@@ -26,30 +26,61 @@
         ::-webkit-scrollbar-thumb { background: #333; }
         ::-webkit-scrollbar-thumb:hover { background: #555; }
 
+        /* --- GLOBAL SCANLINES (Covers Everything) --- */
         body {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             height: 100vh; margin: 0; overflow: hidden; background: black;
+            -webkit-font-smoothing: none; /* Forces sharp pixel rendering */
         }
         body.low-power { filter: brightness(0.7); }
+        
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%);
+            background-size: 100% 4px;
+            pointer-events: none; /* Passes clicks right through */
+            z-index: 999;
+        }
 
         /* --- BOSS MODE --- */
         #boss-screen {
             display: none;
             position: absolute; top: 20px; left: 20px;
-            color: #ccc; font-family: 'PixeloidSans', sans-serif; font-size: 1rem;
+            color: #ccc; font-family: 'PixeloidSans', sans-serif; font-size: 16px;
+            z-index: 1000;
         }
         #boss-screen::after { content: '_'; animation: blink 1s infinite; }
-        body.boss-mode > *:not(#boss-screen) { display: none !important; }
+        body.boss-mode > *:not(#boss-screen):not(style):not(script) { display: none !important; }
+        body.boss-mode::after { display: none !important; } /* Hide scanlines in boss mode */
         body.boss-mode #boss-screen { display: block; }
 
         /* --- COMMAND CENTER --- */
         .command-center {
             width: 100%; display: flex; flex-direction: column; align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
-        .terminal-clock { font-family: 'PixeloidSansBold', sans-serif; font-size: 3.5rem; color: white; margin-bottom: 0px; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255,255,255,0.1); }
-        #greeting { font-family: 'PixeloidSansBold', sans-serif; color: #444; margin-bottom: 25px; font-size: 0.8rem; letter-spacing: 4px; text-transform: uppercase; }
+        .terminal-clock { 
+            font-family: 'PixeloidSansBold', sans-serif; 
+            font-size: 56px; 
+            line-height: 56px; 
+            color: white; 
+            margin-bottom: 0px; 
+            letter-spacing: 2px; 
+            text-shadow: 0 0 10px rgba(255,255,255,0.1); 
+        }
+        #greeting { 
+            font-family: 'PixeloidSansBold', sans-serif; 
+            color: #444; 
+            margin-top: 8px;
+            margin-bottom: 24px; 
+            font-size: 12px; 
+            line-height: 12px;
+            letter-spacing: 4px; 
+            text-transform: uppercase; 
+        }
 
         /* --- ANIMATED SEARCH BAR --- */
         .search-wrapper { 
@@ -66,8 +97,8 @@
         .search-wrapper.has-text { max-width: 718px; }
 
         .search-wrapper::before {
-            content: '>'; position: absolute; left: 25px; top: 50%; transform: translateY(-50%);
-            color: #fff; font-family: 'PixeloidSansBold', sans-serif; font-size: 1.5rem; z-index: 5;
+            content: '>'; position: absolute; left: 24px; top: 50%; transform: translateY(-50%);
+            color: #fff; font-family: 'PixeloidSansBold', sans-serif; font-size: 24px; z-index: 5;
             animation: blink 1s infinite; text-shadow: 0 0 5px rgba(255,255,255,0.3);
             pointer-events: none;
         }
@@ -83,13 +114,14 @@
             width: 100%;
             height: 100%;
             background: #050505; border: 2px solid #222; color: white; 
-            font-family: 'PixeloidSans', sans-serif; font-size: 1.3rem; 
+            font-family: 'PixeloidSans', sans-serif; font-size: 20px; 
             padding: 0 20px 0 50px; 
             outline: none; text-align: left; box-sizing: border-box; 
             transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s; 
             box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.02);
-            background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.02));
-            background-size: 100% 4px, 3px 100%;
+            /* Kept RGB subpixel texture, removed local scanlines */
+            background-image: linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.02));
+            background-size: 3px 100%;
             cursor: text !important;
             z-index: 2;
         }
@@ -111,7 +143,7 @@
             background: #000; 
             border: 2px solid transparent; 
             color: #f00; 
-            font-family: 'PixeloidSansBold', sans-serif; font-size: 1.4rem; 
+            font-family: 'PixeloidSansBold', sans-serif; font-size: 22px; 
             display: flex; align-items: center; justify-content: center;
             opacity: 0; pointer-events: none; overflow: hidden;
             transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
@@ -172,20 +204,20 @@
         }
 
         .suggestion-item {
-            padding: 15px 25px; color: #ccc; font-family: 'PixeloidSans', sans-serif; font-size: 1rem;
+            padding: 16px 24px; color: #ccc; font-family: 'PixeloidSans', sans-serif; font-size: 16px;
             border-bottom: 1px solid #111; transition: 0.1s; display: flex; align-items: center;
         }
         .suggestion-item:last-child { border-bottom: none; }
-        .suggestion-item:hover { background: #1a1a1a; color: #fff; padding-left: 35px; }
+        .suggestion-item:hover { background: #1a1a1a; color: #fff; padding-left: 32px; }
 
         /* --- ICON GRID --- */
-        .quick-links { display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; max-width: 800px; }
-        .link-card { display: flex; flex-direction: column; align-items: center; gap: 10px; text-decoration: none; width: 80px; transition: transform 0.1s; }
+        .quick-links { display: flex; gap: 32px; flex-wrap: wrap; justify-content: center; max-width: 800px; }
+        .link-card { display: flex; flex-direction: column; align-items: center; gap: 12px; text-decoration: none; width: 80px; transition: transform 0.1s; }
         .link-card:hover { transform: scale(1.1); }
-        .icon-box { width: 54px; height: 54px; background: #111; border: 2px solid #333; display: flex; align-items: center; justify-content: center; transition: 0.2s; box-sizing: border-box; }
+        .icon-box { width: 56px; height: 56px; background: #111; border: 2px solid #333; display: flex; align-items: center; justify-content: center; transition: 0.2s; box-sizing: border-box; }
         .link-card:hover .icon-box { border-color: white; box-shadow: 0 0 15px rgba(255,255,255,0.1); }
         .icon-box img { width: 32px; height: 32px; image-rendering: pixelated; pointer-events: none; }
-        .link-label { color: #444; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; transition: color 0.2s; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .link-label { color: #444; font-family: 'PixeloidSansBold', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; transition: color 0.2s; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .link-card:hover .link-label { color: white; }
 
         /* --- SETTINGS DRAWER --- */
@@ -205,33 +237,32 @@
         #drawer-tab img { width: 36px; height: 36px; pointer-events: none; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1); }
         .gear-spin { transform: rotate(180deg); }
 
-        .drawer-content { padding: 25px; flex-grow: 1; overflow-y: auto; }
-        .drawer-header { font-family: 'PixeloidSansBold', sans-serif; color: white; margin-bottom: 25px; font-size: 1.1rem; border-bottom: 1px solid #222; padding-bottom: 10px; letter-spacing: 2px;}
+        .drawer-content { padding: 24px; flex-grow: 1; overflow-y: auto; }
+        .drawer-header { font-family: 'PixeloidSansBold', sans-serif; color: white; margin-bottom: 24px; font-size: 18px; border-bottom: 1px solid #222; padding-bottom: 12px; letter-spacing: 2px;}
 
-        .setting-section { margin-bottom: 30px; }
-        .section-label { display: block; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.7rem; color: #555; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1.5px; }
+        .setting-section { margin-bottom: 32px; }
+        .section-label { display: block; font-family: 'PixeloidSansBold', sans-serif; font-size: 12px; color: #555; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 2px; }
         
-        .cheat-sheet { font-size: 0.65rem; color: #444; line-height: 1.6; background: #050505; padding: 12px; border: 1px solid #111; margin-top: 10px; }
+        .cheat-sheet { font-size: 10px; color: #444; line-height: 16px; background: #050505; padding: 12px; border: 1px solid #111; margin-top: 12px; }
         .cheat-sheet b { color: #888; }
 
         .link-manager-item { display: flex; align-items: center; background: #080808; border: 1px solid #222; padding: 6px; margin-bottom: 8px; gap: 8px; box-sizing: border-box; }
-        .handle { padding: 0 5px; color: #333; font-size: 1rem; line-height: 1; }
-        .manager-input { background: black; border: 1px solid #333; color: #ccc; padding: 0 6px; margin: 0; height: 26px; line-height: 24px; box-sizing: border-box; font-family: 'PixeloidSans', sans-serif; font-size: 0.7rem; outline: none; flex-grow: 1; }
-        .manager-input.edit-name { flex-grow: 0; width: 60px; }
+        .handle { padding: 0 4px; color: #333; font-size: 16px; line-height: 1; }
+        .manager-input { background: black; border: 1px solid #333; color: #ccc; padding: 0 8px; margin: 0; height: 26px; line-height: 24px; box-sizing: border-box; font-family: 'PixeloidSans', sans-serif; font-size: 12px; outline: none; flex-grow: 1; }
+        .manager-input.edit-name { flex-grow: 0; width: 64px; }
         
-        .btn-del { background: #111; color: #f00; border: 1px solid #300; width: 26px; height: 26px; padding: 0; margin: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-family: 'PixeloidSansBold', sans-serif; }
+        .btn-del { background: #111; color: #f00; border: 1px solid #300; width: 26px; height: 26px; padding: 0; margin: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-family: 'PixeloidSansBold', sans-serif; font-size: 12px;}
         .btn-del:hover { background: #f00; color: #000; box-shadow: 0 0 10px #f00; border-color: #f00; }
         
-        /* Flex alignment added here to globally center text in all .btn-add instances */
         .btn-add { 
             width: 100%; background: #000; color: #fff; border: 1px solid #333; height: 36px; box-sizing: border-box; 
-            font-family: 'PixeloidSansBold', sans-serif; margin-top: 5px; transition: 0.2s; 
+            font-family: 'PixeloidSansBold', sans-serif; font-size: 12px; margin-top: 6px; transition: 0.2s; 
             display: flex; align-items: center; justify-content: center;
         }
         .btn-add:hover { background: #fff; color: #000; border-color: white; }
 
         /* --- FIXED UI COMPONENTS --- */
-        .option-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; min-height: 24px; }
+        .option-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; min-height: 24px; font-size: 14px;}
         
         .toggle-input { display: none; }
         .toggle-btn { 
@@ -264,19 +295,20 @@
             background: #080808 url('data:image/svg+xml;utf8,<svg fill="%23555555" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>') no-repeat right 8px center;
             border: 1px solid #333; 
             color: #ccc; 
-            padding: 0 30px 0 10px; 
+            padding: 0 32px 0 12px; 
             height: 36px; 
             box-sizing: border-box; 
             font-family: 'PixeloidSans', sans-serif; 
             width: 100%; 
             outline: none; 
-            font-size: 0.8rem; 
+            font-size: 12px; 
             cursor: pointer;
             transition: 0.2s;
         }
         select:hover, select:focus { border-color: #fff; color: #fff; }
 
-        .status-bar { position: fixed; bottom: 20px; left: 30px; font-family: 'PixeloidSansBold', sans-serif; font-size: 0.85rem; color: #444; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; gap: 15px; z-index: 5; }
+        /* --- MINIMAL STATUS BAR --- */
+        .status-bar { position: fixed; bottom: 24px; left: 32px; font-family: 'PixeloidSansBold', sans-serif; font-size: 14px; line-height: 14px; color: #444; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; gap: 16px; z-index: 5; }
         .weather-module { display: flex; align-items: center; gap: 10px; color: #666; }
         .weather-icon { width: 24px; height: 24px; image-rendering: pixelated; }
         #temp-val { color: #888; }
@@ -334,23 +366,23 @@
 
             <div class="setting-section">
                 <span class="section-label">Weather Override</span>
-                <div style="display: flex; gap: 5px; align-items: center;">
+                <div style="display: flex; gap: 6px; align-items: center;">
                     <input type="text" id="weather-loc-input" class="manager-input" placeholder="City or ZIP (Blank for IP)" style="flex-grow: 1;">
-                    <button id="save-weather-btn" class="btn-add" style="margin: 0; width: 60px; height: 26px; font-size: 0.7rem;">SET</button>
+                    <button id="save-weather-btn" class="btn-add" style="margin: 0; width: 64px; height: 26px; font-size: 12px;">SET</button>
                 </div>
             </div>
 
             <div class="setting-section">
                 <span class="section-label">Link Manager</span>
                 <div id="manager-list"></div>
-                <button class="btn-add" id="addNewBtn" style="margin-bottom: 20px;">+ ADD NEW_ENTRY</button>
+                <button class="btn-add" id="addNewBtn" style="margin-bottom: 24px;">+ ADD NEW_ENTRY</button>
             </div>
 
-            <div class="setting-section" style="border-top: 1px solid #222; padding-top: 20px;">
+            <div class="setting-section" style="border-top: 1px solid #222; padding-top: 24px;">
                 <span class="section-label">System Backup</span>
-                <div style="display: flex; gap: 10px;">
-                    <button id="export-btn" class="btn-add" style="margin:0; font-size: 0.65rem; white-space: nowrap;">EXPORT JSON</button>
-                    <button id="import-btn" class="btn-add" style="margin:0; font-size: 0.65rem; white-space: nowrap;">IMPORT JSON</button>
+                <div style="display: flex; gap: 12px;">
+                    <button id="export-btn" class="btn-add" style="margin:0; font-size: 10px; white-space: nowrap;">EXPORT JSON</button>
+                    <button id="import-btn" class="btn-add" style="margin:0; font-size: 10px; white-space: nowrap;">IMPORT JSON</button>
                     <input type="file" id="import-file" style="display: none;" accept=".json">
                 </div>
             </div>
@@ -379,9 +411,7 @@
             <img src="images/sunny.png" class="weather-icon" id="weather-img">
             <span id="temp-val">LOADING...</span>
         </div>
-        <span>//</span>
-        <span id="sys-status">STATUS: NOMINAL</span>
-    </div>
+        </div>
 
     <script>
         const DEFAULT_CONFIG = { 
@@ -602,8 +632,8 @@
 
             if (query.length === 0 || query.includes(' ')) { suggestionsBox.classList.remove('show'); return; }
             clearTimeout(debounceTimer);
+            
             debounceTimer = setTimeout(() => {
-                // Nuke the old script if it exists so we don't bloat the DOM
                 const oldScript = document.getElementById('ddg-autocomplete');
                 if (oldScript) oldScript.remove();
 
@@ -659,7 +689,7 @@
             config.weatherLoc = document.getElementById('weather-loc-input').value;
             saveConfig();
             document.getElementById('temp-val').innerText = "UPDATING...";
-            fetchWeather(true); // Force update bypassing cache
+            fetchWeather(true); 
         };
 
         // Import / Export JSON
@@ -699,6 +729,9 @@
 
         function updateClock() {
             const now = new Date();
+            const month = now.getMonth();
+            const date = now.getDate();
+            const day = now.getDay();
             let h = now.getHours(), m = String(now.getMinutes()).padStart(2, '0'), s = String(now.getSeconds()).padStart(2, '0');
             
             if (!config.militaryTime) {
@@ -710,7 +743,15 @@
                 document.getElementById('clock').innerText = `${h}:${m}:${s}`;
             }
             
-            document.getElementById('greeting').innerText = now.getHours() < 12 ? "GOOD_MORNING" : now.getHours() < 18 ? "GOOD_AFTERNOON" : "GOOD_EVENING";
+            let greetingText = "";
+            if (month === 9 && date === 31) greetingText = "SYSTEM_HAUNTED";
+            else if (month === 11 && date === 25) greetingText = "MERRY_CRISIS";
+            else if (month === 0 && date === 1) greetingText = "NEW_CYCLE_INITIATED";
+            else if (day === 5 && now.getHours() >= 17) greetingText = "INITIATE_WEEKEND";
+            else {
+                greetingText = now.getHours() < 12 ? "GOOD_MORNING" : now.getHours() < 18 ? "GOOD_AFTERNOON" : "GOOD_EVENING";
+            }
+            document.getElementById('greeting').innerText = greetingText;
         }
 
         function init() { renderLinks(); applySettings(); updateClock(); setInterval(updateClock, 1000); fetchWeather(); setInterval(fetchWeather, 300000); }
