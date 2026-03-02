@@ -628,49 +628,47 @@
             }
         });
 
+        // Replacement for the oninput logic
         searchInput.oninput = () => {
             const query = searchInput.value.trim();
             if (query.length > 0) searchWrapper.classList.add('has-text');
             else searchWrapper.classList.remove('has-text');
 
-            if (query.length === 0 || query.includes(' ')) { suggestionsBox.classList.remove('show'); return; }
+            if (query.length === 0) { 
+                suggestionsBox.classList.remove('show'); 
+                return; 
+            }
             
             clearTimeout(debounceTimer);
-            // 300ms is the sweet spot for feeling fast but looking human
             debounceTimer = setTimeout(() => {
-                const oldScript = document.getElementById('search-autocomplete');
-                if (oldScript) oldScript.remove();
-
-                const script = document.createElement('script');
-                script.id = 'search-autocomplete';
+                suggestionsBox.innerHTML = '';
                 
-                // Switching to Google's official UI suggestions to prevent bot-detection
-                script.src = `https://suggestqueries.google.com/complete/search?client=firefox&q=${encodeURIComponent(query)}&callback=autocompleteCallback`;
-                document.body.appendChild(script);
-            }, 300);
+                // Locally filter your links instead of hitting a Google/DDG server
+                const matches = config.links.filter(l => 
+                    l.name.toLowerCase().includes(query.toLowerCase())
+                );
+                
+                if (matches.length > 0) {
+                    matches.slice(0, 5).forEach(link => {
+                        const div = document.createElement('div');
+                        div.className = 'suggestion-item'; 
+                        div.innerText = `GO TO: ${link.name}`;
+                        div.onmouseenter = () => playSound('hover');
+                        div.onclick = () => { 
+                            playSound('click'); 
+                            window.open(link.url, config.newTab ? "_blank" : "_self"); 
+                        };
+                        suggestionsBox.appendChild(div);
+                    });
+                    suggestionsBox.classList.add('show');
+                } else {
+                    suggestionsBox.classList.remove('show');
+                }
+            }, 100);
         };
 
-        window.autocompleteCallback = (data) => {
-            if (searchInput.value.trim().length === 0) { suggestionsBox.classList.remove('show'); return; }
-            suggestionsBox.innerHTML = '';
-            
-            // Google's API returns [query, [suggestions]]
-            const suggestions = data[1]; 
-            
-            if (suggestions && suggestions.length > 0) {
-                suggestions.slice(0, 5).forEach(phrase => {
-                    const div = document.createElement('div');
-                    div.className = 'suggestion-item'; 
-                    div.innerText = phrase;
-                    div.onmouseenter = () => playSound('hover');
-                    div.onclick = () => { playSound('click'); executeSearch(phrase); };
-                    suggestionsBox.appendChild(div);
-                });
-                suggestionsBox.classList.add('show');
-            } else { 
-                suggestionsBox.classList.remove('show'); 
-            }
-        };
+        // Keep this as an empty shell to prevent console errors
+        window.autocompleteCallback = () => {};
 
         function executeSearch(val) {
             if(!val) return;
