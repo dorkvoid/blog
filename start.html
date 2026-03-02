@@ -603,7 +603,12 @@
             if (query.length === 0 || query.includes(' ')) { suggestionsBox.classList.remove('show'); return; }
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
+                // Nuke the old script if it exists so we don't bloat the DOM
+                const oldScript = document.getElementById('ddg-autocomplete');
+                if (oldScript) oldScript.remove();
+
                 const script = document.createElement('script');
+                script.id = 'ddg-autocomplete';
                 script.src = `https://duckduckgo.com/ac/?q=${encodeURIComponent(query)}&callback=autocompleteCallback`;
                 document.body.appendChild(script);
             }, 150);
