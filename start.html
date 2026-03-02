@@ -679,18 +679,18 @@
             const lowerVal = val.toLowerCase();
             
             let url = "";
-            if(lowerVal.startsWith('yt ')) url = `https://youtube.com/results?search_query=${q}`;
-            else if(lowerVal.startsWith('g ')) url = `https://google.com/search?q=${q}`;
-            else if(lowerVal.startsWith('r/')) url = `https://reddit.com/${val}`;
+            // We use substring() to strip out the "yt " or "g " before searching
+            if(lowerVal.startsWith('yt ')) url = `https://www.youtube.com/results?search_query=${encodeURIComponent(val.substring(3))}`;
+            else if(lowerVal.startsWith('g ')) url = `https://www.google.com/search?q=${encodeURIComponent(val.substring(2))}`;
+            else if(lowerVal.startsWith('r/')) url = `https://www.reddit.com/${val}`;
             else {
                 if(config.engine === 'google') url = `https://www.google.com/search?q=${q}`;
                 else if(config.engine === 'youtube') url = `https://www.youtube.com/results?search_query=${q}`;
                 else url = `https://duckduckgo.com/?q=${q}`;
             }
 
-            // Using location.replace is "cleaner" and prevents 
-            // the back button from getting stuck in a loop.
-            window.location.href = url;
+            // 'replace' stops the browser's back-button from getting stuck
+            window.location.replace(url);
         }
 
         searchInput.onkeydown = (e) => { if(e.key === 'Enter') { playSound('click'); executeSearch(searchInput.value); } };
