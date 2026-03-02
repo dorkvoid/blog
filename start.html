@@ -642,12 +642,12 @@
             if (query.length === 0 || query.includes(' ')) { suggestionsBox.classList.remove('show'); return; }
             
             clearTimeout(debounceTimer);
+            // Dropped from 300ms to 150ms to make it feel instant again
             debounceTimer = setTimeout(async () => {
                 try {
-                    // The Target API
+                    // Using a much faster proxy that doesn't heavily cache partial words
                     const targetUrl = `https://duckduckgo.com/ac/?q=${encodeURIComponent(query)}`;
-                    // Bouncing it through a free CORS proxy to bypass browser security blocks
-                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
                     
                     const response = await fetch(proxyUrl);
                     const data = await response.json();
