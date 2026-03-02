@@ -636,14 +636,16 @@
             if (query.length === 0 || query.includes(' ')) { suggestionsBox.classList.remove('show'); return; }
             
             clearTimeout(debounceTimer);
-            // Increased to 300ms to stop Google from flagging "unusual traffic"
+            // 300ms is the sweet spot for feeling fast but looking human
             debounceTimer = setTimeout(() => {
-                const oldScript = document.getElementById('ddg-autocomplete');
+                const oldScript = document.getElementById('search-autocomplete');
                 if (oldScript) oldScript.remove();
 
                 const script = document.createElement('script');
-                script.id = 'ddg-autocomplete';
-                script.src = `https://duckduckgo.com/ac/?q=${encodeURIComponent(query)}&callback=autocompleteCallback`;
+                script.id = 'search-autocomplete';
+                
+                // Switching to Google's official UI suggestions to prevent bot-detection
+                script.src = `https://suggestqueries.google.com/complete/search?client=firefox&q=${encodeURIComponent(query)}&callback=autocompleteCallback`;
                 document.body.appendChild(script);
             }, 300);
         };
@@ -651,16 +653,23 @@
         window.autocompleteCallback = (data) => {
             if (searchInput.value.trim().length === 0) { suggestionsBox.classList.remove('show'); return; }
             suggestionsBox.innerHTML = '';
-            if (data && data.length > 0) {
-                data.slice(0, 5).forEach(item => {
+            
+            // Google's API returns [query, [suggestions]]
+            const suggestions = data[1]; 
+            
+            if (suggestions && suggestions.length > 0) {
+                suggestions.slice(0, 5).forEach(phrase => {
                     const div = document.createElement('div');
-                    div.className = 'suggestion-item'; div.innerText = item.phrase;
+                    div.className = 'suggestion-item'; 
+                    div.innerText = phrase;
                     div.onmouseenter = () => playSound('hover');
-                    div.onclick = () => { playSound('click'); executeSearch(item.phrase); };
+                    div.onclick = () => { playSound('click'); executeSearch(phrase); };
                     suggestionsBox.appendChild(div);
                 });
                 suggestionsBox.classList.add('show');
-            } else { suggestionsBox.classList.remove('show'); }
+            } else { 
+                suggestionsBox.classList.remove('show'); 
+            }
         };
 
         function executeSearch(val) {
