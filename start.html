@@ -442,7 +442,12 @@
             else if (type === 'mouseUp') { sound = audioAssets.mouseUp[lastMouseIdx]; vol = 0.05; } 
             else { sound = audioAssets.types[Math.floor(Math.random() * 4)]; }
             
-            if (sound) { const clone = sound.cloneNode(); clone.volume = vol; clone.play().catch(()=>{}); }
+            if (sound) { 
+                // Instantly rewind the pre-loaded track instead of cloning a new one
+                sound.currentTime = 0; 
+                sound.volume = vol; 
+                sound.play().catch(()=>{}); 
+            }
         };
 
         async function fetchWeather(force = false) {
