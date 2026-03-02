@@ -313,6 +313,25 @@
         .weather-module { display: flex; align-items: center; gap: 10px; color: #666; }
         .weather-icon { width: 24px; height: 24px; image-rendering: pixelated; }
         #temp-val { color: #888; }
+
+        /* --- SHORTCUT BADGE --- */
+        #shortcut-badge {
+            position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+            padding: 4px 8px; font-family: 'PixeloidSansBold', sans-serif; font-size: 10px;
+            text-transform: uppercase; letter-spacing: 2px; pointer-events: none;
+            opacity: 0; transition: all 0.2s; z-index: 10;
+        }
+        #shortcut-badge.show.youtube { opacity: 1; background: #200; color: #f55; border: 1px solid #f00; box-shadow: 0 0 10px rgba(255,0,0,0.2); }
+        #shortcut-badge.show.google { opacity: 1; background: #002; color: #55f; border: 1px solid #00f; box-shadow: 0 0 10px rgba(0,0,255,0.2); }
+        #shortcut-badge.show.reddit { opacity: 1; background: #310; color: #f82; border: 1px solid #f40; box-shadow: 0 0 10px rgba(255,100,0,0.2); }
+
+        /* --- ARROW KEY HIGHLIGHT --- */
+        .suggestion-item.active-item {
+            background: #1a1a1a; 
+            color: #fff; 
+            padding-left: 32px; 
+            border-left: 3px solid #fff;
+        }
     </style>
 </head>
 <body>
@@ -396,7 +415,9 @@
         
         <div class="search-wrapper" id="search-wrapper">
             <div class="search-box-container">
-                <input type="text" id="web-search" class="search-box" placeholder="type command..." autofocus autocomplete="off">
+                <input type="text" id="web-search" class="search-box" placeholder="Search..." autofocus autocomplete="off">
+                <div id="shortcut-badge"></div>
+                
                 <div id="suggestions-box"></div>
             </div>
             <button id="clear-search" class="clear-btn">X</button>
@@ -634,13 +655,21 @@
             }
         });
 
+        let currentFocus = -1; // Keeps track of what suggestion you are on
+
         searchInput.oninput = () => {
-            // Only trim the left side so you can still type spaces normally
             const query = searchInput.value.trimStart(); 
             const lowerQuery = query.toLowerCase();
+            const badge = document.getElementById('shortcut-badge');
             
             if (query.length > 0) searchWrapper.classList.add('has-text');
             else searchWrapper.classList.remove('has-text');
+
+            // --- VISUAL CUE LOGIC ---
+            if (lowerQuery.startsWith('yt ')) { badge.className = 'show youtube'; badge.innerText = 'YOUTUBE'; }
+            else if (lowerQuery.startsWith('g ')) { badge.className = 'show google'; badge.innerText = 'GOOGLE'; }
+            else if (lowerQuery.startsWith('r/')) { badge.className = 'show reddit'; badge.innerText = 'REDDIT'; }
+            else { badge.className = ''; } // Hide badge if no shortcut is used
 
             // Kills suggestions if empty, or if you are using your custom shortcuts
             if (query.length === 0 || lowerQuery.startsWith('yt ') || lowerQuery.startsWith('g ') || lowerQuery.startsWith('r/')) { 
@@ -651,7 +680,6 @@
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(async () => {
                 try {
-                    // Using a much faster proxy that doesn't heavily cache partial words
                     const targetUrl = `https://duckduckgo.com/ac/?q=${encodeURIComponent(query)}`;
                     const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
                     
@@ -659,12 +687,14 @@
                     const data = await response.json();
                     
                     suggestionsBox.innerHTML = '';
+                    currentFocus = -1; // Reset arrow key position when new results load
+                    
                     if (data && data.length > 0) {
                         data.slice(0, 5).forEach(item => {
                             const div = document.createElement('div');
                             div.className = 'suggestion-item'; 
                             div.innerText = item.phrase;
-                            div.onmouseenter = () => playSound('hover');
+                            div.onmouseenter = () => { currentFocus = -1; playSound('hover'); removeActive(suggestionsBox.querySelectorAll('.suggestion-item')); };
                             div.onclick = () => { playSound('click'); executeSearch(item.phrase); };
                             suggestionsBox.appendChild(div);
                         });
@@ -673,7 +703,6 @@
                         suggestionsBox.classList.remove('show'); 
                     }
                 } catch (error) {
-                    // Silently fail if offline or blocked
                     suggestionsBox.classList.remove('show');
                 }
             }, 150);
@@ -699,7 +728,45 @@
             window.location.replace(url);
         }
 
-        searchInput.onkeydown = (e) => { if(e.key === 'Enter') { playSound('click'); executeSearch(searchInput.value); } };
+        // --- ARROW KEY AND ENTER LOGIC ---
+        searchInput.addEventListener('keydown', function(e) {
+            let items = suggestionsBox.querySelectorAll('.suggestion-item');
+            
+            if (e.key === 'ArrowDown') {
+                e.preventDefault(); // Stops the cursor from jumping around in the text box
+                currentFocus++;
+                addActive(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                currentFocus--;
+                addActive(items);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                playSound('click');
+                // If you selected something with the arrow keys, click it!
+                if (currentFocus > -1 && items.length > 0 && suggestionsBox.classList.contains('show')) {
+                    items[currentFocus].click();
+                } else {
+                    // Otherwise, just do a normal search
+                    executeSearch(searchInput.value);
+                }
+            }
+        });
+
+        // Highlights the active item
+        function addActive(items) {
+            if (!items || items.length === 0) return;
+            removeActive(items);
+            if (currentFocus >= items.length) currentFocus = 0; // Wrap to top
+            if (currentFocus < 0) currentFocus = items.length - 1; // Wrap to bottom
+            items[currentFocus].classList.add('active-item');
+            playSound('hover'); // Plays the sound as you cycle through!
+        }
+
+        // Clears the highlights
+        function removeActive(items) {
+            items.forEach(item => item.classList.remove('active-item'));
+        }
         
         // --- SETTINGS LOGIC ---
         document.getElementById('toggle-status').onchange = (e) => { config.showStatus = e.target.checked; saveConfig(); applySettings(); };
