@@ -519,8 +519,12 @@
         }
 
         function getFavicon(url) {
-            try { return url.startsWith('http') ? `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=64` : 'images/plxeyestiny.png'; } 
-            catch { return 'images/plxeyestiny.png'; }
+            try {
+                // Completely severed from Google. Now uses DuckDuckGo's private icon server.
+                return url.startsWith('http') ? `https://icons.duckduckgo.com/ip3/${new URL(url).hostname}.ico` : 'images/plxeyestiny.png';
+            } catch {
+                return 'images/plxeyestiny.png';
+            }
         }
 
         function renderLinks() {
