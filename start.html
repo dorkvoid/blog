@@ -655,7 +655,7 @@
             }
         });
 
-        let currentFocus = -1; // Keeps track of what suggestion you are on
+        let currentFocus = -1; 
 
         searchInput.oninput = () => {
             const query = searchInput.value.trimStart(); 
@@ -669,64 +669,15 @@
             if (lowerQuery.startsWith('yt ')) { badge.className = 'show youtube'; badge.innerText = 'YOUTUBE'; }
             else if (lowerQuery.startsWith('g ')) { badge.className = 'show google'; badge.innerText = 'GOOGLE'; }
             else if (lowerQuery.startsWith('r/')) { badge.className = 'show reddit'; badge.innerText = 'REDDIT'; }
-            else { badge.className = ''; } // Hide badge if no shortcut is used
+            else { badge.className = ''; } 
 
-            // Kills suggestions if empty, or if you are using your custom shortcuts
-            if (query.length === 0 || lowerQuery.startsWith('yt ') || lowerQuery.startsWith('g ') || lowerQuery.startsWith('r/')) { 
-                suggestionsBox.classList.remove('show'); 
-                return; 
-            }
-            
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(async () => {
-                try {
-                    const targetUrl = `https://duckduckgo.com/ac/?q=${encodeURIComponent(query)}`;
-                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
-                    
-                    const response = await fetch(proxyUrl);
-                    const data = await response.json();
-                    
-                    suggestionsBox.innerHTML = '';
-                    currentFocus = -1; // Reset arrow key position when new results load
-                    
-                    if (data && data.length > 0) {
-                        data.slice(0, 5).forEach(item => {
-                            const div = document.createElement('div');
-                            div.className = 'suggestion-item'; 
-                            div.innerText = item.phrase;
-                            div.onmouseenter = () => { currentFocus = -1; playSound('hover'); removeActive(suggestionsBox.querySelectorAll('.suggestion-item')); };
-                            div.onclick = () => { playSound('click'); executeSearch(item.phrase); };
-                            suggestionsBox.appendChild(div);
-                        });
-                        suggestionsBox.classList.add('show');
-                    } else { 
-                        suggestionsBox.classList.remove('show'); 
-                    }
-                } catch (error) {
-                    suggestionsBox.classList.remove('show');
-                }
-            }, 150);
+            // ==========================================
+            // TEMPORARY KILLSWITCH FOR PREDICTIVE TEXT
+            // This stops the terminal from pinging the internet while you type
+            suggestionsBox.classList.remove('show'); 
+            return; 
+            // ==========================================
         };
-
-        function executeSearch(val) {
-            if(!val) return;
-            const q = encodeURIComponent(val);
-            const lowerVal = val.toLowerCase();
-            
-            let url = "";
-            // We use substring() to strip out the "yt " or "g " before searching
-            if(lowerVal.startsWith('yt ')) url = `https://www.youtube.com/results?search_query=${encodeURIComponent(val.substring(3))}`;
-            else if(lowerVal.startsWith('g ')) url = `https://www.google.com/search?q=${encodeURIComponent(val.substring(2))}`;
-            else if(lowerVal.startsWith('r/')) url = `https://www.reddit.com/${val}`;
-            else {
-                if(config.engine === 'google') url = `https://www.google.com/search?q=${q}`;
-                else if(config.engine === 'youtube') url = `https://www.youtube.com/results?search_query=${q}`;
-                else url = `https://duckduckgo.com/?q=${q}`;
-            }
-
-            // 'replace' stops the browser's back-button from getting stuck
-            window.location.replace(url);
-        }
 
         // --- ARROW KEY AND ENTER LOGIC ---
         searchInput.addEventListener('keydown', function(e) {
