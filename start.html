@@ -218,8 +218,20 @@
             background: #1a1a1a; color: #fff; padding-left: 32px; border-left: 2px solid #fff;
         }
 
-        /* --- TERMINAL TEXT BUTTONS --- */
-        .quick-links { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; max-width: 900px; margin-top: 2rem;}
+        /* --- DASHBOARD & NESTED GROUPS --- */
+        .dashboard { 
+            display: flex; flex-direction: column; gap: 40px; 
+            width: 100%; max-width: 900px; margin-top: 2rem; z-index: 2;
+            overflow-y: auto; max-height: 45vh; padding-bottom: 2rem;
+        }
+        .group-container { display: flex; flex-direction: column; align-items: center; width: 100%; }
+        .group-title { 
+            color: #444; font-family: 'PixeloidSansBold', sans-serif; font-size: 14px; 
+            margin-bottom: 16px; letter-spacing: 2px; text-transform: uppercase; width: 100%; text-align: center;
+        }
+        .group-title span { color: #fff; }
+        .quick-links { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; width: 100%; }
+        
         .link-card { 
             background: #050505; border: 2px solid #222; padding: 10px 20px; 
             text-decoration: none; min-width: 120px; text-align: center;
@@ -268,7 +280,12 @@
         .cheat-sheet { font-size: 10px; color: #444; line-height: 16px; background: #050505; padding: 12px; border: 1px solid #111; margin-top: 12px; }
         .cheat-sheet b { color: #888; }
 
-        .link-manager-item { display: flex; align-items: center; background: #080808; border: 1px solid #222; padding: 6px; margin-bottom: 8px; gap: 8px; box-sizing: border-box; }
+        /* NESTED MANAGER CSS */
+        .manager-group-box { background: #080808; border: 1px solid #222; margin-bottom: 16px; padding: 12px; box-sizing: border-box;}
+        .manager-group-header { display: flex; align-items: center; margin-bottom: 12px; gap: 8px;}
+        .manager-link-list { display: flex; flex-direction: column; gap: 8px; min-height: 20px; border-left: 2px dashed #222; padding-left: 12px; margin-left: 8px;}
+        
+        .link-manager-item { display: flex; align-items: center; background: #000; border: 1px solid #222; padding: 6px; gap: 8px; box-sizing: border-box; }
         .handle { padding: 0 4px; color: #333; font-size: 16px; line-height: 1; }
         .manager-input { background: black; border: 1px solid #333; color: #ccc; padding: 0 8px; margin: 0; height: 26px; line-height: 24px; box-sizing: border-box; font-family: 'PixeloidSans', sans-serif; font-size: 12px; outline: none; flex-grow: 1; }
         .manager-input.edit-name { flex-grow: 0; width: 64px; }
@@ -397,7 +414,7 @@
             <div class="setting-section">
                 <span class="section-label">Link Manager</span>
                 <div id="manager-list"></div>
-                <button class="btn-add" id="addNewBtn" style="margin-bottom: 24px;">+ ADD NEW_ENTRY</button>
+                <button class="btn-add" id="addNewGroupBtn" style="margin-bottom: 24px;">+ ADD GROUP</button>
             </div>
 
             <div class="setting-section" style="border-top: 1px solid #222; padding-top: 24px;">
@@ -425,7 +442,7 @@
         </div>
     </div>
 
-    <div id="links-container" class="quick-links"></div>
+    <div id="dashboard" class="dashboard"></div>
 
     <div class="status-bar" id="status-bar">
         <span>MIKEVOID_OS</span>
@@ -437,13 +454,25 @@
     </div>
 
     <script>
-        // --- CORE CONFIGURATION ---
+        // --- CORE CONFIGURATION & MIGRATION ---
         const DEFAULT_CONFIG = { 
             showStatus: true, lowPower: false, newTab: true, militaryTime: false, weatherLoc: "", engine: "duckduckgo", 
-            links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}] 
+            linkGroups: [
+                { groupName: "MAIN", links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}] }
+            ] 
         };
         
+        function sanitizeConfig(cfg) {
+            // Migrates old flat links into the new Group structure automatically
+            if (cfg.links && !cfg.linkGroups) {
+                cfg.linkGroups = [{ groupName: "GENERAL", links: cfg.links }];
+                delete cfg.links;
+            }
+            return cfg;
+        }
+
         let savedConfig = JSON.parse(localStorage.getItem('startConfig')) || {};
+        savedConfig = sanitizeConfig(savedConfig);
         let config = { ...DEFAULT_CONFIG, ...savedConfig }; 
         const saveConfig = () => localStorage.setItem('startConfig', JSON.stringify(config));
 
@@ -520,33 +549,78 @@
             document.getElementById('weather-img').src = `images/${icon}`;
         }
 
-        // --- QUICK LINKS UI ---
-        function renderLinks() {
-            const container = document.getElementById('links-container');
-            const manager = document.getElementById('manager-list');
-            container.innerHTML = ''; manager.innerHTML = '';
-            config.links.forEach((link, index) => {
-                const card = document.createElement('a');
-                card.className = 'link-card'; 
-                card.href = link.url; 
-                card.target = config.newTab ? "_blank" : "_self";
+        // --- DASHBOARD & NESTED MANAGER UI ---
+        function renderMainUI() {
+            const dashboard = document.getElementById('dashboard');
+            dashboard.innerHTML = '';
+
+            config.linkGroups.forEach((group) => {
+                if(group.links.length === 0 && group.groupName.trim() === "") return; // Skip blank ghost groups
                 
-                card.innerHTML = `<div class="link-label">${link.name}</div>`;
-                card.onmouseenter = () => playSound('hover'); 
-                card.onclick = () => playSound('click');
-                container.appendChild(card);
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'group-container';
                 
-                const item = document.createElement('div');
-                item.className = 'link-manager-item';
-                item.innerHTML = `
-                    <span class="handle">::</span>
-                    <input type="text" value="${link.name}" class="manager-input edit-name" data-idx="${index}">
-                    <input type="text" value="${link.url}" class="manager-input edit-url" data-idx="${index}">
-                    <button class="btn-del" data-idx="${index}">X</button>
+                let linksHTML = group.links.map((link) => `
+                    <a href="${link.url}" target="${config.newTab ? "_blank" : "_self"}" class="link-card" onmouseenter="playSound('hover')" onclick="playSound('click')">
+                        <div class="link-label">${link.name}</div>
+                    </a>
+                `).join('');
+
+                groupDiv.innerHTML = `
+                    <div class="group-title">>_ <span>${group.groupName}</span></div>
+                    <div class="quick-links">${linksHTML}</div>
                 `;
-                manager.appendChild(item);
+                dashboard.appendChild(groupDiv);
             });
+        }
+
+        function renderManager() {
+            const manager = document.getElementById('manager-list');
+            manager.innerHTML = '';
+            
+            config.linkGroups.forEach((group, gIdx) => {
+                const groupEl = document.createElement('div');
+                groupEl.className = 'manager-group-box';
+                
+                let linksHTML = group.links.map((link, lIdx) => `
+                    <div class="link-manager-item">
+                        <span class="handle link-handle">::</span>
+                        <input type="text" value="${link.name}" class="manager-input edit-name">
+                        <input type="text" value="${link.url}" class="manager-input edit-url">
+                        <button class="btn-del del-link" data-gidx="${gIdx}" data-lidx="${lIdx}">X</button>
+                    </div>
+                `).join('');
+
+                groupEl.innerHTML = `
+                    <div class="manager-group-header">
+                        <span class="handle group-handle" style="color:#555;">[G]</span>
+                        <input type="text" value="${group.groupName}" class="manager-input edit-group-name" style="font-family:'PixeloidSansBold', sans-serif; color: #fff;">
+                        <button class="btn-del del-group" data-gidx="${gIdx}">X</button>
+                    </div>
+                    <div class="manager-link-list">${linksHTML}</div>
+                    <button class="btn-add add-link-btn" data-gidx="${gIdx}" style="height: 24px; font-size: 10px; margin-top: 8px;">+ ADD LINK TO GROUP</button>
+                `;
+                manager.appendChild(groupEl);
+            });
+
             attachManagerEvents();
+        }
+
+        function syncDataFromManager() {
+            const newGroups = [];
+            document.querySelectorAll('.manager-group-box').forEach(groupBox => {
+                const groupName = groupBox.querySelector('.edit-group-name').value;
+                const links = [];
+                groupBox.querySelectorAll('.link-manager-item').forEach(linkItem => {
+                    links.push({
+                        name: linkItem.querySelector('.edit-name').value,
+                        url: linkItem.querySelector('.edit-url').value
+                    });
+                });
+                newGroups.push({ groupName, links });
+            });
+            config.linkGroups = newGroups;
+            saveConfig();
         }
 
         function applySettings() {
@@ -561,30 +635,57 @@
         }
 
         function attachManagerEvents() {
+            // Sortable Magic: Groups
             if (typeof Sortable !== 'undefined') {
                 Sortable.create(document.getElementById('manager-list'), {
-                    handle: '.handle', animation: 150,
-                    onEnd: () => {
-                        const nl = [];
-                        document.querySelectorAll('.link-manager-item').forEach(el => nl.push({ name: el.querySelector('.edit-name').value, url: el.querySelector('.edit-url').value }));
-                        config.links = nl; saveConfig(); renderLinks();
-                    }
+                    handle: '.group-handle', animation: 150,
+                    onEnd: () => { syncDataFromManager(); renderMainUI(); renderManager(); }
+                });
+                
+                // Sortable Magic: Links inside groups (Allows dragging between groups!)
+                document.querySelectorAll('.manager-link-list').forEach(list => {
+                    Sortable.create(list, {
+                        group: 'shared-links', handle: '.link-handle', animation: 150,
+                        onEnd: () => { syncDataFromManager(); renderMainUI(); renderManager(); }
+                    });
                 });
             }
+
+            // Save on input change (Without collapsing the menu or dropping focus)
             document.querySelectorAll('.manager-input').forEach(input => {
-                input.addEventListener('change', (e) => {
-                    const idx = e.target.dataset.idx;
-                    e.target.classList.contains('edit-name') ? config.links[idx].name = e.target.value : config.links[idx].url = e.target.value;
-                    saveConfig(); renderLinks();
+                input.addEventListener('input', () => {
+                    syncDataFromManager(); 
+                    renderMainUI();
                 });
             });
-            document.querySelectorAll('.btn-del').forEach(btn => {
-                btn.onclick = (e) => { 
-                    e.stopPropagation(); 
-                    playSound('click'); 
-                    config.links.splice(e.target.dataset.idx, 1); 
-                    saveConfig(); 
-                    renderLinks(); 
+
+            // Delete Link
+            document.querySelectorAll('.del-link').forEach(btn => {
+                btn.onclick = (e) => {
+                    e.stopPropagation(); playSound('click');
+                    syncDataFromManager(); 
+                    config.linkGroups[e.target.dataset.gidx].links.splice(e.target.dataset.lidx, 1);
+                    saveConfig(); renderManager(); renderMainUI();
+                };
+            });
+
+            // Delete Entire Group
+            document.querySelectorAll('.del-group').forEach(btn => {
+                btn.onclick = (e) => {
+                    e.stopPropagation(); playSound('click');
+                    syncDataFromManager();
+                    config.linkGroups.splice(e.target.dataset.gidx, 1);
+                    saveConfig(); renderManager(); renderMainUI();
+                };
+            });
+
+            // Add Link to specific group
+            document.querySelectorAll('.add-link-btn').forEach(btn => {
+                btn.onclick = (e) => {
+                    e.stopPropagation(); playSound('click');
+                    syncDataFromManager();
+                    config.linkGroups[e.target.dataset.gidx].links.push({name: "NEW", url: "https://"});
+                    saveConfig(); renderManager(); renderMainUI();
                 };
             });
         }
@@ -757,10 +858,17 @@
         // --- SETTINGS DRAWER EVENTS ---
         document.getElementById('toggle-status').onchange = (e) => { config.showStatus = e.target.checked; saveConfig(); applySettings(); };
         document.getElementById('toggle-power').onchange = (e) => { config.lowPower = e.target.checked; saveConfig(); applySettings(); };
-        document.getElementById('toggle-newtab').onchange = (e) => { config.newTab = e.target.checked; saveConfig(); renderLinks(); };
+        document.getElementById('toggle-newtab').onchange = (e) => { config.newTab = e.target.checked; saveConfig(); renderMainUI(); };
         document.getElementById('toggle-military').onchange = (e) => { config.militaryTime = e.target.checked; saveConfig(); updateClock(); };
         document.getElementById('engine-select').onchange = (e) => { config.engine = e.target.value; saveConfig(); };
-        document.getElementById('addNewBtn').onclick = (e) => { e.stopPropagation(); playSound('click'); config.links.push({name: "NEW", url: "https://"}); saveConfig(); renderLinks(); };
+        
+        // Add a brand new Group
+        document.getElementById('addNewGroupBtn').onclick = (e) => { 
+            e.stopPropagation(); playSound('click'); 
+            syncDataFromManager();
+            config.linkGroups.push({groupName: "NEW_GROUP", links: []}); 
+            saveConfig(); renderManager(); renderMainUI(); 
+        };
         
         document.getElementById('save-weather-btn').onclick = () => {
             playSound('click');
@@ -787,7 +895,8 @@
             const reader = new FileReader();
             reader.onload = (event) => {
                 try {
-                    const importedConfig = JSON.parse(event.target.result);
+                    let importedConfig = JSON.parse(event.target.result);
+                    importedConfig = sanitizeConfig(importedConfig);
                     localStorage.setItem('startConfig', JSON.stringify(importedConfig));
                     location.reload();
                 } catch (err) { alert("ERROR: Invalid config file structure."); }
@@ -833,7 +942,8 @@
         }
 
         function init() { 
-            renderLinks(); 
+            renderMainUI(); 
+            renderManager();
             applySettings(); 
             updateClock(); 
             setInterval(updateClock, 1000); 
