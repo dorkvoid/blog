@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TERMINAL // START</title>
+    <meta name="referrer" content="no-referrer">
     <link rel="icon" type="image/png" href="images/plxeyestiny.png">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -20,198 +21,8 @@
             cursor: url('images/link-select-click.png'), pointer !important;
         }
 
-        /* --- CUSTOM SCROLLBARS --- */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #000; border-left: 1px solid #111; }
-        ::-webkit-scrollbar-thumb { background: #333; }
-        ::-webkit-scrollbar-thumb:hover { background: #555; }
-
-        /* --- GLOBAL SCANLINES (Subtle Texture) --- */
-        body {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            height: 100vh; margin: 0; overflow: hidden; background: black;
-            -webkit-font-smoothing: none; 
-        }
-        body.low-power { filter: brightness(0.7); }
-        
-        body::after {
-            content: '';
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            /* Dropped opacity from 0.15 to 0.04 to restore brightness and readability */
-            background: linear-gradient(rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.04) 50%);
-            background-size: 100% 4px;
-            pointer-events: none; 
-            z-index: 999;
-        }
-
-        /* --- BOSS MODE --- */
-        #boss-screen {
-            display: none;
-            position: absolute; top: 20px; left: 20px;
-            color: #ccc; font-family: 'PixeloidSans', sans-serif; font-size: 16px;
-            z-index: 1000;
-        }
-        #boss-screen::after { content: '_'; animation: blink 1s infinite; }
-        body.boss-mode > *:not(#boss-screen):not(style):not(script) { display: none !important; }
-        body.boss-mode::after { display: none !important; } 
-        body.boss-mode #boss-screen { display: block; }
-
-        /* --- COMMAND CENTER --- */
-        .command-center {
-            width: 100%; display: flex; flex-direction: column; align-items: center;
-            margin-bottom: 24px;
-        }
-
-        .terminal-clock { 
-            font-family: 'PixeloidSansBold', sans-serif; 
-            font-size: 56px; 
-            line-height: 56px; 
-            color: white; 
-            margin-bottom: 0px; 
-            letter-spacing: 2px; 
-            text-shadow: 0 0 10px rgba(255,255,255,0.1); 
-        }
-        #greeting { 
-            font-family: 'PixeloidSansBold', sans-serif; 
-            color: #444; 
-            margin-top: 8px;
-            margin-bottom: 24px; 
-            font-size: 12px; 
-            line-height: 12px;
-            letter-spacing: 4px; 
-            text-transform: uppercase; 
-        }
-
-        /* --- ANIMATED SEARCH BAR --- */
-        .search-wrapper { 
-            position: relative; 
-            width: 100%; 
-            max-width: 650px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            transition: max-width 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
-            margin: 0 auto;
-        }
-        
-        .search-wrapper.has-text { max-width: 718px; }
-
-        .search-wrapper::before {
-            content: '>'; position: absolute; left: 24px; top: 50%; transform: translateY(-50%);
-            color: #fff; font-family: 'PixeloidSansBold', sans-serif; font-size: 24px; z-index: 5;
-            animation: blink 1s infinite; text-shadow: 0 0 5px rgba(255,255,255,0.3);
-            pointer-events: none;
-        }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-
-        .search-box-container {
-            position: relative;
-            flex: 0 0 650px;
-            height: 60px;
-        }
-
-        .search-box { 
-            width: 100%;
-            height: 100%;
-            background: #050505; border: 2px solid #222; color: white; 
-            font-family: 'PixeloidSans', sans-serif; font-size: 20px; 
-            padding: 0 20px 0 50px; 
-            outline: none; text-align: left; box-sizing: border-box; 
-            transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s; 
-            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.02);
-            background-image: linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.02));
-            background-size: 3px 100%;
-            cursor: text !important;
-            z-index: 2;
-        }
-        
-        .search-box.flicker {
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.2) !important;
-            border-color: #fff !important;
-        }
-
-        .search-box:focus { 
-            border-color: #fff; background-color: #0a0a0a; 
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.15), inset 0 0 15px rgba(255,255,255,0.05); 
-        }
-
-        /* --- THE DETACHED "X" BOX --- */
-        .clear-btn {
-            width: 0px; height: 60px; 
-            flex-shrink: 0; 
-            background: #000; 
-            border: 2px solid transparent; 
-            color: #f00; 
-            font-family: 'PixeloidSansBold', sans-serif; font-size: 22px; 
-            display: flex; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none; overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-            box-sizing: border-box; padding: 0; margin: 0;
-            cursor: pointer;
-            z-index: 1;
-            line-height: 1;
-        }
-        
-        .search-wrapper.has-text .clear-btn {
-            width: 60px; 
-            margin-left: 8px; 
-            border-color: #f00; 
-            opacity: 1; pointer-events: auto;
-        }
-        
-        .clear-btn:hover { 
-            background: #f00 !important; 
-            color: #000 !important; 
-            border-color: #f00 !important;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.6);
-        }
-
-        /* --- BRACKET KILLSWITCH --- */
-        .clear-btn::before, .clear-btn::after, 
-        .btn-del::before, .btn-del::after, 
-        #save-weather-btn::before, #save-weather-btn::after,
-        #export-btn::before, #export-btn::after,
-        #import-btn::before, #import-btn::after { 
-            content: none !important; display: none !important; 
-        }
-
-        /* --- SLIDING PREDICTIVE SEARCH --- */
-        #suggestions-box {
-            position: absolute; 
-            top: 100%; 
-            left: 0; 
-            width: 100%; 
-            background: #050505; border: 2px solid #fff; border-top: none; 
-            display: flex; flex-direction: column; 
-            z-index: 20; box-sizing: border-box;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.8);
-
-            transform: translateY(-20px);
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s, visibility 0.2s;
-            clip-path: inset(0 0 100% 0); 
-        }
-
-        #suggestions-box.show {
-            transform: translateY(0);
-            opacity: 1;
-            visibility: visible;
-            pointer-events: auto;
-            clip-path: inset(0 -50px -50px -50px); 
-        }
-
-        .suggestion-item {
-            padding: 16px 24px; color: #ccc; font-family: 'PixeloidSans', sans-serif; font-size: 16px;
-            border-bottom: 1px solid #111; transition: 0.1s; display: flex; align-items: center;
-        }
-        .suggestion-item:last-child { border-bottom: none; }
-        .suggestion-item:hover { background: #1a1a1a; color: #fff; padding-left: 32px; }
-
         /* --- TERMINAL TEXT BUTTONS --- */
-        .quick-links { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; max-width: 900px; }
+        .quick-links { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; max-width: 900px; margin-top: 2rem;}
         .link-card { 
             background: #050505; border: 2px solid #222; padding: 10px 20px; 
             text-decoration: none; min-width: 120px; text-align: center;
@@ -220,9 +31,9 @@
         .link-card:hover { border-color: #fff; background: #111; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,255,255,0.05); }
         .link-label { color: #666; font-family: 'PixeloidSansBold', sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; transition: color 0.2s; }
         .link-card:hover .link-label { color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.5); }
-        .icon-box { display: none; } /* Kills the old icons */
-
+        
         /* --- SHORTCUT BADGE --- */
+        .search-box-container { position: relative; width: 100%; max-width: 600px; margin: 0 auto; }
         #shortcut-badge {
             position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
             padding: 4px 8px; font-family: 'PixeloidSansBold', sans-serif; font-size: 10px; letter-spacing: 2px;
@@ -233,286 +44,100 @@
         #shortcut-badge.youtube { border-color: #f00; color: #f00; box-shadow: 0 0 10px rgba(255,0,0,0.2); }
         #shortcut-badge.google { border-color: #00ff00; color: #00ff00; box-shadow: 0 0 10px rgba(0,255,0,0.2); }
         #shortcut-badge.reddit { border-color: #ff8800; color: #ff8800; box-shadow: 0 0 10px rgba(255,136,0,0.2); }
-
-        /* --- SETTINGS DRAWER --- */
-        #settings-drawer {
-            position: fixed; top: 0; right: -350px; width: 350px; height: 100vh;
-            background: #000; border-left: 2px solid #333; z-index: 100;
-            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            color: white; font-family: 'PixeloidSans', sans-serif; display: flex; flex-direction: column;
-        }
-        #settings-drawer.open { right: 0; }
         
-        #drawer-tab {
-            position: absolute; left: -52px; bottom: 40px; width: 50px; height: 50px; 
-            background: #000; border: 2px solid #333; border-right: none;
-            display: flex; align-items: center; justify-content: center;
-        }
-        #drawer-tab img { width: 36px; height: 36px; pointer-events: none; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1); }
-        .gear-spin { transform: rotate(180deg); }
-
-        .drawer-content { padding: 24px; flex-grow: 1; overflow-y: auto; }
-        .drawer-header { font-family: 'PixeloidSansBold', sans-serif; color: white; margin-bottom: 24px; font-size: 18px; border-bottom: 1px solid #222; padding-bottom: 12px; letter-spacing: 2px;}
-
-        .setting-section { margin-bottom: 32px; }
-        .section-label { display: block; font-family: 'PixeloidSansBold', sans-serif; font-size: 12px; color: #555; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 2px; }
-        
-        .cheat-sheet { font-size: 10px; color: #444; line-height: 16px; background: #050505; padding: 12px; border: 1px solid #111; margin-top: 12px; }
-        .cheat-sheet b { color: #888; }
-
-        .link-manager-item { display: flex; align-items: center; background: #080808; border: 1px solid #222; padding: 6px; margin-bottom: 8px; gap: 8px; box-sizing: border-box; }
-        .handle { padding: 0 4px; color: #333; font-size: 16px; line-height: 1; }
-        .manager-input { background: black; border: 1px solid #333; color: #ccc; padding: 0 8px; margin: 0; height: 26px; line-height: 24px; box-sizing: border-box; font-family: 'PixeloidSans', sans-serif; font-size: 12px; outline: none; flex-grow: 1; }
-        .manager-input.edit-name { flex-grow: 0; width: 64px; }
-        
-        .btn-del { background: #111; color: #f00; border: 1px solid #300; width: 26px; height: 26px; padding: 0; margin: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-family: 'PixeloidSansBold', sans-serif; font-size: 12px;}
-        .btn-del:hover { background: #f00; color: #000; box-shadow: 0 0 10px #f00; border-color: #f00; }
-        
-        .btn-add { 
-            width: 100%; background: #000; color: #fff; border: 1px solid #333; height: 36px; box-sizing: border-box; 
-            font-family: 'PixeloidSansBold', sans-serif; font-size: 12px; margin-top: 6px; transition: 0.2s; 
-            display: flex; align-items: center; justify-content: center;
-        }
-        .btn-add:hover { background: #fff; color: #000; border-color: white; }
-
-        /* --- FIXED UI COMPONENTS --- */
-        .option-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; min-height: 24px; font-size: 14px;}
-        
-        .toggle-input { display: none; }
-        .toggle-btn { 
-            display: block; 
-            width: 36px; 
-            height: 18px; 
-            background: #111; 
-            position: relative; 
-            border: 2px solid #333; 
-            box-sizing: border-box; 
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .toggle-btn::after { 
-            content: ''; 
-            position: absolute; 
-            width: 12px; 
-            height: 12px; 
-            background: #444; 
-            top: 1px; 
-            left: 1px; 
-            transition: 0.2s cubic-bezier(0.25, 1, 0.5, 1); 
-        }
-        .toggle-input:checked + .toggle-btn { background: #fff; border-color: #fff; }
-        .toggle-input:checked + .toggle-btn::after { left: 19px; background: #000; }
-        
-        select { 
-            appearance: none; 
-            -webkit-appearance: none; 
-            background: #080808 url('data:image/svg+xml;utf8,<svg fill="%23555555" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>') no-repeat right 8px center;
-            border: 1px solid #333; 
-            color: #ccc; 
-            padding: 0 32px 0 12px; 
-            height: 36px; 
-            box-sizing: border-box; 
-            font-family: 'PixeloidSans', sans-serif; 
-            width: 100%; 
-            outline: none; 
-            font-size: 12px; 
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        select:hover, select:focus { border-color: #fff; color: #fff; }
-
-        /* --- MINIMAL STATUS BAR --- */
-        .status-bar { position: fixed; bottom: 24px; left: 32px; font-family: 'PixeloidSansBold', sans-serif; font-size: 14px; line-height: 14px; color: #444; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; gap: 16px; z-index: 5; }
-        .weather-module { display: flex; align-items: center; gap: 10px; color: #666; }
-        .weather-icon { width: 24px; height: 24px; image-rendering: pixelated; }
-        #temp-val { color: #888; }
+        /* Basic hides to prevent glitchy layout */
+        #suggestions-box { display: none; position: absolute; width: 100%; background: #050505; border: 1px solid #333; z-index: 100;}
+        #suggestions-box.show { display: block; }
+        .suggestion-item { padding: 10px; color: #aaa; border-bottom: 1px solid #111; }
+        .suggestion-item.active-item, .suggestion-item:hover { background: #111; color: #fff; }
     </style>
 </head>
 <body>
 
-    <div id="boss-screen">C:\&gt; </div>
-
-    <div id="settings-drawer">
-        <div id="drawer-tab">
-            <img src="images/gear.png" id="gear-icon" alt="Settings">
-        </div>
-        <div class="drawer-content">
-            <div class="drawer-header">CORE_SYSTEM</div>
-            
-            <div class="setting-section">
-                <span class="section-label">Search Config</span>
-                <select id="engine-select">
-                    <option value="duckduckgo">DuckDuckGo</option>
-                    <option value="google">Google</option>
-                    <option value="youtube">YouTube</option>
-                </select>
-                <div class="cheat-sheet">
-                    <b>yt [query]</b> -> YouTube<br>
-                    <b>g  [query]</b> -> Google<br>
-                    <b>r/[sub]</b> &nbsp;&nbsp;&nbsp;-> Subreddit<br>
-                    <b>Default</b> &nbsp;&nbsp;-> Selected Engine
-                </div>
-            </div>
-
-            <div class="setting-section">
-                <span class="section-label">Interface</span>
-                <div class="option-row">
-                    <span>Low Power Mode</span>
-                    <input type="checkbox" id="toggle-power" class="toggle-input">
-                    <label for="toggle-power" class="toggle-btn"></label>
-                </div>
-                <div class="option-row">
-                    <span>Show Status Bar</span>
-                    <input type="checkbox" id="toggle-status" class="toggle-input" checked>
-                    <label for="toggle-status" class="toggle-btn"></label>
-                </div>
-                <div class="option-row">
-                    <span>Open Links in New Tab</span>
-                    <input type="checkbox" id="toggle-newtab" class="toggle-input" checked>
-                    <label for="toggle-newtab" class="toggle-btn"></label>
-                </div>
-                <div class="option-row">
-                    <span>24-Hour Time</span>
-                    <input type="checkbox" id="toggle-military" class="toggle-input">
-                    <label for="toggle-military" class="toggle-btn"></label>
-                </div>
-            </div>
-
-            <div class="setting-section">
-                <span class="section-label">Weather Override</span>
-                <div style="display: flex; gap: 6px; align-items: center;">
-                    <input type="text" id="weather-loc-input" class="manager-input" placeholder="City or ZIP (Blank for IP)" style="flex-grow: 1;">
-                    <button id="save-weather-btn" class="btn-add" style="margin: 0; width: 64px; height: 26px; font-size: 12px;">SET</button>
-                </div>
-            </div>
-
-            <div class="setting-section">
-                <span class="section-label">Link Manager</span>
-                <div id="manager-list"></div>
-                <button class="btn-add" id="addNewBtn" style="margin-bottom: 24px;">+ ADD NEW_ENTRY</button>
-            </div>
-
-            <div class="setting-section" style="border-top: 1px solid #222; padding-top: 24px;">
-                <span class="section-label">System Backup</span>
-                <div style="display: flex; gap: 12px;">
-                    <button id="export-btn" class="btn-add" style="margin:0; font-size: 10px; white-space: nowrap;">EXPORT JSON</button>
-                    <button id="import-btn" class="btn-add" style="margin:0; font-size: 10px; white-space: nowrap;">IMPORT JSON</button>
-                    <input type="file" id="import-file" style="display: none;" accept=".json">
-                </div>
-            </div>
-        </div>
+    <div id="clock-container" style="text-align: center; margin-top: 10vh; margin-bottom: 2rem;">
+        <h1 id="clock" style="font-size: 4rem; margin: 0; color: #fff;">00:00:00</h1>
+        <h3 id="greeting" style="color: #666; margin: 5px 0;">SYSTEM_INIT</h3>
+        <div id="weather" style="color: #888; font-size: 0.9rem; margin-top: 10px;">Loading Weather...</div>
     </div>
 
-    <div class="command-center">
-        <div id="clock" class="terminal-clock">00:00:00</div>
-        <div id="greeting">SYSTEM_ONLINE</div>
-        
-        <div class="search-wrapper" id="search-wrapper">
-            <div class="search-box-container">
-        <input type="text" id="search-box" class="search-box" autocomplete="off" spellcheck="false" autofocus>
-        
+    <div class="search-box-container">
+        <input type="text" id="search-box" class="search-box" autocomplete="off" spellcheck="false" autofocus placeholder="> enter command...">
         <div id="shortcut-badge"></div>
-        
         <div id="suggestions-box"></div>
     </div>
-            <button id="clear-search" class="clear-btn">X</button>
-        </div>
-    </div>
 
-    <div id="links-container" class="quick-links"></div>
+    <div id="quick-links" class="quick-links"></div>
 
-    <div class="status-bar" id="status-bar">
-        <span>MIKEVOID_OS</span>
-        <span>//</span>
-        <div class="weather-module" id="weather-display">
-            <img src="images/sunny.png" class="weather-icon" id="weather-img">
-            <span id="temp-val">LOADING...</span>
-        </div>
+    <div id="settings-drawer" class="drawer">
+        <div id="drawer-tab">SETTINGS</div>
+        <div class="drawer-content" style="padding: 20px;">
+            <p>Settings Module Online</p>
+            </div>
     </div>
 
     <script>
-        const DEFAULT_CONFIG = { 
-            showStatus: true, lowPower: false, newTab: true, militaryTime: false, weatherLoc: "", engine: "duckduckgo", 
-            links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}] 
-        };
-        
-        let savedConfig = JSON.parse(localStorage.getItem('startConfig')) || {};
-        let config = { ...DEFAULT_CONFIG, ...savedConfig }; 
-        const saveConfig = () => localStorage.setItem('startConfig', JSON.stringify(config));
-
-        const audioAssets = {
-            hover: new Audio('sounds/hoverbutton.wav'), 
-            click: new Audio('sounds/buttonclick.mp3'),
-            types: [new Audio('sounds/type1.mp3'), new Audio('sounds/type2.mp3'), new Audio('sounds/type3.mp3'), new Audio('sounds/type4.mp3')],
-            mouseDown: [new Audio('sounds/mousedown1.mp3'), new Audio('sounds/mousedown2.mp3'), new Audio('sounds/mousedown3.mp3'), new Audio('sounds/mousedown4.mp3')],
-            mouseUp: [new Audio('sounds/mouseup1.mp3'), new Audio('sounds/mouseup2.mp3'), new Audio('sounds/mouseup3.mp3'), new Audio('sounds/mouseup4.mp3')]
+        // --- CONFIGURATION ---
+        const config = {
+            militaryTime: false,
+            engine: 'duckduckgo',
+            links: [
+                { name: "YouTube", url: "https://youtube.com" },
+                { name: "Reddit", url: "https://reddit.com" },
+                { name: "GitHub", url: "https://github.com" },
+                { name: "Gmail", url: "https://mail.google.com" }
+            ]
         };
 
-        let lastMouseIdx = 0; 
+        // --- DOM ELEMENTS ---
+        const searchInput = document.getElementById('search-box');
+        const suggestionsBox = document.getElementById('suggestions-box');
+        const badge = document.getElementById('shortcut-badge');
+        const searchWrapper = document.querySelector('.search-box-container');
+        const drawer = document.getElementById('settings-drawer');
+        const drawerTab = document.getElementById('drawer-tab');
 
-        const playSound = (type) => {
-            let sound, vol = 0.4;
-            if (type === 'hover') { sound = audioAssets.hover; } 
-            else if (type === 'click') { sound = audioAssets.click; } 
-            else if (type === 'mouseDown') { lastMouseIdx = Math.floor(Math.random() * 4); sound = audioAssets.mouseDown[lastMouseIdx]; vol = 0.05; } 
-            else if (type === 'mouseUp') { sound = audioAssets.mouseUp[lastMouseIdx]; vol = 0.05; } 
-            else { sound = audioAssets.types[Math.floor(Math.random() * 4)]; }
+        // --- AUDIO ENGINE (STUBBED) ---
+        function playSound(type) {
+            // Re-link your audio files here if you want the terminal clicks back
+            // console.log("Played sound: " + type);
+        }
+
+        // --- CLOCK & GREETING ---
+        function updateClock() {
+            const now = new Date();
+            const month = now.getMonth();
+            const date = now.getDate();
+            const day = now.getDay();
+            let h = now.getHours(), m = String(now.getMinutes()).padStart(2, '0'), s = String(now.getSeconds()).padStart(2, '0');
             
-            if (sound) { const clone = sound.cloneNode(); clone.volume = vol; clone.play().catch(()=>{}); }
-        };
-
-        async function fetchWeather(force = false) {
-            const cacheKey = 'weatherCache';
-            const cachedData = JSON.parse(localStorage.getItem(cacheKey));
-            const now = new Date().getTime();
-            
-            if (!force && cachedData && (now - cachedData.timestamp < 900000)) {
-                applyWeatherUI(cachedData.temp, cachedData.code);
-                return;
+            if (!config.militaryTime) {
+                const ampm = h >= 12 ? 'PM' : 'AM'; 
+                h = h % 12 || 12;
+                document.getElementById('clock').innerText = `${h}:${m}:${s} ${ampm}`;
+            } else {
+                h = String(h).padStart(2, '0');
+                document.getElementById('clock').innerText = `${h}:${m}:${s}`;
             }
-            try {
-                let lat, lon;
-                if (config.weatherLoc && config.weatherLoc.trim() !== "") {
-                    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(config.weatherLoc)}&count=1`);
-                    const geoData = await geoRes.json();
-                    if (geoData.results && geoData.results.length > 0) {
-                        lat = geoData.results[0].latitude;
-                        lon = geoData.results[0].longitude;
-                    } else throw new Error("Location not found");
-                } else {
-                    const ipRes = await fetch("https://ipapi.co/json/");
-                    const location = await ipRes.json();
-                    lat = location.latitude;
-                    lon = location.longitude;
-                }
-
-                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&temperature_unit=fahrenheit`);
-                const data = await res.json();
-                const weatherInfo = { temp: Math.round(data.current.temperature_2m), code: data.current.weather_code, timestamp: now };
-                localStorage.setItem(cacheKey, JSON.stringify(weatherInfo));
-                applyWeatherUI(weatherInfo.temp, weatherInfo.code);
-            } catch (e) { document.getElementById('temp-val').innerText = "ERROR"; }
+            
+            let greetingText = "";
+            if (month === 9 && date === 31) greetingText = "SYSTEM_HAUNTED";
+            else if (month === 11 && date === 25) greetingText = "MERRY_CRISIS";
+            else if (month === 4 && date === 17) greetingText = "HAPPY_BIRTHDAY";
+            else if (month === 0 && date === 1) greetingText = "NEW_CYCLE_INITIATED";
+            else if (day === 5 && now.getHours() >= 17) greetingText = "INITIATE_WEEKEND";
+            else {
+                greetingText = now.getHours() < 12 ? "GOOD_MORNING" : now.getHours() < 18 ? "GOOD_AFTERNOON" : "GOOD_EVENING";
+            }
+            document.getElementById('greeting').innerText = greetingText;
         }
+        setInterval(updateClock, 1000);
+        updateClock();
 
-        function applyWeatherUI(temp, code) {
-            document.getElementById('temp-val').innerText = `${temp}°F`;
-            let icon = "sunny.png";
-            if (code >= 1 && code <= 3) icon = "partly cloudy.png";
-            else if (code >= 45 && code <= 48) icon = "foggy.png";
-            else if (code >= 51 && code <= 67) icon = "rainy.png";
-            else if (code >= 71 && code <= 77) icon = "cold.png"; 
-            else if (code >= 80 && code <= 82) icon = "rainy.png";
-            else if (code >= 95 && code <= 99) icon = "thunderstorm.png";
-            else if (code > 3) icon = "cloudy.png";
-            if (new Date().getHours() >= 20 || new Date().getHours() <= 5) icon = "night.png";
-            document.getElementById('weather-img').src = `images/${icon}`;
-        }
+        // --- WEATHER (STUBBED API) ---
+        // Make sure to insert your specific weather API logic back here if you have a custom one
+        document.getElementById('weather').innerText = "WEATHER_MODULE_STANDBY";
 
-        function getFavicon(url) {
-            try { return url.startsWith('http') ? `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=64` : 'images/plxeyestiny.png'; } 
-            catch { return 'images/plxeyestiny.png'; }
-        }
-
+        // --- QUICK LINKS (TEXT BUTTONS) ---
         function renderLinks() {
             const container = document.getElementById('quick-links');
             container.innerHTML = config.links.map((link, index) => `
@@ -526,131 +151,47 @@
                 card.onclick = () => playSound('click');
             });
         }
+        renderLinks();
 
-        function applySettings() {
-            document.getElementById('status-bar').style.display = config.showStatus ? 'flex' : 'none';
-            document.getElementById('toggle-status').checked = config.showStatus;
-            document.getElementById('toggle-power').checked = config.lowPower;
-            document.getElementById('toggle-newtab').checked = config.newTab; 
-            document.getElementById('toggle-military').checked = config.militaryTime; 
-            document.getElementById('engine-select').value = config.engine;
-            document.getElementById('weather-loc-input').value = config.weatherLoc;
-            config.lowPower ? document.body.classList.add('low-power') : document.body.classList.remove('low-power');
-        }
-
-        function attachManagerEvents() {
-            Sortable.create(document.getElementById('manager-list'), {
-                handle: '.handle', animation: 150,
-                onEnd: () => {
-                    const nl = [];
-                    document.querySelectorAll('.link-manager-item').forEach(el => nl.push({ name: el.querySelector('.edit-name').value, url: el.querySelector('.edit-url').value }));
-                    config.links = nl; saveConfig(); renderLinks();
-                }
-            });
-            document.querySelectorAll('.manager-input').forEach(input => {
-                input.addEventListener('change', (e) => {
-                    const idx = e.target.dataset.idx;
-                    e.target.classList.contains('edit-name') ? config.links[idx].name = e.target.value : config.links[idx].url = e.target.value;
-                    saveConfig(); renderLinks();
-                });
-            });
-            document.querySelectorAll('.btn-del').forEach(btn => {
-                btn.onclick = (e) => { playSound('click'); config.links.splice(e.target.dataset.idx, 1); saveConfig(); renderLinks(); };
-            });
-        }
-
-        window.addEventListener('mousedown', () => playSound('mouseDown'));
-        window.addEventListener('mouseup', () => playSound('mouseUp'));
-        
-        const searchInput = document.getElementById('web-search');
-        const clearBtn = document.getElementById('clear-search');
-        const searchWrapper = document.getElementById('search-wrapper');
-        const suggestionsBox = document.getElementById('suggestions-box');
-        let debounceTimer;
-
-        function triggerFlicker() {
-            searchInput.classList.remove('flicker');
-            void searchInput.offsetWidth; 
-            searchInput.classList.add('flicker');
-            setTimeout(() => searchInput.classList.remove('flicker'), 200);
-        }
-
-        searchInput.addEventListener('focus', triggerFlicker);
-
-        clearBtn.onmousedown = (e) => {
-            e.preventDefault(); 
-            playSound('click');
-            searchInput.value = '';
-            searchWrapper.classList.remove('has-text'); 
-            suggestionsBox.classList.remove('show');
-            searchInput.focus();
-        };
-
-        window.addEventListener('keydown', (e) => {
-            if (e.repeat) return; 
+        // --- SEARCH ROUTING ---
+        function executeSearch(val) {
+            if(!val) return;
+            const q = encodeURIComponent(val);
+            const lowerVal = val.toLowerCase();
+            let url = "";
             
-            if (e.key === '`' || e.key === '~') {
-                if(document.activeElement.tagName === 'INPUT') return;
-                
-                e.preventDefault();
-                playSound('click');
-                document.body.classList.toggle('boss-mode');
-                return;
+            if(lowerVal.startsWith('g ')) url = `https://www.google.com/search?q=${encodeURIComponent(val.substring(2))}`;
+            else if(lowerVal.startsWith('yt ')) url = `https://www.youtube.com/results?search_query=${encodeURIComponent(val.substring(3))}`;
+            else if(lowerVal.startsWith('r/')) url = `https://www.reddit.com/${val}`;
+            else {
+                if(config.engine === 'google') url = `https://www.google.com/search?q=${q}`;
+                else if(config.engine === 'youtube') url = `https://www.youtube.com/results?search_query=${q}`;
+                else url = `https://duckduckgo.com/?q=${q}`;
             }
-            if (document.body.classList.contains('boss-mode')) return;
+            window.location.replace(url);
+        }
 
-            if (e.key === 'Escape') {
-                if(searchInput.value) {
-                    playSound('click');
-                    searchInput.value = '';
-                    searchWrapper.classList.remove('has-text');
-                    suggestionsBox.classList.remove('show');
-                }
-                searchInput.blur();
-                return;
-            }
-
-            if (e.key !== 'Enter' && e.key !== 'Escape' && e.key.length === 1) { playSound('type'); }
-            if (e.key === 'Backspace') { playSound('type'); }
-
-            if (document.activeElement !== searchInput && document.activeElement.tagName !== 'INPUT') {
-                if (e.key === 'Backspace') {
-                    e.preventDefault();
-                    if (searchInput.value.length > 0) {
-                        searchInput.value = searchInput.value.slice(0, -1);
-                        searchInput.focus();
-                        searchInput.dispatchEvent(new Event('input')); 
-                    }
-                    if (searchInput.value.length === 0) searchWrapper.classList.remove('has-text');
-                } 
-                else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-                    searchInput.focus();
-                }
-            }
-        });
-
+        // --- PREDICTIVE TEXT & BOT-PROOFING ---
         let currentFocus = -1;
+        let debounceTimer; // The hero variable that caused the crash earlier
 
         searchInput.oninput = () => {
             const query = searchInput.value.trimStart();
             const lowerQuery = query.toLowerCase();
-            const badge = document.getElementById('shortcut-badge');
             
-            if (query.length > 0) searchWrapper.classList.add('has-text');
-            else searchWrapper.classList.remove('has-text');
-
-            // --- VISUAL CUE FOR SHORTCUTS ---
+            // Handle Shortcut Badges
             if (lowerQuery.startsWith('yt ')) { badge.className = 'show youtube'; badge.innerText = 'YOUTUBE'; }
             else if (lowerQuery.startsWith('g ')) { badge.className = 'show google'; badge.innerText = 'GOOGLE'; }
             else if (lowerQuery.startsWith('r/')) { badge.className = 'show reddit'; badge.innerText = 'REDDIT'; }
             else { badge.className = ''; }
 
-            // Turn off predictive search if query is empty OR if using a shortcut
+            // Turn off predictive search if query is empty OR if using a custom shortcut
             if (query.length === 0 || lowerQuery.startsWith('yt ') || lowerQuery.startsWith('g ') || lowerQuery.startsWith('r/')) { 
                 suggestionsBox.classList.remove('show'); 
                 return; 
             }
             
+            // Bot-Proof Delay: Wait 300ms before pinging the proxy so we don't spam DDG
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(async () => {
                 try {
@@ -674,10 +215,10 @@
                         suggestionsBox.classList.add('show');
                     } else { suggestionsBox.classList.remove('show'); }
                 } catch (error) { suggestionsBox.classList.remove('show'); }
-            }, 250); // Increased to 250ms to prevent bot-flagging
+            }, 300); 
         };
 
-        // --- RESTORED ENTER & ARROW KEYS ---
+        // --- ARROW KEYS & ENTER KEY ---
         searchInput.addEventListener('keydown', function(e) {
             let items = suggestionsBox.querySelectorAll('.suggestion-item');
             if (e.key === 'ArrowDown') {
@@ -691,6 +232,7 @@
             } else if (e.key === 'Enter') {
                 e.preventDefault();
                 playSound('click');
+                // If a dropdown item is highlighted, search that. Otherwise, search what's in the box.
                 if (currentFocus > -1 && items.length > 0 && suggestionsBox.classList.contains('show')) {
                     items[currentFocus].click();
                 } else {
@@ -712,118 +254,12 @@
             items.forEach(item => item.classList.remove('active-item'));
         }
 
-        window.autocompleteCallback = (data) => {
-            if (searchInput.value.trim().length === 0) { suggestionsBox.classList.remove('show'); return; }
-            suggestionsBox.innerHTML = '';
-            if (data && data.length > 0) {
-                data.slice(0, 5).forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'suggestion-item'; div.innerText = item.phrase;
-                    div.onmouseenter = () => playSound('hover');
-                    div.onclick = () => { playSound('click'); executeSearch(item.phrase); };
-                    suggestionsBox.appendChild(div);
-                });
-                suggestionsBox.classList.add('show');
-            } else { suggestionsBox.classList.remove('show'); }
-        };
-
-        function executeSearch(val) {
-            if(!val) return;
-            const lowerVal = val.toLowerCase();
-            if(lowerVal.startsWith('yt ')) window.location.href = `https://youtube.com/results?search_query=${encodeURIComponent(val.substring(3))}`;
-            else if(lowerVal.startsWith('g ')) window.location.href = `https://google.com/search?q=${encodeURIComponent(val.substring(2))}`;
-            else if(lowerVal.startsWith('r/')) window.location.href = `https://reddit.com/${val}`;
-            else {
-                const q = encodeURIComponent(val);
-                if(config.engine === 'google') window.location.href = `https://google.com/search?q=${q}`;
-                else if(config.engine === 'youtube') window.location.href = `https://youtube.com/results?search_query=${q}`;
-                else window.location.href = `https://duckduckgo.com/?q=${q}`;
-            }
-        }
-
-        searchInput.onkeydown = (e) => { if(e.key === 'Enter') { playSound('click'); executeSearch(searchInput.value); } };
-        
-        // --- SETTINGS LOGIC ---
-        document.getElementById('toggle-status').onchange = (e) => { config.showStatus = e.target.checked; saveConfig(); applySettings(); };
-        document.getElementById('toggle-power').onchange = (e) => { config.lowPower = e.target.checked; saveConfig(); applySettings(); };
-        document.getElementById('toggle-newtab').onchange = (e) => { config.newTab = e.target.checked; saveConfig(); renderLinks(); };
-        document.getElementById('toggle-military').onchange = (e) => { config.militaryTime = e.target.checked; saveConfig(); updateClock(); };
-        document.getElementById('engine-select').onchange = (e) => { config.engine = e.target.value; saveConfig(); };
-        document.getElementById('addNewBtn').onclick = () => { playSound('click'); config.links.push({name: "NEW", url: "https://"}); saveConfig(); renderLinks(); };
-        
-        // Weather Save Button
-        document.getElementById('save-weather-btn').onclick = () => {
+        // --- DRAWER TOGGLE ---
+        drawerTab.addEventListener('click', () => {
+            drawer.classList.toggle('open');
             playSound('click');
-            config.weatherLoc = document.getElementById('weather-loc-input').value;
-            saveConfig();
-            document.getElementById('temp-val').innerText = "UPDATING...";
-            fetchWeather(true); 
-        };
+        });
 
-        // Import / Export JSON
-        document.getElementById('export-btn').onclick = () => {
-            playSound('click');
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(config));
-            const dl = document.createElement('a');
-            dl.setAttribute("href", dataStr);
-            dl.setAttribute("download", "mikevoid_os_backup.json");
-            dl.click();
-        };
-        
-        document.getElementById('import-btn').onclick = () => { playSound('click'); document.getElementById('import-file').click(); };
-        
-        document.getElementById('import-file').onchange = (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                try {
-                    const importedConfig = JSON.parse(event.target.result);
-                    localStorage.setItem('startConfig', JSON.stringify(importedConfig));
-                    location.reload();
-                } catch (err) { alert("ERROR: Invalid config file structure."); }
-            };
-            reader.readAsText(file);
-        };
-
-        const drawer = document.getElementById('settings-drawer');
-        const gearIcon = document.getElementById('gear-icon');
-        document.getElementById('drawer-tab').onclick = (e) => { e.stopPropagation(); playSound('click'); drawer.classList.toggle('open'); gearIcon.classList.toggle('gear-spin'); };
-        
-        window.onclick = (e) => { 
-            if (e.target !== searchInput && e.target !== clearBtn && !e.target.closest('#suggestions-box')) suggestionsBox.classList.remove('show');
-            if (!drawer.contains(e.target) && !document.getElementById('drawer-tab').contains(e.target) && drawer.classList.contains('open')) { drawer.classList.remove('open'); gearIcon.classList.remove('gear-spin'); }
-        };
-
-        function updateClock() {
-            const now = new Date();
-            const month = now.getMonth();
-            const date = now.getDate();
-            const day = now.getDay();
-            let h = now.getHours(), m = String(now.getMinutes()).padStart(2, '0'), s = String(now.getSeconds()).padStart(2, '0');
-            
-            if (!config.militaryTime) {
-                const ampm = h >= 12 ? 'PM' : 'AM'; 
-                h = h % 12 || 12;
-                document.getElementById('clock').innerText = `${h}:${m}:${s} ${ampm}`;
-            } else {
-                h = String(h).padStart(2, '0');
-                document.getElementById('clock').innerText = `${h}:${m}:${s}`;
-            }
-            
-            let greetingText = "";
-            if (month === 9 && date === 31) greetingText = "SYSTEM_HAUNTED";
-            else if (month === 11 && date === 25) greetingText = "MERRY_CRISIS";
-            else if (month === 0 && date === 1) greetingText = "NEW_CYCLE_INITIATED";
-            else if (day === 5 && now.getHours() >= 17) greetingText = "INITIATE_WEEKEND";
-            else {
-                greetingText = now.getHours() < 12 ? "GOOD_MORNING" : now.getHours() < 18 ? "GOOD_AFTERNOON" : "GOOD_EVENING";
-            }
-            document.getElementById('greeting').innerText = greetingText;
-        }
-
-        function init() { renderLinks(); applySettings(); updateClock(); setInterval(updateClock, 1000); fetchWeather(); setInterval(fetchWeather, 300000); }
-        init();
     </script>
 </body>
 </html>
