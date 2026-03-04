@@ -220,7 +220,19 @@
         .link-card:hover { border-color: #fff; background: #111; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,255,255,0.05); }
         .link-label { color: #666; font-family: 'PixeloidSansBold', sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; transition: color 0.2s; }
         .link-card:hover .link-label { color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.5); }
-        .icon-box { display: none; } /* Kills the old icon container just in case */
+        .icon-box { display: none; } /* Kills the old icons */
+
+        /* --- SHORTCUT BADGE --- */
+        #shortcut-badge {
+            position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+            padding: 4px 8px; font-family: 'PixeloidSansBold', sans-serif; font-size: 10px; letter-spacing: 2px;
+            background: #000; border: 1px solid #333; color: #fff;
+            opacity: 0; pointer-events: none; transition: all 0.2s; z-index: 10;
+        }
+        #shortcut-badge.show { opacity: 1; right: 24px; }
+        #shortcut-badge.youtube { border-color: #f00; color: #f00; box-shadow: 0 0 10px rgba(255,0,0,0.2); }
+        #shortcut-badge.google { border-color: #00ff00; color: #00ff00; box-shadow: 0 0 10px rgba(0,255,0,0.2); }
+        #shortcut-badge.reddit { border-color: #ff8800; color: #ff8800; box-shadow: 0 0 10px rgba(255,136,0,0.2); }
 
         /* --- SETTINGS DRAWER --- */
         #settings-drawer {
@@ -398,6 +410,7 @@
         <div class="search-wrapper" id="search-wrapper">
             <div class="search-box-container">
                 <input type="text" id="web-search" class="search-box" placeholder="type command..." autofocus autocomplete="off">
+                <div id="shortcut-badge"></div>
                 <div id="suggestions-box"></div>
             </div>
             <button id="clear-search" class="clear-btn">X</button>
@@ -493,20 +506,107 @@
             document.getElementById('weather-img').src = `images/${icon}`;
         }
 
+        // --- QUICK LINKS (TEXT BUTTONS ONLY) ---
         function renderLinks() {
-            // Make sure your HTML div ID matches 'quick-links'
-            const container = document.getElementById('quick-links'); 
+            const container = document.getElementById('quick-links');
             container.innerHTML = config.links.map((link, index) => `
                 <a href="${link.url}" class="link-card" data-index="${index}">
                     <div class="link-label">${link.name}</div>
                 </a>
             `).join('');
             
-            // Keeps your hover and click sounds working on the new buttons
             document.querySelectorAll('.link-card').forEach(card => {
                 card.onmouseenter = () => playSound('hover');
                 card.onclick = () => playSound('click');
             });
+        }
+        // Make sure this is called so your links actually appear!
+        renderLinks(); 
+
+        // --- PREDICTIVE TEXT & BOT-PROOFING ---
+        let currentFocus = -1;
+        let debounceTimer; // Must be here so the script doesn't crash!
+
+        searchInput.oninput = () => {
+            const query = searchInput.value.trimStart();
+            const lowerQuery = query.toLowerCase();
+            const badge = document.getElementById('shortcut-badge');
+            
+            if (query.length > 0) searchWrapper.classList.add('has-text');
+            else searchWrapper.classList.remove('has-text');
+
+            // --- VISUAL CUE LOGIC ---
+            if (lowerQuery.startsWith('yt ')) { badge.className = 'show youtube'; badge.innerText = 'YOUTUBE'; }
+            else if (lowerQuery.startsWith('g ')) { badge.className = 'show google'; badge.innerText = 'GOOGLE'; }
+            else if (lowerQuery.startsWith('r/')) { badge.className = 'show reddit'; badge.innerText = 'REDDIT'; }
+            else { badge.className = ''; }
+
+            // Turn off predictive search if query is empty OR if using a shortcut
+            if (query.length === 0 || lowerQuery.startsWith('yt ') || lowerQuery.startsWith('g ') || lowerQuery.startsWith('r/')) { 
+                suggestionsBox.classList.remove('show'); 
+                return; 
+            }
+            
+            clearTimeout(debounceTimer);
+            // 300ms delay stops you from getting flagged as a spam bot
+            debounceTimer = setTimeout(async () => {
+                try {
+                    const targetUrl = `https://duckduckgo.com/ac/?q=${encodeURIComponent(query)}`;
+                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+                    const response = await fetch(proxyUrl);
+                    const data = await response.json();
+                    
+                    suggestionsBox.innerHTML = '';
+                    currentFocus = -1;
+                    
+                    if (data && data.length > 0) {
+                        data.slice(0, 5).forEach(item => {
+                            const div = document.createElement('div');
+                            div.className = 'suggestion-item'; 
+                            div.innerText = item.phrase;
+                            div.onmouseenter = () => { currentFocus = -1; playSound('hover'); removeActive(suggestionsBox.querySelectorAll('.suggestion-item')); };
+                            div.onclick = () => { playSound('click'); executeSearch(item.phrase); };
+                            suggestionsBox.appendChild(div);
+                        });
+                        suggestionsBox.classList.add('show');
+                    } else { suggestionsBox.classList.remove('show'); }
+                } catch (error) { suggestionsBox.classList.remove('show'); }
+            }, 300); 
+        };
+
+        // --- RESTORED ENTER & ARROW KEYS ---
+        searchInput.addEventListener('keydown', function(e) {
+            let items = suggestionsBox.querySelectorAll('.suggestion-item');
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                currentFocus++;
+                addActive(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                currentFocus--;
+                addActive(items);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                playSound('click');
+                if (currentFocus > -1 && items.length > 0 && suggestionsBox.classList.contains('show')) {
+                    items[currentFocus].click();
+                } else {
+                    executeSearch(searchInput.value);
+                }
+            }
+        });
+
+        function addActive(items) {
+            if (!items || items.length === 0) return;
+            removeActive(items);
+            if (currentFocus >= items.length) currentFocus = 0;
+            if (currentFocus < 0) currentFocus = items.length - 1;
+            items[currentFocus].classList.add('active-item');
+            playSound('hover');
+        }
+
+        function removeActive(items) {
+            items.forEach(item => item.classList.remove('active-item'));
         }
 
         function applySettings() {
@@ -548,7 +648,6 @@
         const clearBtn = document.getElementById('clear-search');
         const searchWrapper = document.getElementById('search-wrapper');
         const suggestionsBox = document.getElementById('suggestions-box');
-        let debounceTimer;
 
         function triggerFlicker() {
             searchInput.classList.remove('flicker');
