@@ -9,9 +9,17 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     
     <style>
-        /* --- GLOBAL UI & CURSORS --- */
-        * { cursor: url('images/cursor.png'), auto !important; }
+        /* --- GLOBAL UI, CURSORS, & PIXEL RENDERING --- */
+        * { 
+            cursor: url('images/cursor.png'), auto !important; 
+            -webkit-font-smoothing: none; 
+            -moz-osx-font-smoothing: grayscale; 
+            text-rendering: optimizeSpeed;
+            font-smooth: never;
+        }
         *:active { cursor: url('images/cursor-click.png'), auto !important; }
+
+        img { image-rendering: pixelated; }
 
         a, button, .suggestion-item, #drawer-tab, select, .handle, .toggle-btn, .link-card, .link-card *, .clear-btn {
             cursor: url('images/link-select.png'), pointer !important;
@@ -30,7 +38,6 @@
         body {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             height: 100vh; margin: 0; overflow: hidden; background: black;
-            -webkit-font-smoothing: none; 
         }
         body.low-power { filter: brightness(0.7); }
         
@@ -430,6 +437,7 @@
     </div>
 
     <script>
+        // --- CORE CONFIGURATION ---
         const DEFAULT_CONFIG = { 
             showStatus: true, lowPower: false, newTab: true, militaryTime: false, weatherLoc: "", engine: "duckduckgo", 
             links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}] 
@@ -439,6 +447,7 @@
         let config = { ...DEFAULT_CONFIG, ...savedConfig }; 
         const saveConfig = () => localStorage.setItem('startConfig', JSON.stringify(config));
 
+        // --- AUDIO ENGINE ---
         const audioAssets = {
             hover: new Audio('sounds/hoverbutton.wav'), 
             click: new Audio('sounds/buttonclick.mp3'),
@@ -460,6 +469,10 @@
             if (sound) { const clone = sound.cloneNode(); clone.volume = vol; clone.play().catch(()=>{}); }
         };
 
+        window.addEventListener('mousedown', () => playSound('mouseDown'));
+        window.addEventListener('mouseup', () => playSound('mouseUp'));
+
+        // --- WEATHER MODULE ---
         async function fetchWeather(force = false) {
             const cacheKey = 'weatherCache';
             const cachedData = JSON.parse(localStorage.getItem(cacheKey));
@@ -507,6 +520,7 @@
             document.getElementById('weather-img').src = `images/${icon}`;
         }
 
+        // --- QUICK LINKS UI ---
         function renderLinks() {
             const container = document.getElementById('links-container');
             const manager = document.getElementById('manager-list');
@@ -518,7 +532,8 @@
                 card.target = config.newTab ? "_blank" : "_self";
                 
                 card.innerHTML = `<div class="link-label">${link.name}</div>`;
-                card.onmouseenter = () => playSound('hover'); card.onclick = () => playSound('click');
+                card.onmouseenter = () => playSound('hover'); 
+                card.onclick = () => playSound('click');
                 container.appendChild(card);
                 
                 const item = document.createElement('div');
@@ -546,14 +561,16 @@
         }
 
         function attachManagerEvents() {
-            Sortable.create(document.getElementById('manager-list'), {
-                handle: '.handle', animation: 150,
-                onEnd: () => {
-                    const nl = [];
-                    document.querySelectorAll('.link-manager-item').forEach(el => nl.push({ name: el.querySelector('.edit-name').value, url: el.querySelector('.edit-url').value }));
-                    config.links = nl; saveConfig(); renderLinks();
-                }
-            });
+            if (typeof Sortable !== 'undefined') {
+                Sortable.create(document.getElementById('manager-list'), {
+                    handle: '.handle', animation: 150,
+                    onEnd: () => {
+                        const nl = [];
+                        document.querySelectorAll('.link-manager-item').forEach(el => nl.push({ name: el.querySelector('.edit-name').value, url: el.querySelector('.edit-url').value }));
+                        config.links = nl; saveConfig(); renderLinks();
+                    }
+                });
+            }
             document.querySelectorAll('.manager-input').forEach(input => {
                 input.addEventListener('change', (e) => {
                     const idx = e.target.dataset.idx;
@@ -562,13 +579,17 @@
                 });
             });
             document.querySelectorAll('.btn-del').forEach(btn => {
-                btn.onclick = (e) => { playSound('click'); config.links.splice(e.target.dataset.idx, 1); saveConfig(); renderLinks(); };
+                btn.onclick = (e) => { 
+                    e.stopPropagation(); 
+                    playSound('click'); 
+                    config.links.splice(e.target.dataset.idx, 1); 
+                    saveConfig(); 
+                    renderLinks(); 
+                };
             });
         }
 
-        window.addEventListener('mousedown', () => playSound('mouseDown'));
-        window.addEventListener('mouseup', () => playSound('mouseUp'));
-        
+        // --- SEARCH BAR & LOGIC ---
         const searchInput = document.getElementById('web-search');
         const clearBtn = document.getElementById('clear-search');
         const searchWrapper = document.getElementById('search-wrapper');
@@ -733,15 +754,14 @@
             } 
         };
         
-        // --- SETTINGS LOGIC ---
+        // --- SETTINGS DRAWER EVENTS ---
         document.getElementById('toggle-status').onchange = (e) => { config.showStatus = e.target.checked; saveConfig(); applySettings(); };
         document.getElementById('toggle-power').onchange = (e) => { config.lowPower = e.target.checked; saveConfig(); applySettings(); };
         document.getElementById('toggle-newtab').onchange = (e) => { config.newTab = e.target.checked; saveConfig(); renderLinks(); };
         document.getElementById('toggle-military').onchange = (e) => { config.militaryTime = e.target.checked; saveConfig(); updateClock(); };
         document.getElementById('engine-select').onchange = (e) => { config.engine = e.target.value; saveConfig(); };
-        document.getElementById('addNewBtn').onclick = () => { playSound('click'); config.links.push({name: "NEW", url: "https://"}); saveConfig(); renderLinks(); };
+        document.getElementById('addNewBtn').onclick = (e) => { e.stopPropagation(); playSound('click'); config.links.push({name: "NEW", url: "https://"}); saveConfig(); renderLinks(); };
         
-        // Weather Save Button
         document.getElementById('save-weather-btn').onclick = () => {
             playSound('click');
             config.weatherLoc = document.getElementById('weather-loc-input').value;
@@ -750,7 +770,6 @@
             fetchWeather(true); 
         };
 
-        // Import / Export JSON
         document.getElementById('export-btn').onclick = () => {
             playSound('click');
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(config));
@@ -785,6 +804,7 @@
             if (!drawer.contains(e.target) && !document.getElementById('drawer-tab').contains(e.target) && drawer.classList.contains('open')) { drawer.classList.remove('open'); gearIcon.classList.remove('gear-spin'); }
         };
 
+        // --- CLOCK & CORE LOOP ---
         function updateClock() {
             const now = new Date();
             const month = now.getMonth();
@@ -812,7 +832,14 @@
             document.getElementById('greeting').innerText = greetingText;
         }
 
-        function init() { renderLinks(); applySettings(); updateClock(); setInterval(updateClock, 1000); fetchWeather(); setInterval(fetchWeather, 300000); }
+        function init() { 
+            renderLinks(); 
+            applySettings(); 
+            updateClock(); 
+            setInterval(updateClock, 1000); 
+            fetchWeather(); 
+            setInterval(fetchWeather, 300000); 
+        }
         init();
     </script>
 </body>
