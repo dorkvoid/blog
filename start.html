@@ -38,7 +38,6 @@
             content: '';
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            /* Dropped opacity from 0.15 to 0.04 to restore brightness and readability */
             background: linear-gradient(rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.04) 50%);
             background-size: 100% 4px;
             pointer-events: none; 
@@ -208,17 +207,33 @@
             border-bottom: 1px solid #111; transition: 0.1s; display: flex; align-items: center;
         }
         .suggestion-item:last-child { border-bottom: none; }
-        .suggestion-item:hover { background: #1a1a1a; color: #fff; padding-left: 32px; }
+        .suggestion-item:hover, .suggestion-item.active-item { 
+            background: #1a1a1a; color: #fff; padding-left: 32px; border-left: 2px solid #fff;
+        }
 
-        /* --- ICON GRID --- */
-        .quick-links { display: flex; gap: 32px; flex-wrap: wrap; justify-content: center; max-width: 800px; }
-        .link-card { display: flex; flex-direction: column; align-items: center; gap: 12px; text-decoration: none; width: 80px; transition: transform 0.1s; }
-        .link-card:hover { transform: scale(1.1); }
-        .icon-box { width: 56px; height: 56px; background: #111; border: 2px solid #333; display: flex; align-items: center; justify-content: center; transition: 0.2s; box-sizing: border-box; }
-        .link-card:hover .icon-box { border-color: white; box-shadow: 0 0 15px rgba(255,255,255,0.1); }
-        .icon-box img { width: 32px; height: 32px; image-rendering: pixelated; pointer-events: none; }
-        .link-label { color: #444; font-family: 'PixeloidSansBold', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; transition: color 0.2s; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .link-card:hover .link-label { color: white; }
+        /* --- TERMINAL TEXT BUTTONS --- */
+        .quick-links { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; max-width: 900px; margin-top: 2rem;}
+        .link-card { 
+            background: #050505; border: 2px solid #222; padding: 10px 20px; 
+            text-decoration: none; min-width: 120px; text-align: center;
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .link-card:hover { border-color: #fff; background: #111; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,255,255,0.05); }
+        .link-label { color: #666; font-family: 'PixeloidSansBold', sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; transition: color 0.2s; text-align: center; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .link-card:hover .link-label { color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.5); }
+
+        /* --- SHORTCUT BADGE --- */
+        #shortcut-badge {
+            position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+            padding: 4px 8px; font-family: 'PixeloidSansBold', sans-serif; font-size: 10px; letter-spacing: 2px;
+            background: #000; border: 1px solid #333; color: #fff;
+            opacity: 0; pointer-events: none; transition: all 0.2s; z-index: 10;
+        }
+        #shortcut-badge.show { opacity: 1; right: 24px; }
+        #shortcut-badge.youtube { border-color: #f00; color: #f00; box-shadow: 0 0 10px rgba(255,0,0,0.2); }
+        #shortcut-badge.google { border-color: #00ff00; color: #00ff00; box-shadow: 0 0 10px rgba(0,255,0,0.2); }
+        #shortcut-badge.reddit { border-color: #ff8800; color: #ff8800; box-shadow: 0 0 10px rgba(255,136,0,0.2); }
 
         /* --- SETTINGS DRAWER --- */
         #settings-drawer {
@@ -292,7 +307,7 @@
         select { 
             appearance: none; 
             -webkit-appearance: none; 
-            background: #080808 url('data:image/svg+xml;utf8,<svg fill="%23555555" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>') no-repeat right 8px center;
+            background: #080808 url('data:image/svg+xml;utf8,<svg fill="%2355555" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>') no-repeat right 8px center;
             border: 1px solid #333; 
             color: #ccc; 
             padding: 0 32px 0 12px; 
@@ -396,6 +411,7 @@
         <div class="search-wrapper" id="search-wrapper">
             <div class="search-box-container">
                 <input type="text" id="web-search" class="search-box" placeholder="type command..." autofocus autocomplete="off">
+                <div id="shortcut-badge"></div>
                 <div id="suggestions-box"></div>
             </div>
             <button id="clear-search" class="clear-btn">X</button>
@@ -491,11 +507,6 @@
             document.getElementById('weather-img').src = `images/${icon}`;
         }
 
-        function getFavicon(url) {
-            try { return url.startsWith('http') ? `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=64` : 'images/plxeyestiny.png'; } 
-            catch { return 'images/plxeyestiny.png'; }
-        }
-
         function renderLinks() {
             const container = document.getElementById('links-container');
             const manager = document.getElementById('manager-list');
@@ -506,7 +517,7 @@
                 card.href = link.url; 
                 card.target = config.newTab ? "_blank" : "_self";
                 
-                card.innerHTML = `<div class="icon-box"><img src="${getFavicon(link.url)}" onerror="this.src='images/plxeyestiny.png'"></div><div class="link-label">${link.name}</div>`;
+                card.innerHTML = `<div class="link-label">${link.name}</div>`;
                 card.onmouseenter = () => playSound('hover'); card.onclick = () => playSound('click');
                 container.appendChild(card);
                 
@@ -563,6 +574,7 @@
         const searchWrapper = document.getElementById('search-wrapper');
         const suggestionsBox = document.getElementById('suggestions-box');
         let debounceTimer;
+        let currentFocus = -1;
 
         function triggerFlicker() {
             searchInput.classList.remove('flicker');
@@ -626,11 +638,23 @@
         });
 
         searchInput.oninput = () => {
-            const query = searchInput.value.trim();
+            const query = searchInput.value.trimStart();
+            const lowerQuery = query.toLowerCase();
+            const badge = document.getElementById('shortcut-badge');
+
             if (query.length > 0) searchWrapper.classList.add('has-text');
             else searchWrapper.classList.remove('has-text');
 
-            if (query.length === 0 || query.includes(' ')) { suggestionsBox.classList.remove('show'); return; }
+            if (lowerQuery.startsWith('yt ')) { badge.className = 'show youtube'; badge.innerText = 'YOUTUBE'; }
+            else if (lowerQuery.startsWith('g ')) { badge.className = 'show google'; badge.innerText = 'GOOGLE'; }
+            else if (lowerQuery.startsWith('r/')) { badge.className = 'show reddit'; badge.innerText = 'REDDIT'; }
+            else { badge.className = ''; }
+
+            if (query.length === 0 || lowerQuery.startsWith('yt ') || lowerQuery.startsWith('g ') || lowerQuery.startsWith('r/')) { 
+                suggestionsBox.classList.remove('show'); 
+                return; 
+            }
+
             clearTimeout(debounceTimer);
             
             debounceTimer = setTimeout(() => {
@@ -641,23 +665,38 @@
                 script.id = 'ddg-autocomplete';
                 script.src = `https://duckduckgo.com/ac/?q=${encodeURIComponent(query)}&callback=autocompleteCallback`;
                 document.body.appendChild(script);
-            }, 150);
+            }, 300);
         };
 
         window.autocompleteCallback = (data) => {
             if (searchInput.value.trim().length === 0) { suggestionsBox.classList.remove('show'); return; }
             suggestionsBox.innerHTML = '';
+            currentFocus = -1;
+            
             if (data && data.length > 0) {
-                data.slice(0, 5).forEach(item => {
+                data.slice(0, 5).forEach((item, index) => {
                     const div = document.createElement('div');
                     div.className = 'suggestion-item'; div.innerText = item.phrase;
-                    div.onmouseenter = () => playSound('hover');
+                    div.onmouseenter = () => { currentFocus = index; removeActive(suggestionsBox.querySelectorAll('.suggestion-item')); div.classList.add('active-item'); playSound('hover'); };
                     div.onclick = () => { playSound('click'); executeSearch(item.phrase); };
                     suggestionsBox.appendChild(div);
                 });
                 suggestionsBox.classList.add('show');
             } else { suggestionsBox.classList.remove('show'); }
         };
+
+        function addActive(items) {
+            if (!items || items.length === 0) return;
+            removeActive(items);
+            if (currentFocus >= items.length) currentFocus = 0;
+            if (currentFocus < 0) currentFocus = items.length - 1;
+            items[currentFocus].classList.add('active-item');
+            playSound('hover');
+        }
+
+        function removeActive(items) {
+            items.forEach(item => item.classList.remove('active-item'));
+        }
 
         function executeSearch(val) {
             if(!val) return;
@@ -673,7 +712,26 @@
             }
         }
 
-        searchInput.onkeydown = (e) => { if(e.key === 'Enter') { playSound('click'); executeSearch(searchInput.value); } };
+        searchInput.onkeydown = (e) => { 
+            let items = suggestionsBox.querySelectorAll('.suggestion-item');
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                currentFocus++;
+                addActive(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                currentFocus--;
+                addActive(items);
+            } else if (e.key === 'Enter') { 
+                e.preventDefault();
+                playSound('click'); 
+                if (currentFocus > -1 && items.length > 0 && suggestionsBox.classList.contains('show')) {
+                    items[currentFocus].click();
+                } else {
+                    executeSearch(searchInput.value); 
+                }
+            } 
+        };
         
         // --- SETTINGS LOGIC ---
         document.getElementById('toggle-status').onchange = (e) => { config.showStatus = e.target.checked; saveConfig(); applySettings(); };
