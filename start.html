@@ -220,13 +220,27 @@
 
         /* --- DASHBOARD & NESTED GROUPS --- */
         .dashboard { 
-            display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 60px; 
-            width: 100%; max-width: 900px; margin-top: 2rem; z-index: 2;
-            overflow-y: auto; max-height: 45vh; padding-bottom: 2rem;
+            display: block; 
+            column-width: 220px; 
+            column-gap: 30px; 
+            width: 100%; max-width: 1000px; margin-top: 2rem; z-index: 2;
+            overflow-y: auto; max-height: 55vh; padding-bottom: 2rem;
         }
-        .group-container { display: flex; flex-direction: column; align-items: flex-start; width: auto; min-width: 160px;}
+        .group-container { 
+            break-inside: avoid;
+            margin-bottom: 30px;
+            border: 2px solid #222;
+            background: #050505;
+            padding: 16px;
+            width: 100%;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        .group-container:hover {
+            border-color: var(--group-color, #fff);
+        }
         .group-title { 
-            background: #fff; color: #000; font-family: 'PixeloidSansBold', sans-serif; font-size: 14px; 
+            background: var(--group-color, #fff); color: #000; font-family: 'PixeloidSansBold', sans-serif; font-size: 14px; 
             padding: 4px 10px; margin-bottom: 16px; letter-spacing: 2px; text-transform: uppercase; 
             display: inline-block; width: fit-content; text-align: left;
         }
@@ -247,9 +261,9 @@
             transition: color 0.2s;
         }
         .link-card:hover { border: none; background: transparent; transform: translateX(6px); box-shadow: none; }
-        .link-card:hover::before { color: #fff; }
+        .link-card:hover::before { color: var(--group-color, #fff); }
         .link-label { color: #888; font-family: 'PixeloidSansBold', sans-serif; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; transition: color 0.2s; text-align: left;}
-        .link-card:hover .link-label { color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.4); }
+        .link-card:hover .link-label { color: #fff; text-shadow: 0 0 8px var(--group-color, rgba(255,255,255,0.4)); }
 
         /* --- SHORTCUT BADGE --- */
         #shortcut-badge {
@@ -298,6 +312,9 @@
         .handle { padding: 0 4px; color: #333; font-size: 16px; line-height: 1; }
         .manager-input { background: black; border: 1px solid #333; color: #ccc; padding: 0 8px; margin: 0; height: 26px; line-height: 24px; box-sizing: border-box; font-family: 'PixeloidSans', sans-serif; font-size: 12px; outline: none; flex-grow: 1; }
         .manager-input.edit-name { flex-grow: 0; width: 64px; }
+        .manager-input.edit-color { flex-grow: 0; width: 36px; padding: 0; cursor: pointer; border: 1px solid #333; }
+        .manager-input.edit-color::-webkit-color-swatch-wrapper { padding: 0; }
+        .manager-input.edit-color::-webkit-color-swatch { border: none; }
         
         .btn-del { background: #111; color: #f00; border: 1px solid #300; width: 26px; height: 26px; padding: 0; margin: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-family: 'PixeloidSansBold', sans-serif; font-size: 12px;}
         .btn-del:hover { background: #f00; color: #000; box-shadow: 0 0 10px #f00; border-color: #f00; }
@@ -467,15 +484,18 @@
         const DEFAULT_CONFIG = { 
             showStatus: true, lowPower: false, newTab: true, militaryTime: false, weatherLoc: "", engine: "duckduckgo", 
             linkGroups: [
-                { groupName: "MAIN", links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}] }
+                { groupName: "MAIN", color: "#ffffff", links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}] }
             ] 
         };
         
         function sanitizeConfig(cfg) {
             // Migrates old flat links into the new Group structure automatically
             if (cfg.links && !cfg.linkGroups) {
-                cfg.linkGroups = [{ groupName: "GENERAL", links: cfg.links }];
+                cfg.linkGroups = [{ groupName: "GENERAL", color: "#ffffff", links: cfg.links }];
                 delete cfg.links;
+            }
+            if (cfg.linkGroups) {
+                cfg.linkGroups.forEach(g => { if(!g.color) g.color = "#ffffff"; });
             }
             return cfg;
         }
@@ -568,6 +588,7 @@
                 
                 const groupDiv = document.createElement('div');
                 groupDiv.className = 'group-container';
+                groupDiv.style.setProperty('--group-color', group.color || '#ffffff');
                 
                 let linksHTML = group.links.map((link) => `
                     <a href="${link.url}" target="${config.newTab ? "_blank" : "_self"}" class="link-card" onmouseenter="playSound('hover')" onclick="playSound('click')">
@@ -603,6 +624,7 @@
                 groupEl.innerHTML = `
                     <div class="manager-group-header">
                         <span class="handle group-handle" style="color:#555;">[G]</span>
+                        <input type="color" value="${group.color || '#ffffff'}" class="manager-input edit-color" title="Group Color">
                         <input type="text" value="${group.groupName}" class="manager-input edit-group-name" style="font-family:'PixeloidSansBold', sans-serif; color: #fff;">
                         <button class="btn-del del-group" data-gidx="${gIdx}">X</button>
                     </div>
@@ -619,6 +641,7 @@
             const newGroups = [];
             document.querySelectorAll('.manager-group-box').forEach(groupBox => {
                 const groupName = groupBox.querySelector('.edit-group-name').value;
+                const groupColor = groupBox.querySelector('.edit-color').value;
                 const links = [];
                 groupBox.querySelectorAll('.link-manager-item').forEach(linkItem => {
                     links.push({
@@ -626,7 +649,7 @@
                         url: linkItem.querySelector('.edit-url').value
                     });
                 });
-                newGroups.push({ groupName, links });
+                newGroups.push({ groupName, color: groupColor, links });
             });
             config.linkGroups = newGroups;
             saveConfig();
@@ -875,7 +898,7 @@
         document.getElementById('addNewGroupBtn').onclick = (e) => { 
             e.stopPropagation(); playSound('click'); 
             syncDataFromManager();
-            config.linkGroups.push({groupName: "NEW_GROUP", links: []}); 
+            config.linkGroups.push({groupName: "NEW_GROUP", color: "#ffffff", links: []}); 
             saveConfig(); renderManager(); renderMainUI(); 
         };
         
