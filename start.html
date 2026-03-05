@@ -574,14 +574,17 @@
         function applyWeatherUI(temp, code) {
             document.getElementById('temp-val').innerText = `${temp}°F`;
             let icon = "sunny.png";
-            if (code >= 1 && code <= 3) icon = "partly cloudy.png";
-            else if (code >= 45 && code <= 48) icon = "foggy.png";
-            else if (code >= 51 && code <= 67) icon = "rainy.png";
-            else if (code >= 71 && code <= 77) icon = "cold.png"; 
-            else if (code >= 80 && code <= 82) icon = "rainy.png";
+            
+            if (code === 1 || code === 2) icon = "partly cloudy.png";
+            else if (code === 3) icon = "cloudy.png";
+            else if (code === 45 || code === 48) icon = "foggy.png";
+            else if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) icon = "rainy.png";
+            else if ((code >= 71 && code <= 77) || code === 85 || code === 86) icon = "cold.png";
             else if (code >= 95 && code <= 99) icon = "thunderstorm.png";
-            else if (code > 3) icon = "cloudy.png";
-            if (new Date().getHours() >= 20 || new Date().getHours() <= 5) icon = "night.png";
+            
+            const hour = new Date().getHours();
+            if ((hour >= 20 || hour <= 5) && (code === 0 || code === 1 || code === 2)) icon = "night.png";
+            
             document.getElementById('weather-img').src = `images/${icon}`;
         }
 
@@ -769,6 +772,13 @@
             if (document.body.classList.contains('boss-mode')) return;
 
             if (e.key === 'Escape') {
+                const drawer = document.getElementById('settings-drawer');
+                if (drawer.classList.contains('open')) {
+                    drawer.classList.remove('open');
+                    document.getElementById('gear-icon').classList.remove('gear-spin');
+                    return;
+                }
+
                 if(searchInput.value) {
                     playSound('click');
                     searchInput.value = '';
@@ -860,7 +870,7 @@
         }
 
         function executeSearch(val) {
-            if(!val) return;
+            if(!val || val.trim() === '') return;
             const lowerVal = val.toLowerCase();
             if(lowerVal.startsWith('yt ')) window.location.href = `https://youtube.com/results?search_query=${encodeURIComponent(val.substring(3))}`;
             else if(lowerVal.startsWith('g ')) window.location.href = `https://google.com/search?q=${encodeURIComponent(val.substring(2))}`;
