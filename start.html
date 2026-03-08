@@ -408,14 +408,19 @@
         :root { --phosphor: #ffb000; }
         #root-console {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: #000; color: var(--phosphor); z-index: 9999; padding: 50px; box-sizing: border-box;
+            background: #000; color: var(--phosphor); z-index: 9999; box-sizing: border-box;
             font-family: 'Courier New', Courier, monospace; font-size: 14px;
-            flex-direction: column; gap: 20px;
             overflow: hidden; text-shadow: 0 0 4px rgba(255, 176, 0, 0.4);
         }
         #root-console.active { display: flex; animation: terminalBoot 0.3s ease-out forwards; }
         #root-console.closing { display: flex; animation: tvShutOff 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards; pointer-events: none; }
         
+        #root-console-inner {
+            width: 100%; max-width: 960px; margin: 0 auto; padding: 50px 20px;
+            display: flex; flex-direction: column; gap: 20px; height: 100%;
+            position: relative; z-index: 2; box-sizing: border-box;
+        }
+
         @keyframes terminalBoot {
             0% { filter: brightness(3) contrast(2); opacity: 0; }
             100% { filter: brightness(1) contrast(1); opacity: 1; }
@@ -440,7 +445,7 @@
 
         /* Terminal Grid Settings */
         .root-settings-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; 
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; 
             flex-grow: 1; align-content: start; margin-top: 10px; z-index: 2;
         }
         .root-setting-item { 
@@ -463,7 +468,7 @@
 
         .root-input {
             background: transparent; border: 1px dashed var(--phosphor); color: var(--phosphor);
-            padding: 10px 14px; font-family: inherit; font-size: 14px; outline: none; transition: 0.2s;
+            padding: 10px 14px; font-family: inherit; font-size: 14px; outline: none; transition: 0.2s; width: 100%; box-sizing: border-box;
         }
         .root-input:focus { background: rgba(255, 176, 0, 0.1); border-style: solid; text-shadow: none; }
         select.root-input { cursor: pointer; }
@@ -485,7 +490,7 @@
 
         /* Clean ASCII Mascot */
         .mascot-container {
-            position: absolute; bottom: 120px; right: 60px; z-index: 5;
+            position: absolute; bottom: 100px; right: 20px; z-index: 5;
             display: flex; flex-direction: column; align-items: flex-end;
         }
         .mascot-label {
@@ -507,88 +512,88 @@
 
     <!-- SECRET ROOT CONSOLE (CLEAN TERMINAL THEME) -->
     <div id="root-console">
+        <div id="root-console-inner">
+            <div class="root-header-container">
+                <h1 class="root-header">MIKE_OS v1.09 // SYSTEM_OVERRIDE</h1>
+                <div class="root-sub">ROOT_ACCESS_GRANTED<span class="cursor-blink"></span></div>
+            </div>
+            
+            <div class="root-tools">
+                <button class="root-btn tool-btn" id="tool-clearcache" onmouseenter="playSound('hover')">[ FLUSH_DNS/CACHE ]</button>
+                <button class="root-btn tool-btn" id="tool-scanlines" onmouseenter="playSound('hover')">[ TOGGLE_CRT_SCANLINES ]</button>
+                <button class="root-btn tool-btn" id="tool-color" onmouseenter="playSound('hover')">[ CYCLE_PHOSPHOR_THEME ]</button>
+            </div>
 
-        <div class="root-header-container">
-            <h1 class="root-header">MIKE_OS v1.09 // SYSTEM_OVERRIDE</h1>
-            <div class="root-sub">ROOT_ACCESS_GRANTED<span class="cursor-blink"></span></div>
-        </div>
-        
-        <div class="root-tools">
-            <button class="root-btn tool-btn" id="tool-clearcache" onmouseenter="playSound('hover')">[ FLUSH_DNS/CACHE ]</button>
-            <button class="root-btn tool-btn" id="tool-scanlines" onmouseenter="playSound('hover')">[ TOGGLE_CRT_SCANLINES ]</button>
-            <button class="root-btn tool-btn" id="tool-color" onmouseenter="playSound('hover')">[ CYCLE_PHOSPHOR_THEME ]</button>
-        </div>
+            <div class="root-settings-grid">
+                <div class="root-setting-item">
+                    <span class="root-label">> SYS.GREETING_OVERRIDE
+                        <span class="root-info">?
+                            <span class="root-info-text">Replaces the default clock greeting (e.g. GOOD_MORNING) with whatever you type here.</span>
+                        </span>
+                    </span>
+                    <input type="text" id="root-greeting" class="root-input" placeholder="e.g. WAKE_UP_NEO...">
+                </div>
+                <div class="root-setting-item">
+                    <span class="root-label">> PHOSPHOR_HEX_CODE
+                        <span class="root-info">?
+                            <span class="root-info-text">Accepts any valid #hex color code to change the global accent color for this terminal.</span>
+                        </span>
+                    </span>
+                    <input type="text" id="root-hex" class="root-input" placeholder="#ffb000">
+                </div>
+                <div class="root-setting-item">
+                    <span class="root-label">> CRT_FLICKER_INTENSITY
+                        <span class="root-info">?
+                            <span class="root-info-text">Simulates a dying CRT monitor. High flicker might cause eye strain, use with caution.</span>
+                        </span>
+                    </span>
+                    <select id="root-flicker" class="root-input">
+                        <option value="none">DISABLED (Stable)</option>
+                        <option value="low">LOW (Subtle Pulse)</option>
+                        <option value="high">HIGH (Aggressive Flicker)</option>
+                    </select>
+                </div>
+                <div class="root-setting-item">
+                    <span class="root-label">> CUSTOM_CURSOR_INJECTION
+                        <span class="root-info">?
+                            <span class="root-info-text">Overrides the retro pixel hand cursor and restores your normal system pointer.</span>
+                        </span>
+                    </span>
+                    <select id="root-cursor" class="root-input">
+                        <option value="retro">RETRO PIXEL (Default)</option>
+                        <option value="system">SYSTEM DEFAULT</option>
+                    </select>
+                </div>
+                <div class="root-setting-item">
+                    <span class="root-label">> SYS.WALLPAPER_INJECTION
+                        <span class="root-info">?
+                            <span class="root-info-text">Paste a direct image or .gif URL here to set a custom background behind the scanlines.</span>
+                        </span>
+                    </span>
+                    <input type="text" id="root-wallpaper" class="root-input" placeholder="https://... (Leave blank for black)">
+                </div>
+                <div class="root-setting-item">
+                    <span class="root-label">> MASTER_AUDIO_SYSTEM
+                        <span class="root-info">?
+                            <span class="root-info-text">Hard killswitch for all UI sound effects (typing, clicking, hovering).</span>
+                        </span>
+                    </span>
+                    <select id="root-audio" class="root-input">
+                        <option value="on">ENABLED (Default)</option>
+                        <option value="muted">MUTED (Stealth Mode)</option>
+                    </select>
+                </div>
+            </div>
 
-        <div class="root-settings-grid">
-            <div class="root-setting-item">
-                <span class="root-label">> SYS.GREETING_OVERRIDE
-                    <span class="root-info">?
-                        <span class="root-info-text">Replaces the default clock greeting (e.g. GOOD_MORNING) with whatever you type here.</span>
-                    </span>
-                </span>
-                <input type="text" id="root-greeting" class="root-input" placeholder="e.g. WAKE_UP_NEO...">
+            <div class="root-actions">
+                <button id="root-save" class="root-btn" onmouseenter="playSound('hover')">[ COMPILE_AND_REBOOT ]</button>
+                <button id="root-nuke" class="root-btn" onmouseenter="playSound('hover')" style="border-color: #f00; color: #f00;">[ FACTORY_RESET ]</button>
+                <button id="root-close" class="root-btn" onmouseenter="playSound('hover')" style="margin-left: auto;">[ EXIT_TERMINAL ]</button>
             </div>
-            <div class="root-setting-item">
-                <span class="root-label">> PHOSPHOR_HEX_CODE
-                    <span class="root-info">?
-                        <span class="root-info-text">Accepts any valid #hex color code to change the global accent color for this terminal.</span>
-                    </span>
-                </span>
-                <input type="text" id="root-hex" class="root-input" placeholder="#ffb000">
-            </div>
-            <div class="root-setting-item">
-                <span class="root-label">> CRT_FLICKER_INTENSITY
-                    <span class="root-info">?
-                        <span class="root-info-text">Simulates a dying CRT monitor. High flicker might cause eye strain, use with caution.</span>
-                    </span>
-                </span>
-                <select id="root-flicker" class="root-input">
-                    <option value="none">DISABLED (Stable)</option>
-                    <option value="low">LOW (Subtle Pulse)</option>
-                    <option value="high">HIGH (Aggressive Flicker)</option>
-                </select>
-            </div>
-            <div class="root-setting-item">
-                <span class="root-label">> CUSTOM_CURSOR_INJECTION
-                    <span class="root-info">?
-                        <span class="root-info-text">Overrides the retro pixel hand cursor and restores your normal system pointer.</span>
-                    </span>
-                </span>
-                <select id="root-cursor" class="root-input">
-                    <option value="retro">RETRO PIXEL (Default)</option>
-                    <option value="system">SYSTEM DEFAULT</option>
-                </select>
-            </div>
-            <div class="root-setting-item">
-                <span class="root-label">> SYS.WALLPAPER_INJECTION
-                    <span class="root-info">?
-                        <span class="root-info-text">Paste a direct image or .gif URL here to set a custom background behind the scanlines.</span>
-                    </span>
-                </span>
-                <input type="text" id="root-wallpaper" class="root-input" placeholder="https://... (Leave blank for black)">
-            </div>
-            <div class="root-setting-item">
-                <span class="root-label">> MASTER_AUDIO_SYSTEM
-                    <span class="root-info">?
-                        <span class="root-info-text">Hard killswitch for all UI sound effects (typing, clicking, hovering).</span>
-                    </span>
-                </span>
-                <select id="root-audio" class="root-input">
-                    <option value="on">ENABLED (Default)</option>
-                    <option value="muted">MUTED (Stealth Mode)</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="root-actions">
-            <button id="root-save" class="root-btn" onmouseenter="playSound('hover')">[ COMPILE_AND_REBOOT ]</button>
-            <button id="root-nuke" class="root-btn" onmouseenter="playSound('hover')" style="border-color: #f00; color: #f00;">[ FACTORY_RESET ]</button>
-            <button id="root-close" class="root-btn" onmouseenter="playSound('hover')" style="margin-left: auto;">[ EXIT_TERMINAL ]</button>
-        </div>
-        
-        <div class="mascot-container">
-            <div class="mascot-label">DAEMON_PROCESS_ACTIVE</div>
-            <pre class="ascii-mascot">
+            
+            <div class="mascot-container">
+                <div class="mascot-label">DAEMON_PROCESS_ACTIVE</div>
+                <pre class="ascii-mascot">
     /\_/\
    (<span class="cat-eyes"> o.o </span>)
     > ^ <
@@ -596,9 +601,9 @@
   / /| |\ \
  ( ( | | ) )
   \__|_|__/
-            </pre>
+                </pre>
+            </div>
         </div>
-
         <div class="root-scanline"></div>
     </div>
 
