@@ -226,37 +226,27 @@
         /* --- DASHBOARD & NESTED GROUPS --- */
         .dashboard { 
             flex-grow: 1;
-            column-width: 180px; 
-            column-gap: 20px; 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, 180px); 
+            justify-content: center;
+            align-content: start;
+            gap: 20px; 
             width: 100%; max-width: 1000px; margin-top: 40px; z-index: 2;
             overflow-y: auto; padding-bottom: 80px;
         }
-        
-        /* Neural Focus Mode */
-        .dashboard:hover .group-container:not(:hover) {
-            opacity: 0.3;
-            filter: grayscale(100%);
-        }
-
         .group-container { 
-            position: relative;
             border: 2px solid #222;
             background: #050505;
             padding: 12px;
             width: 100%;
             box-sizing: border-box;
-            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-            display: inline-block; 
-            break-inside: avoid;
-            margin-bottom: 20px;
+            transition: border-color 0.3s;
+            display: flex;
+            flex-direction: column;
         }
         .group-container:hover {
             border-color: var(--group-color, #fff);
-            transform: translateY(-4px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.8);
-            z-index: 10;
         }
-        
         .group-title { 
             background: var(--group-color, #fff); color: #000; font-family: 'PixeloidSansBold', sans-serif; font-size: 12px; 
             padding: 4px 8px; margin-bottom: 12px; letter-spacing: 2px; text-transform: uppercase; 
