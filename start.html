@@ -18,6 +18,12 @@
             font-smooth: never;
         }
         *:active { cursor: url('images/cursor-click.png'), auto !important; }
+        
+        /* Fallback for system cursors */
+        body.sys-cursor * { cursor: auto !important; }
+        body.sys-cursor a, body.sys-cursor button, body.sys-cursor .suggestion-item, body.sys-cursor #drawer-tab, body.sys-cursor select, body.sys-cursor .handle, body.sys-cursor .toggle-btn, body.sys-cursor .link-card, body.sys-cursor .link-card *, body.sys-cursor .clear-btn, body.sys-cursor #os-label {
+            cursor: pointer !important;
+        }
 
         img { image-rendering: pixelated; }
 
@@ -44,6 +50,7 @@
             box-sizing: border-box;
         }
         body.low-power { filter: brightness(0.7); }
+        body.no-scanlines::after { display: none !important; }
         
         body::after {
             content: '';
@@ -53,6 +60,15 @@
             background-size: 100% 4px;
             pointer-events: none; 
             z-index: 999;
+        }
+        
+        /* CRT Flicker Effects */
+        body.flicker-low { animation: screenFlicker 0.4s infinite; }
+        body.flicker-high { animation: screenFlicker 0.12s infinite; }
+        @keyframes screenFlicker {
+            0% { opacity: 0.98; }
+            50% { opacity: 0.94; }
+            100% { opacity: 1; }
         }
 
         /* --- BOSS MODE --- */
@@ -114,7 +130,6 @@
             animation: blink 1s infinite; text-shadow: 0 0 5px rgba(255,255,255,0.3);
             pointer-events: none;
         }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
         .search-box-container {
             position: relative;
@@ -226,18 +241,28 @@
         /* --- DASHBOARD & NESTED GROUPS --- */
         .dashboard { 
             flex-grow: 1;
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, 180px); 
-            justify-content: center;
-            align-content: start;
-            gap: 20px; 
-            width: 100%; max-width: 1000px; margin-top: 40px; z-index: 2;
+            display: block; 
+            column-count: 2; /* STRICT 2-COLUMN LAYOUT */
+            column-gap: 24px; 
+            width: 100%; 
+            max-width: 600px; /* Locked down so it doesn't stretch */
+            margin-top: 40px; z-index: 2;
             overflow-y: auto; padding-bottom: 80px;
         }
+
+        /* Mobile fallback for tiny screens */
+        @media (max-width: 650px) {
+            .dashboard { column-count: 1; padding: 0 20px; }
+            .search-wrapper { max-width: 90%; }
+            .search-box-container { flex: 0 0 100%; }
+        }
+
         .group-container { 
+            break-inside: avoid; /* Prevents boxes from splitting across columns */
+            margin-bottom: 24px;
             border: 2px solid #222;
             background: #050505;
-            padding: 12px;
+            padding: 16px;
             width: 100%;
             box-sizing: border-box;
             transition: border-color 0.3s;
@@ -382,50 +407,11 @@
 
         /* --- MINIMAL STATUS BAR --- */
         .status-bar { position: fixed; bottom: 24px; left: 32px; font-family: 'PixeloidSansBold', sans-serif; font-size: 14px; line-height: 14px; color: #444; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; gap: 16px; z-index: 5; }
+        #os-label { cursor: pointer; transition: color 0.2s, text-shadow 0.2s; pointer-events: auto; }
+        #os-label:hover { color: var(--phosphor, #ffb000); text-shadow: 0 0 10px var(--phosphor, #ffb000); }
         .weather-module { display: flex; align-items: center; gap: 10px; color: #666; }
         .weather-icon { width: 24px; height: 24px; image-rendering: pixelated; }
         #temp-val { color: #888; }
-
-        /* --- SECRET ROOT CONSOLE --- */
-        #root-console {
-            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: #020202; color: #0f0; z-index: 9999; padding: 40px; box-sizing: border-box;
-            font-family: 'Courier New', Courier, monospace; font-size: 14px;
-            text-shadow: 0 0 8px rgba(0, 255, 0, 0.6);
-            flex-direction: column; gap: 20px;
-            box-shadow: inset 0 0 150px rgba(0,255,0,0.15);
-        }
-        #root-console.active { display: flex; animation: crtTurnOn 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
-        
-        @keyframes crtTurnOn {
-            0% { transform: scale(1, 0.01); opacity: 0; }
-            40% { transform: scale(1, 0.01); opacity: 1; }
-            100% { transform: scale(1, 1); }
-        }
-
-        .root-header { font-size: 24px; font-weight: bold; border-bottom: 2px solid #0f0; padding-bottom: 10px; animation: rootBlink 2s infinite; letter-spacing: 4px; }
-        @keyframes rootBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
-        
-        #root-editor {
-            flex-grow: 1; background: rgba(0, 20, 0, 0.5); border: 1px solid #0f0; color: #0f0;
-            padding: 20px; font-family: inherit; font-size: 14px; resize: none; outline: none;
-            text-shadow: inherit; transition: 0.2s;
-        }
-        #root-editor::-webkit-scrollbar-thumb { background: #0f0; }
-        
-        .root-actions { display: flex; gap: 20px; flex-wrap: wrap; }
-        .root-btn {
-            background: #000; border: 1px solid #0f0; color: #0f0; padding: 12px 24px; cursor: pointer;
-            font-family: inherit; font-size: 14px; font-weight: bold; text-shadow: inherit; transition: 0.2s;
-            text-transform: uppercase; letter-spacing: 2px;
-        }
-        .root-btn:hover { background: #0f0; color: #000; text-shadow: none; box-shadow: 0 0 20px rgba(0,255,0,0.6); }
-        
-        .root-scanline {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.2), rgba(0,0,0,0.2) 2px, transparent 2px, transparent 4px);
-            pointer-events: none; z-index: 10;
-        }
 
         /* --- AI CO-PROCESSOR MODAL --- */
         #ai-modal {
@@ -439,16 +425,129 @@
         @keyframes modalBoot { 0% { transform: translate(-50%, -45%); opacity: 0; filter: blur(4px); } 100% { transform: translate(-50%, -50%); opacity: 1; filter: blur(0); } }
         
         .ai-header { 
-            font-family: 'PixeloidSansBold', sans-serif; font-size: 16px; border-bottom: 1px dashed #0ff; 
-            padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;
+            position: relative; font-family: 'PixeloidSansBold', sans-serif; font-size: 16px; border-bottom: 1px dashed #0ff; 
+            padding-bottom: 16px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
             letter-spacing: 2px; text-shadow: 0 0 8px rgba(0, 255, 255, 0.4);
         }
-        .ai-close { background: transparent; border: none; color: #0ff; font-family: 'PixeloidSansBold', sans-serif; font-size: 18px; cursor: pointer; transition: 0.2s; }
-        .ai-close:hover { color: #fff; text-shadow: 0 0 10px #0ff; transform: scale(1.1); }
+        .ai-close { 
+            position: absolute; top: 0; right: 0;
+            background: transparent !important; border: none !important; box-shadow: none !important;
+            color: #0ff; font-family: 'PixeloidSansBold', sans-serif; font-size: 18px; cursor: pointer; transition: 0.2s; padding: 4px; line-height: 1; 
+        }
+        .ai-close:hover { color: #fff !important; text-shadow: 0 0 10px #fff !important; transform: scale(1.2); background: transparent !important; }
+        
         .ai-content { font-size: 14px; line-height: 1.6; white-space: pre-wrap; overflow-y: auto; max-height: 50vh; padding-right: 10px; }
         .ai-loading::after { content: '_'; animation: blink 1s infinite; }
         .ai-content::-webkit-scrollbar-thumb { background: #0ff; }
         .ai-content a { color: #fff; text-decoration: underline; text-decoration-color: #0ff; }
+
+        /* --- SECRET ROOT CONSOLE (CLEAN TERMINAL THEME) --- */
+        :root { --phosphor: #ffb000; }
+        #root-console {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #000; color: var(--phosphor); z-index: 9999; box-sizing: border-box;
+            font-family: 'Courier New', Courier, monospace; font-size: 14px;
+            overflow: hidden; text-shadow: 0 0 4px rgba(255, 176, 0, 0.4);
+        }
+        #root-console.active { display: flex; animation: terminalBoot 0.3s ease-out forwards; }
+        #root-console.closing { display: flex; animation: tvShutOff 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards; pointer-events: none; }
+        
+        #root-console-inner {
+            width: 100%; max-width: 960px; margin: 0 auto; padding: 50px 20px;
+            display: flex; flex-direction: column; gap: 20px; height: 100%;
+            position: relative; z-index: 2; box-sizing: border-box;
+        }
+
+        @keyframes terminalBoot {
+            0% { filter: brightness(3) contrast(2); opacity: 0; }
+            100% { filter: brightness(1) contrast(1); opacity: 1; }
+        }
+        @keyframes tvShutOff {
+            0% { transform: scale(1, 1); filter: brightness(1) contrast(1); opacity: 1; }
+            40% { transform: scale(1, 0.005); filter: brightness(3) contrast(2); opacity: 1; }
+            70% { transform: scale(0.005, 0.005); filter: brightness(5) contrast(3); opacity: 1; box-shadow: 0 0 50px var(--phosphor); }
+            100% { transform: scale(0, 0); opacity: 0; }
+        }
+
+        .root-header-container { z-index: 2; display: flex; flex-direction: column; gap: 8px; border-bottom: 1px dashed var(--phosphor); padding-bottom: 16px; margin-bottom: 10px; width: 100%;}
+        .root-header { 
+            font-weight: normal; font-size: 24px; margin: 0; letter-spacing: 2px; line-height: 1.2;
+        }
+        .root-sub { font-size: 16px; font-weight: normal; display: flex; align-items: center; opacity: 0.8; }
+        .cursor-blink { display: inline-block; width: 10px; height: 18px; background: var(--phosphor); margin-left: 6px; animation: blink 1s step-end infinite; }
+        
+        .root-tools { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 10px; z-index: 2; width: 100%; align-items: center;}
+        .tool-btn { font-size: 14px; padding: 6px 12px; flex: 0 0 auto; }
+
+        /* Terminal Grid Settings */
+        .root-settings-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; 
+            flex-grow: 1; align-content: start; margin-top: 10px; z-index: 2; width: 100%;
+        }
+        
+        /* Mobile fallback for secret menu grid */
+        @media (max-width: 650px) {
+            .root-settings-grid { grid-template-columns: 1fr; }
+        }
+
+        .root-setting-item { 
+            display: flex; flex-direction: column; gap: 8px; 
+            padding: 0 0 0 16px; border-left: 2px solid var(--phosphor);
+        }
+        .root-label { color: var(--phosphor); font-weight: normal; font-size: 14px; letter-spacing: 1px; display: flex; align-items: center;}
+        
+        .root-info {
+            display: inline-flex; margin-left: 10px; color: #000; background: var(--phosphor); 
+            padding: 0 6px; cursor: help; position: relative; font-weight: bold; font-size: 12px;
+        }
+        .root-info-text {
+            visibility: hidden; position: absolute; bottom: 130%; left: 0; width: 220px;
+            background: #000; border: 1px solid var(--phosphor); color: var(--phosphor);
+            padding: 10px; font-size: 12px; font-weight: normal; z-index: 10; opacity: 0;
+            transition: opacity 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.8); line-height: 1.4;
+        }
+        .root-info:hover .root-info-text { visibility: visible; opacity: 1; }
+
+        .root-input {
+            background: transparent; border: 1px dashed var(--phosphor); color: var(--phosphor);
+            padding: 10px 14px; font-family: inherit; font-size: 14px; outline: none; transition: 0.2s; width: 100%; box-sizing: border-box;
+        }
+        .root-input:focus { background: rgba(255, 176, 0, 0.1); border-style: solid; text-shadow: none; }
+        
+        .root-actions { 
+            display: flex; gap: 16px; flex-wrap: wrap; justify-content: flex-start; align-items: center;
+            margin-top: auto; z-index: 2; border-top: 1px dashed var(--phosphor); padding-top: 20px; width: 100%;
+        }
+        .root-btn {
+            background: transparent; border: 1px solid var(--phosphor); color: var(--phosphor); padding: 10px 20px; cursor: pointer;
+            font-family: inherit; font-size: 14px; font-weight: normal; text-shadow: inherit; transition: 0.1s;
+            text-transform: uppercase; letter-spacing: 2px; flex: 0 0 auto;
+        }
+        .root-btn:hover { background: var(--phosphor); color: #000; box-shadow: 0 0 10px var(--phosphor); text-shadow: none; }
+        .root-btn:active { transform: scale(0.98); }
+        
+        .root-scanline {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.3), rgba(0,0,0,0.3) 2px, transparent 2px, transparent 4px);
+            pointer-events: none; z-index: 10; opacity: 0.8;
+        }
+
+        /* Clean ASCII Mascot */
+        .mascot-container {
+            position: absolute; bottom: 100px; right: 20px; z-index: 5;
+            display: flex; flex-direction: column; align-items: flex-end;
+        }
+        .mascot-label {
+            font-family: inherit; font-size: 12px; color: var(--phosphor); 
+            margin-bottom: 8px; letter-spacing: 1px; opacity: 0.8;
+        }
+        .ascii-mascot {
+            color: var(--phosphor); font-family: inherit; font-size: 14px;
+            pointer-events: none; white-space: pre; line-height: 1.2; margin: 0;
+            text-align: left; opacity: 0.9;
+        }
+        .cat-eyes { display: inline-block; animation: catBlink 4s infinite; transform-origin: center; }
+        @keyframes catBlink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(0.1); } }
     </style>
 </head>
 <body>
@@ -464,15 +563,99 @@
         <div class="ai-content" id="ai-output"></div>
     </div>
 
-    <!-- ROOT CONSOLE OVERLAY -->
+    <!-- SECRET ROOT CONSOLE (CLEAN TERMINAL THEME) -->
     <div id="root-console">
-        <div class="root-header">SYS.OVERRIDE // RAW DATA ACCESS</div>
-        <div style="color: #0a0;">// WARNING: Direct modification of system JSON may cause corruption.</div>
-        <textarea id="root-editor" spellcheck="false"></textarea>
-        <div class="root-actions">
-            <button id="root-save" class="root-btn" onmouseenter="playSound('hover')">[ COMPILE_AND_REBOOT ]</button>
-            <button id="root-nuke" class="root-btn" onmouseenter="playSound('hover')">[ FACTORY_RESET ]</button>
-            <button id="root-close" class="root-btn" onmouseenter="playSound('hover')" style="margin-left: auto;">[ EXIT_TERMINAL ]</button>
+        <div id="root-console-inner">
+            <div class="root-header-container">
+                <h1 class="root-header">MIKE_OS v1.09 // SYSTEM_OVERRIDE</h1>
+                <div class="root-sub">ROOT_ACCESS_GRANTED<span class="cursor-blink"></span></div>
+            </div>
+            
+            <div class="root-tools">
+                <button class="root-btn tool-btn" id="tool-clearcache" onmouseenter="playSound('hover')">[ FLUSH_DNS/CACHE ]</button>
+                <button class="root-btn tool-btn" id="tool-scanlines" onmouseenter="playSound('hover')">[ TOGGLE_CRT_SCANLINES ]</button>
+                <button class="root-btn tool-btn" id="tool-color" onmouseenter="playSound('hover')">[ CYCLE_PHOSPHOR_THEME ]</button>
+            </div>
+
+            <div class="root-settings-grid">
+                <div class="root-setting-item">
+                    <span class="root-label">> SYS.GREETING_OVERRIDE
+                        <span class="root-info">?
+                            <span class="root-info-text">Replaces the default clock greeting (e.g. GOOD_MORNING) with whatever you type here.</span>
+                        </span>
+                    </span>
+                    <input type="text" id="root-greeting" class="root-input" placeholder="e.g. WAKE_UP_NEO...">
+                </div>
+                <div class="root-setting-item">
+                    <span class="root-label">> PHOSPHOR_HEX_CODE
+                        <span class="root-info">?
+                            <span class="root-info-text">Accepts any valid #hex color code to change the global accent color for this terminal.</span>
+                        </span>
+                    </span>
+                    <input type="text" id="root-hex" class="root-input" placeholder="#ffb000">
+                </div>
+                <div class="root-setting-item">
+                    <span class="root-label">> CRT_FLICKER_INTENSITY
+                        <span class="root-info">?
+                            <span class="root-info-text">Simulates a dying CRT monitor. High flicker might cause eye strain, use with caution.</span>
+                        </span>
+                    </span>
+                    <select id="root-flicker" class="root-input">
+                        <option value="none">DISABLED (Stable)</option>
+                        <option value="low">LOW (Subtle Pulse)</option>
+                        <option value="high">HIGH (Aggressive Flicker)</option>
+                    </select>
+                </div>
+                <div class="root-setting-item">
+                    <span class="root-label">> CUSTOM_CURSOR_INJECTION
+                        <span class="root-info">?
+                            <span class="root-info-text">Overrides the retro pixel hand cursor and restores your normal system pointer.</span>
+                        </span>
+                    </span>
+                    <select id="root-cursor" class="root-input">
+                        <option value="retro">RETRO PIXEL (Default)</option>
+                        <option value="system">SYSTEM DEFAULT</option>
+                    </select>
+                </div>
+                <div class="root-setting-item">
+                    <span class="root-label">> SYS.WALLPAPER_INJECTION
+                        <span class="root-info">?
+                            <span class="root-info-text">Paste a direct image or .gif URL here to set a custom background behind the scanlines.</span>
+                        </span>
+                    </span>
+                    <input type="text" id="root-wallpaper" class="root-input" placeholder="https://... (Leave blank for black)">
+                </div>
+                <div class="root-setting-item">
+                    <span class="root-label">> MASTER_AUDIO_SYSTEM
+                        <span class="root-info">?
+                            <span class="root-info-text">Hard killswitch for all UI sound effects (typing, clicking, hovering).</span>
+                        </span>
+                    </span>
+                    <select id="root-audio" class="root-input">
+                        <option value="on">ENABLED (Default)</option>
+                        <option value="muted">MUTED (Stealth Mode)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="root-actions">
+                <button id="root-save" class="root-btn" onmouseenter="playSound('hover')">[ COMPILE_AND_REBOOT ]</button>
+                <button id="root-nuke" class="root-btn" onmouseenter="playSound('hover')" style="border-color: #f00; color: #f00;">[ FACTORY_RESET ]</button>
+                <button id="root-close" class="root-btn" onmouseenter="playSound('hover')" style="margin-left: auto;">[ EXIT_TERMINAL ]</button>
+            </div>
+            
+            <div class="mascot-container">
+                <div class="mascot-label">DAEMON_PROCESS_ACTIVE</div>
+                <pre class="ascii-mascot">
+    /\_/\
+   (<span class="cat-eyes"> o.o </span>)
+    > ^ <
+   /  _  \
+  / /| |\ \
+ ( ( | | ) )
+  \__|_|__/
+                </pre>
+            </div>
         </div>
         <div class="root-scanline"></div>
     </div>
@@ -496,8 +679,14 @@
                     <b>g  [query]</b> -> Google<br>
                     <b>ai [query]</b> -> Neural Coprocessor<br>
                     <b>r/[sub]</b> &nbsp;&nbsp;&nbsp;-> Subreddit<br>
-                    <b>Default</b> &nbsp;&nbsp;-> Selected Engine
+                    <b>sudo</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-> ROOT_ACCESS
                 </div>
+            </div>
+
+            <div class="setting-section">
+                <span class="section-label">Neural Link (Gemini API)</span>
+                <input type="password" id="gemini-key-input" class="manager-input" placeholder="Paste Gemini API Key here..." style="width: 100%;">
+                <div class="cheat-sheet">Required for <b>ai</b> commands and Auto-Organize. Get a free key from Google AI Studio.</div>
             </div>
 
             <div class="setting-section">
@@ -567,7 +756,7 @@
     <div id="dashboard" class="dashboard"></div>
 
     <div class="status-bar" id="status-bar">
-        <span>MIKEVOID_OS</span>
+        <span id="os-label" title="Access System Root">MIKEVOID_OS</span>
         <span>//</span>
         <div class="weather-module" id="weather-display">
             <img src="images/sunny.png" class="weather-icon" id="weather-img">
@@ -579,13 +768,14 @@
         // --- CORE CONFIGURATION & MIGRATION ---
         const DEFAULT_CONFIG = { 
             showStatus: true, lowPower: false, newTab: true, militaryTime: false, weatherLoc: "", engine: "duckduckgo", 
+            scanlines: true, phosphorColor: "#ffb000", customGreeting: "", flicker: "none", cursor: "retro",
+            wallpaper: "", muteAudio: false, geminiKey: "AIzaSyCIXu8_4htLCMXKyFErahmxhe6wsfDrAxg",
             linkGroups: [
                 { groupName: "MAIN", color: "#ffffff", links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}] }
             ] 
         };
         
         function sanitizeConfig(cfg) {
-            // Migrates old flat links into the new Group structure automatically
             if (cfg.links && !cfg.linkGroups) {
                 cfg.linkGroups = [{ groupName: "GENERAL", color: "#ffffff", links: cfg.links }];
                 delete cfg.links;
@@ -601,8 +791,35 @@
         let config = { ...DEFAULT_CONFIG, ...savedConfig }; 
         const saveConfig = () => localStorage.setItem('startConfig', JSON.stringify(config));
 
+        // --- AUDIO ENGINE ---
+        const audioAssets = {
+            hover: new Audio('sounds/hoverbutton.wav'), 
+            click: new Audio('sounds/buttonclick.mp3'),
+            types: [new Audio('sounds/type1.mp3'), new Audio('sounds/type2.mp3'), new Audio('sounds/type3.mp3'), new Audio('sounds/type4.mp3')],
+            mouseDown: [new Audio('sounds/mousedown1.mp3'), new Audio('sounds/mousedown2.mp3'), new Audio('sounds/mousedown3.mp3'), new Audio('sounds/mousedown4.mp3')],
+            mouseUp: [new Audio('sounds/mouseup1.mp3'), new Audio('sounds/mouseup2.mp3'), new Audio('sounds/mouseup3.mp3'), new Audio('sounds/mouseup4.mp3')]
+        };
+
+        let lastMouseIdx = 0; 
+
+        const playSound = (type) => {
+            if (config.muteAudio) return; // Hard killswitch for audio
+
+            let sound, vol = 0.4;
+            if (type === 'hover') { sound = audioAssets.hover; } 
+            else if (type === 'click') { sound = audioAssets.click; } 
+            else if (type === 'mouseDown') { lastMouseIdx = Math.floor(Math.random() * 4); sound = audioAssets.mouseDown[lastMouseIdx]; vol = 0.05; } 
+            else if (type === 'mouseUp') { sound = audioAssets.mouseUp[lastMouseIdx]; vol = 0.05; } 
+            else { sound = audioAssets.types[Math.floor(Math.random() * 4)]; }
+            
+            if (sound) { const clone = sound.cloneNode(); clone.volume = vol; clone.play().catch(()=>{}); }
+        };
+
+        window.addEventListener('mousedown', () => playSound('mouseDown'));
+        window.addEventListener('mouseup', () => playSound('mouseUp'));
+
         // --- GEMINI API INTEGRATION ---
-        const apiKey = ""; // Injected by execution environment
+        const envApiKey = ""; // Injected by execution environment
 
         async function fetchWithRetry(url, options, retries = 5) {
             const delays = [1000, 2000, 4000, 8000, 16000];
@@ -619,7 +836,9 @@
         }
 
         async function generateAIResponse(prompt) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const activeKey = envApiKey || config.geminiKey;
+            if (!activeKey || activeKey.trim() === "") throw new Error("NO_API_KEY");
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${activeKey.trim()}`;
             const payload = {
                 contents: [{ parts: [{ text: prompt }] }],
                 systemInstruction: { parts: [{ text: "You are an integrated AI co-processor inside a retro terminal OS called MIKEVOID_OS. Keep responses concise, helpful, and maintain a cool, slightly robotic/hacker aesthetic. Do not use markdown bolding." }] }
@@ -632,13 +851,13 @@
             const modal = document.getElementById('ai-modal');
             const output = document.getElementById('ai-output');
             modal.classList.add('active');
-            output.innerHTML = `<span style="color:#005555;">> ${query}</span><br><br><span class="ai-loading">PROCESSING_QUERY</span>`;
             
+            output.innerHTML = `<span style="color:#005555;">> ${query}</span><br><br><span class="ai-loading">PROCESSING_QUERY</span>`;
             generateAIResponse(query).then(res => {
                 output.innerHTML = `<span style="color:#005555;">> ${query}</span><br><br>`;
                 typeWriter(res, output);
             }).catch(err => {
-                output.innerHTML = `<span style="color:#005555;">> ${query}</span><br><br><span style="color:#f00; text-shadow: 0 0 5px #f00;">[ERR]: NEURAL_LINK_SEVERED</span>`;
+                output.innerHTML = `<span style="color:#005555;">> ${query}</span><br><br><span style="color:#f00; text-shadow: 0 0 5px #f00;">[ERR]: NEURAL_LINK_SEVERED<br>Check your API key or connection.</span>`;
             });
         }
 
@@ -664,31 +883,6 @@
             const searchInput = document.getElementById('web-search');
             if(searchInput) searchInput.focus();
         };
-
-        // --- AUDIO ENGINE ---
-        const audioAssets = {
-            hover: new Audio('sounds/hoverbutton.wav'), 
-            click: new Audio('sounds/buttonclick.mp3'),
-            types: [new Audio('sounds/type1.mp3'), new Audio('sounds/type2.mp3'), new Audio('sounds/type3.mp3'), new Audio('sounds/type4.mp3')],
-            mouseDown: [new Audio('sounds/mousedown1.mp3'), new Audio('sounds/mousedown2.mp3'), new Audio('sounds/mousedown3.mp3'), new Audio('sounds/mousedown4.mp3')],
-            mouseUp: [new Audio('sounds/mouseup1.mp3'), new Audio('sounds/mouseup2.mp3'), new Audio('sounds/mouseup3.mp3'), new Audio('sounds/mouseup4.mp3')]
-        };
-
-        let lastMouseIdx = 0; 
-
-        const playSound = (type) => {
-            let sound, vol = 0.4;
-            if (type === 'hover') { sound = audioAssets.hover; } 
-            else if (type === 'click') { sound = audioAssets.click; } 
-            else if (type === 'mouseDown') { lastMouseIdx = Math.floor(Math.random() * 4); sound = audioAssets.mouseDown[lastMouseIdx]; vol = 0.05; } 
-            else if (type === 'mouseUp') { sound = audioAssets.mouseUp[lastMouseIdx]; vol = 0.05; } 
-            else { sound = audioAssets.types[Math.floor(Math.random() * 4)]; }
-            
-            if (sound) { const clone = sound.cloneNode(); clone.volume = vol; clone.play().catch(()=>{}); }
-        };
-
-        window.addEventListener('mousedown', () => playSound('mouseDown'));
-        window.addEventListener('mouseup', () => playSound('mouseUp'));
 
         // --- WEATHER MODULE ---
         async function fetchWeather(force = false) {
@@ -747,7 +941,7 @@
             dashboard.innerHTML = '';
 
             config.linkGroups.forEach((group) => {
-                if(group.links.length === 0 && group.groupName.trim() === "") return; // Skip blank ghost groups
+                if(group.links.length === 0 && group.groupName.trim() === "") return; 
                 
                 const groupDiv = document.createElement('div');
                 groupDiv.className = 'group-container';
@@ -826,18 +1020,39 @@
             document.getElementById('toggle-military').checked = config.militaryTime; 
             document.getElementById('engine-select').value = config.engine;
             document.getElementById('weather-loc-input').value = config.weatherLoc;
+            document.getElementById('gemini-key-input').value = config.geminiKey || "";
+            
             config.lowPower ? document.body.classList.add('low-power') : document.body.classList.remove('low-power');
+            
+            document.body.style.setProperty('--phosphor', config.phosphorColor || '#ffb000');
+            
+            if (config.scanlines === false) document.body.classList.add('no-scanlines');
+            else document.body.classList.remove('no-scanlines');
+
+            if (config.cursor === 'system') document.body.classList.add('sys-cursor');
+            else document.body.classList.remove('sys-cursor');
+
+            document.body.classList.remove('flicker-low', 'flicker-high');
+            if (config.flicker === 'low') document.body.classList.add('flicker-low');
+            else if (config.flicker === 'high') document.body.classList.add('flicker-high');
+
+            if (config.wallpaper && config.wallpaper.trim() !== "") {
+                document.body.style.backgroundImage = `url('${config.wallpaper}')`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundPosition = 'center';
+            } else {
+                document.body.style.backgroundImage = 'none';
+                document.body.style.background = 'black';
+            }
         }
 
         function attachManagerEvents() {
-            // Sortable Magic: Groups
             if (typeof Sortable !== 'undefined') {
                 Sortable.create(document.getElementById('manager-list'), {
                     handle: '.group-handle', animation: 150,
                     onEnd: () => { syncDataFromManager(); renderMainUI(); renderManager(); }
                 });
                 
-                // Sortable Magic: Links inside groups (Allows dragging between groups!)
                 document.querySelectorAll('.manager-link-list').forEach(list => {
                     Sortable.create(list, {
                         group: 'shared-links', handle: '.link-handle', animation: 150,
@@ -846,15 +1061,18 @@
                 });
             }
 
-            // Save on input change (Without collapsing the menu or dropping focus)
             document.querySelectorAll('.manager-input').forEach(input => {
                 input.addEventListener('input', () => {
-                    syncDataFromManager(); 
-                    renderMainUI();
+                    if (input.id === 'gemini-key-input') {
+                        config.geminiKey = input.value;
+                        saveConfig();
+                    } else {
+                        syncDataFromManager(); 
+                        renderMainUI();
+                    }
                 });
             });
 
-            // Delete Link
             document.querySelectorAll('.del-link').forEach(btn => {
                 btn.onclick = (e) => {
                     e.stopPropagation(); playSound('click');
@@ -864,7 +1082,6 @@
                 };
             });
 
-            // Delete Entire Group
             document.querySelectorAll('.del-group').forEach(btn => {
                 btn.onclick = (e) => {
                     e.stopPropagation(); playSound('click');
@@ -874,7 +1091,6 @@
                 };
             });
 
-            // Add Link to specific group
             document.querySelectorAll('.add-link-btn').forEach(btn => {
                 btn.onclick = (e) => {
                     e.stopPropagation(); playSound('click');
@@ -928,6 +1144,12 @@
                 const aiModal = document.getElementById('ai-modal');
                 if (aiModal.classList.contains('active')) {
                     document.getElementById('ai-close-btn').click();
+                    return;
+                }
+
+                const rc = document.getElementById('root-console');
+                if (rc.classList.contains('active') && !rc.classList.contains('closing')) {
+                    document.getElementById('root-close').click();
                     return;
                 }
 
@@ -1036,8 +1258,7 @@
             // --- SECRET ROOT OVERRIDE ---
             if(lowerVal === '//root' || lowerVal === 'sudo') {
                 playSound('click');
-                document.getElementById('root-console').classList.add('active');
-                document.getElementById('root-editor').value = JSON.stringify(config, null, 4);
+                openRootConsole();
                 searchInput.value = '';
                 searchWrapper.classList.remove('has-text'); 
                 suggestionsBox.classList.remove('show');
@@ -1097,6 +1318,14 @@
             e.stopPropagation(); playSound('click');
             const btn = e.target;
             
+            const activeKey = envApiKey || config.geminiKey;
+            if (!activeKey || activeKey.trim() === "") {
+                btn.style.borderColor = '#f00'; btn.style.color = '#f00';
+                btn.innerText = "ERR: MISSING_API_KEY";
+                setTimeout(() => { btn.style.borderColor = '#0ff'; btn.style.color = '#0ff'; btn.innerText = "✨ AUTO-ORGANIZE (AI)"; }, 2000);
+                return;
+            }
+
             let allLinks = [];
             config.linkGroups.forEach(g => allLinks.push(...g.links));
             if(allLinks.length === 0) return;
@@ -1105,7 +1334,7 @@
             btn.style.pointerEvents = 'none';
 
             try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${activeKey.trim()}`;
                 const payload = {
                     contents: [{ parts: [{ text: JSON.stringify(allLinks) }] }],
                     systemInstruction: { parts: [{ text: "Take these links and categorize them into logical, thematic groups. Keep groupNames uppercase and short. Assign a vibrant, fitting hex color to each group. Respond strictly in JSON." }] },
@@ -1199,27 +1428,82 @@
         };
 
         // --- ROOT CONSOLE LOGIC ---
+        function openRootConsole() {
+            const rc = document.getElementById('root-console');
+            rc.classList.remove('closing');
+            rc.classList.add('active');
+            
+            // Populate the new grid inputs with current config
+            document.getElementById('root-greeting').value = config.customGreeting || "";
+            document.getElementById('root-hex').value = config.phosphorColor || "#ffb000";
+            document.getElementById('root-flicker').value = config.flicker || "none";
+            document.getElementById('root-cursor').value = config.cursor || "retro";
+            document.getElementById('root-wallpaper').value = config.wallpaper || "";
+            document.getElementById('root-audio').value = config.muteAudio ? "muted" : "on";
+        }
+
+        document.getElementById('os-label').onclick = () => {
+            playSound('click');
+            openRootConsole();
+        };
+
         document.getElementById('root-close').onclick = () => {
             playSound('click');
-            document.getElementById('root-console').classList.remove('active');
-            searchInput.focus();
+            const rc = document.getElementById('root-console');
+            rc.classList.add('closing');
+            setTimeout(() => {
+                rc.classList.remove('active');
+                rc.classList.remove('closing');
+                searchInput.focus();
+            }, 450); // Matches the new TV shutoff animation timing
+        };
+
+        // Root Tools
+        document.getElementById('tool-clearcache').onclick = (e) => {
+            playSound('click');
+            localStorage.removeItem('weatherCache');
+            fetchWeather(true);
+            const btn = e.target;
+            btn.innerText = "[ CACHE_FLUSHED ]";
+            setTimeout(() => btn.innerText = "[ FLUSH_DNS/CACHE ]", 2000);
+        };
+
+        document.getElementById('tool-scanlines').onclick = () => {
+            playSound('click');
+            config.scanlines = config.scanlines === false ? true : false;
+            saveConfig();
+            applySettings();
+        };
+
+        const phosphorThemes = ['#ffb000', '#0f0', '#0ff', '#f00', '#fff']; // Amber, Green, Cyan, Red, White
+        document.getElementById('tool-color').onclick = () => {
+            playSound('click');
+            let idx = phosphorThemes.indexOf(config.phosphorColor);
+            if(idx === -1) idx = 0;
+            idx = (idx + 1) % phosphorThemes.length;
+            config.phosphorColor = phosphorThemes[idx];
+            document.getElementById('root-hex').value = config.phosphorColor;
+            saveConfig();
+            applySettings();
         };
 
         document.getElementById('root-save').onclick = () => {
-            try {
-                const newConfig = JSON.parse(document.getElementById('root-editor').value);
-                localStorage.setItem('startConfig', JSON.stringify(newConfig));
-                location.reload();
-            } catch (err) {
-                playSound('click');
-                const editor = document.getElementById('root-editor');
-                editor.style.borderColor = '#f00';
-                editor.style.boxShadow = 'inset 0 0 30px rgba(255,0,0,0.4)';
-                setTimeout(() => {
-                    editor.style.borderColor = '#0f0';
-                    editor.style.boxShadow = 'none';
-                }, 800);
+            playSound('click');
+            // Grab values from the new grid
+            config.customGreeting = document.getElementById('root-greeting').value;
+            
+            const hexVal = document.getElementById('root-hex').value.trim();
+            if (/^#[0-9A-F]{6}$/i.test(hexVal) || /^#[0-9A-F]{3}$/i.test(hexVal)) {
+                config.phosphorColor = hexVal;
             }
+            
+            config.flicker = document.getElementById('root-flicker').value;
+            config.cursor = document.getElementById('root-cursor').value;
+            config.wallpaper = document.getElementById('root-wallpaper').value.trim();
+            config.muteAudio = document.getElementById('root-audio').value === 'muted';
+            
+            saveConfig();
+            location.reload(); // Hard reboot to apply
         };
 
         let nukeArmed = false;
@@ -1235,9 +1519,9 @@
                 setTimeout(() => {
                     nukeArmed = false;
                     nukeBtn.innerText = "[ FACTORY_RESET ]";
-                    nukeBtn.style.color = "#0f0";
-                    nukeBtn.style.background = "#000";
-                    nukeBtn.style.borderColor = "#0f0";
+                    nukeBtn.style.color = "var(--phosphor)";
+                    nukeBtn.style.background = "transparent";
+                    nukeBtn.style.borderColor = "var(--phosphor)";
                 }, 3000); // 3 seconds to confirm
             } else {
                 localStorage.removeItem('startConfig');
@@ -1263,11 +1547,17 @@
             }
             
             let greetingText = "";
-            if (month === 9 && date === 31) greetingText = "SYSTEM_HAUNTED";
-            else if (month === 11 && date === 25) greetingText = "MERRY_CRISIS";
-            else if (month === 0 && date === 1) greetingText = "NEW_CYCLE_INITIATED";
-            else if (day === 5 && now.getHours() >= 17) greetingText = "INITIATE_WEEKEND";
-            else {
+            if (config.customGreeting && config.customGreeting.trim() !== "") {
+                greetingText = config.customGreeting;
+            } else if (month === 9 && date === 31) {
+                greetingText = "SYSTEM_HAUNTED";
+            } else if (month === 11 && date === 25) {
+                greetingText = "MERRY_CRISIS";
+            } else if (month === 0 && date === 1) {
+                greetingText = "NEW_CYCLE_INITIATED";
+            } else if (day === 5 && now.getHours() >= 17) {
+                greetingText = "INITIATE_WEEKEND";
+            } else {
                 greetingText = now.getHours() < 12 ? "GOOD_MORNING" : now.getHours() < 18 ? "GOOD_AFTERNOON" : "GOOD_EVENING";
             }
             document.getElementById('greeting').innerText = greetingText;
