@@ -18,6 +18,12 @@
             font-smooth: never;
         }
         *:active { cursor: url('images/cursor-click.png'), auto !important; }
+        
+        /* Fallback for system cursors */
+        body.sys-cursor * { cursor: auto !important; }
+        body.sys-cursor a, body.sys-cursor button, body.sys-cursor .suggestion-item, body.sys-cursor #drawer-tab, body.sys-cursor select, body.sys-cursor .handle, body.sys-cursor .toggle-btn, body.sys-cursor .link-card, body.sys-cursor .link-card *, body.sys-cursor .clear-btn, body.sys-cursor #os-label {
+            cursor: pointer !important;
+        }
 
         img { image-rendering: pixelated; }
 
@@ -44,6 +50,7 @@
             box-sizing: border-box;
         }
         body.low-power { filter: brightness(0.7); }
+        body.no-scanlines::after { display: none !important; }
         
         body::after {
             content: '';
@@ -53,6 +60,15 @@
             background-size: 100% 4px;
             pointer-events: none; 
             z-index: 999;
+        }
+        
+        /* CRT Flicker Effects */
+        body.flicker-low { animation: screenFlicker 0.4s infinite; }
+        body.flicker-high { animation: screenFlicker 0.12s infinite; }
+        @keyframes screenFlicker {
+            0% { opacity: 0.98; }
+            50% { opacity: 0.94; }
+            100% { opacity: 1; }
         }
 
         /* --- BOSS MODE --- */
@@ -382,14 +398,209 @@
 
         /* --- MINIMAL STATUS BAR --- */
         .status-bar { position: fixed; bottom: 24px; left: 32px; font-family: 'PixeloidSansBold', sans-serif; font-size: 14px; line-height: 14px; color: #444; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; gap: 16px; z-index: 5; }
+        #os-label { cursor: pointer; transition: color 0.2s, text-shadow 0.2s; pointer-events: auto; }
+        #os-label:hover { color: var(--phosphor, #ffb000); text-shadow: 0 0 10px var(--phosphor, #ffb000); }
         .weather-module { display: flex; align-items: center; gap: 10px; color: #666; }
         .weather-icon { width: 24px; height: 24px; image-rendering: pixelated; }
         #temp-val { color: #888; }
+
+        /* --- SECRET ROOT CONSOLE (CLEAN TERMINAL THEME) --- */
+        :root { --phosphor: #ffb000; }
+        #root-console {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #000; color: var(--phosphor); z-index: 9999; padding: 50px; box-sizing: border-box;
+            font-family: 'Courier New', Courier, monospace; font-size: 14px;
+            flex-direction: column; gap: 20px;
+            overflow: hidden; text-shadow: 0 0 4px rgba(255, 176, 0, 0.4);
+        }
+        #root-console.active { display: flex; animation: terminalBoot 0.3s ease-out forwards; }
+        #root-console.closing { display: flex; animation: tvShutOff 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards; pointer-events: none; }
+        
+        @keyframes terminalBoot {
+            0% { filter: brightness(3) contrast(2); opacity: 0; }
+            100% { filter: brightness(1) contrast(1); opacity: 1; }
+        }
+        @keyframes tvShutOff {
+            0% { transform: scale(1, 1); filter: brightness(1) contrast(1); opacity: 1; }
+            40% { transform: scale(1, 0.005); filter: brightness(3) contrast(2); opacity: 1; }
+            70% { transform: scale(0.005, 0.005); filter: brightness(5) contrast(3); opacity: 1; box-shadow: 0 0 50px var(--phosphor); }
+            100% { transform: scale(0, 0); opacity: 0; }
+        }
+
+        .root-header-container { z-index: 2; display: flex; flex-direction: column; gap: 8px; border-bottom: 1px dashed var(--phosphor); padding-bottom: 16px; margin-bottom: 10px; }
+        .root-header { 
+            font-weight: normal; font-size: 24px; margin: 0; letter-spacing: 2px; line-height: 1.2;
+        }
+        .root-sub { font-size: 16px; font-weight: normal; display: flex; align-items: center; opacity: 0.8; }
+        .cursor-blink { display: inline-block; width: 10px; height: 18px; background: var(--phosphor); margin-left: 6px; animation: blink 1s step-end infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        
+        .root-tools { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 10px; z-index: 2; }
+        .tool-btn { font-size: 14px; padding: 6px 12px; }
+
+        /* Terminal Grid Settings */
+        .root-settings-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; 
+            flex-grow: 1; align-content: start; margin-top: 10px; z-index: 2;
+        }
+        .root-setting-item { 
+            display: flex; flex-direction: column; gap: 8px; 
+            padding: 0 0 0 16px; border-left: 2px solid var(--phosphor);
+        }
+        .root-label { color: var(--phosphor); font-weight: normal; font-size: 14px; letter-spacing: 1px; display: flex; align-items: center;}
+        
+        .root-info {
+            display: inline-flex; margin-left: 10px; color: #000; background: var(--phosphor); 
+            padding: 0 6px; cursor: help; position: relative; font-weight: bold; font-size: 12px;
+        }
+        .root-info-text {
+            visibility: hidden; position: absolute; bottom: 130%; left: 0; width: 220px;
+            background: #000; border: 1px solid var(--phosphor); color: var(--phosphor);
+            padding: 10px; font-size: 12px; font-weight: normal; z-index: 10; opacity: 0;
+            transition: opacity 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.8); line-height: 1.4;
+        }
+        .root-info:hover .root-info-text { visibility: visible; opacity: 1; }
+
+        .root-input {
+            background: transparent; border: 1px dashed var(--phosphor); color: var(--phosphor);
+            padding: 10px 14px; font-family: inherit; font-size: 14px; outline: none; transition: 0.2s;
+        }
+        .root-input:focus { background: rgba(255, 176, 0, 0.1); border-style: solid; text-shadow: none; }
+        select.root-input { cursor: pointer; }
+        
+        .root-actions { display: flex; gap: 16px; flex-wrap: wrap; margin-top: auto; z-index: 2; align-items: center; border-top: 1px dashed var(--phosphor); padding-top: 20px;}
+        .root-btn {
+            background: transparent; border: 1px solid var(--phosphor); color: var(--phosphor); padding: 10px 20px; cursor: pointer;
+            font-family: inherit; font-size: 14px; font-weight: normal; text-shadow: inherit; transition: 0.1s;
+            text-transform: uppercase; letter-spacing: 2px;
+        }
+        .root-btn:hover { background: var(--phosphor); color: #000; box-shadow: 0 0 10px var(--phosphor); text-shadow: none; }
+        .root-btn:active { transform: scale(0.98); }
+        
+        .root-scanline {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.3), rgba(0,0,0,0.3) 2px, transparent 2px, transparent 4px);
+            pointer-events: none; z-index: 10; opacity: 0.8;
+        }
+
+        /* Clean ASCII Mascot */
+        .mascot-container {
+            position: absolute; bottom: 120px; right: 60px; z-index: 5;
+            display: flex; flex-direction: column; align-items: flex-end;
+        }
+        .mascot-label {
+            font-family: inherit; font-size: 12px; color: var(--phosphor); 
+            margin-bottom: 8px; letter-spacing: 1px; opacity: 0.8;
+        }
+        .ascii-mascot {
+            color: var(--phosphor); font-family: inherit; font-size: 14px;
+            pointer-events: none; white-space: pre; line-height: 1.2; margin: 0;
+            text-align: left; opacity: 0.9;
+        }
+        .cat-eyes { display: inline-block; animation: catBlink 4s infinite; transform-origin: center; }
+        @keyframes catBlink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(0.1); } }
     </style>
 </head>
 <body>
 
     <div id="boss-screen">C:\&gt; </div>
+
+    <!-- SECRET ROOT CONSOLE (CLEAN TERMINAL THEME) -->
+    <div id="root-console">
+
+        <div class="root-header-container">
+            <h1 class="root-header">MIKE_OS v1.09 // SYSTEM_OVERRIDE</h1>
+            <div class="root-sub">ROOT_ACCESS_GRANTED<span class="cursor-blink"></span></div>
+        </div>
+        
+        <div class="root-tools">
+            <button class="root-btn tool-btn" id="tool-clearcache" onmouseenter="playSound('hover')">[ FLUSH_DNS/CACHE ]</button>
+            <button class="root-btn tool-btn" id="tool-scanlines" onmouseenter="playSound('hover')">[ TOGGLE_CRT_SCANLINES ]</button>
+            <button class="root-btn tool-btn" id="tool-color" onmouseenter="playSound('hover')">[ CYCLE_PHOSPHOR_THEME ]</button>
+        </div>
+
+        <div class="root-settings-grid">
+            <div class="root-setting-item">
+                <span class="root-label">> SYS.GREETING_OVERRIDE
+                    <span class="root-info">?
+                        <span class="root-info-text">Replaces the default clock greeting (e.g. GOOD_MORNING) with whatever you type here.</span>
+                    </span>
+                </span>
+                <input type="text" id="root-greeting" class="root-input" placeholder="e.g. WAKE_UP_NEO...">
+            </div>
+            <div class="root-setting-item">
+                <span class="root-label">> PHOSPHOR_HEX_CODE
+                    <span class="root-info">?
+                        <span class="root-info-text">Accepts any valid #hex color code to change the global accent color for this terminal.</span>
+                    </span>
+                </span>
+                <input type="text" id="root-hex" class="root-input" placeholder="#ffb000">
+            </div>
+            <div class="root-setting-item">
+                <span class="root-label">> CRT_FLICKER_INTENSITY
+                    <span class="root-info">?
+                        <span class="root-info-text">Simulates a dying CRT monitor. High flicker might cause eye strain, use with caution.</span>
+                    </span>
+                </span>
+                <select id="root-flicker" class="root-input">
+                    <option value="none">DISABLED (Stable)</option>
+                    <option value="low">LOW (Subtle Pulse)</option>
+                    <option value="high">HIGH (Aggressive Flicker)</option>
+                </select>
+            </div>
+            <div class="root-setting-item">
+                <span class="root-label">> CUSTOM_CURSOR_INJECTION
+                    <span class="root-info">?
+                        <span class="root-info-text">Overrides the retro pixel hand cursor and restores your normal system pointer.</span>
+                    </span>
+                </span>
+                <select id="root-cursor" class="root-input">
+                    <option value="retro">RETRO PIXEL (Default)</option>
+                    <option value="system">SYSTEM DEFAULT</option>
+                </select>
+            </div>
+            <div class="root-setting-item">
+                <span class="root-label">> SYS.WALLPAPER_INJECTION
+                    <span class="root-info">?
+                        <span class="root-info-text">Paste a direct image or .gif URL here to set a custom background behind the scanlines.</span>
+                    </span>
+                </span>
+                <input type="text" id="root-wallpaper" class="root-input" placeholder="https://... (Leave blank for black)">
+            </div>
+            <div class="root-setting-item">
+                <span class="root-label">> MASTER_AUDIO_SYSTEM
+                    <span class="root-info">?
+                        <span class="root-info-text">Hard killswitch for all UI sound effects (typing, clicking, hovering).</span>
+                    </span>
+                </span>
+                <select id="root-audio" class="root-input">
+                    <option value="on">ENABLED (Default)</option>
+                    <option value="muted">MUTED (Stealth Mode)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="root-actions">
+            <button id="root-save" class="root-btn" onmouseenter="playSound('hover')">[ COMPILE_AND_REBOOT ]</button>
+            <button id="root-nuke" class="root-btn" onmouseenter="playSound('hover')" style="border-color: #f00; color: #f00;">[ FACTORY_RESET ]</button>
+            <button id="root-close" class="root-btn" onmouseenter="playSound('hover')" style="margin-left: auto;">[ EXIT_TERMINAL ]</button>
+        </div>
+        
+        <div class="mascot-container">
+            <div class="mascot-label">DAEMON_PROCESS_ACTIVE</div>
+            <pre class="ascii-mascot">
+    /\_/\
+   (<span class="cat-eyes"> o.o </span>)
+    > ^ <
+   /  _  \
+  / /| |\ \
+ ( ( | | ) )
+  \__|_|__/
+            </pre>
+        </div>
+
+        <div class="root-scanline"></div>
+    </div>
 
     <div id="settings-drawer">
         <div id="drawer-tab">
@@ -409,7 +620,7 @@
                     <b>yt [query]</b> -> YouTube<br>
                     <b>g  [query]</b> -> Google<br>
                     <b>r/[sub]</b> &nbsp;&nbsp;&nbsp;-> Subreddit<br>
-                    <b>Default</b> &nbsp;&nbsp;-> Selected Engine
+                    <b>sudo</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-> ROOT_ACCESS
                 </div>
             </div>
 
@@ -479,7 +690,7 @@
     <div id="dashboard" class="dashboard"></div>
 
     <div class="status-bar" id="status-bar">
-        <span>MIKEVOID_OS</span>
+        <span id="os-label" title="Access System Root">MIKEVOID_OS</span>
         <span>//</span>
         <div class="weather-module" id="weather-display">
             <img src="images/sunny.png" class="weather-icon" id="weather-img">
@@ -491,6 +702,8 @@
         // --- CORE CONFIGURATION & MIGRATION ---
         const DEFAULT_CONFIG = { 
             showStatus: true, lowPower: false, newTab: true, militaryTime: false, weatherLoc: "", engine: "duckduckgo", 
+            scanlines: true, phosphorColor: "#ffb000", customGreeting: "", flicker: "none", cursor: "retro",
+            wallpaper: "", muteAudio: false,
             linkGroups: [
                 { groupName: "MAIN", color: "#ffffff", links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}] }
             ] 
@@ -525,6 +738,8 @@
         let lastMouseIdx = 0; 
 
         const playSound = (type) => {
+            if (config.muteAudio) return; // Hard killswitch for audio
+
             let sound, vol = 0.4;
             if (type === 'hover') { sound = audioAssets.hover; } 
             else if (type === 'click') { sound = audioAssets.click; } 
@@ -675,6 +890,28 @@
             document.getElementById('engine-select').value = config.engine;
             document.getElementById('weather-loc-input').value = config.weatherLoc;
             config.lowPower ? document.body.classList.add('low-power') : document.body.classList.remove('low-power');
+            
+            // Apply new Root/Global settings
+            document.body.style.setProperty('--phosphor', config.phosphorColor || '#0f0');
+            
+            if (config.scanlines === false) document.body.classList.add('no-scanlines');
+            else document.body.classList.remove('no-scanlines');
+
+            if (config.cursor === 'system') document.body.classList.add('sys-cursor');
+            else document.body.classList.remove('sys-cursor');
+
+            document.body.classList.remove('flicker-low', 'flicker-high');
+            if (config.flicker === 'low') document.body.classList.add('flicker-low');
+            else if (config.flicker === 'high') document.body.classList.add('flicker-high');
+
+            if (config.wallpaper && config.wallpaper.trim() !== "") {
+                document.body.style.backgroundImage = `url('${config.wallpaper}')`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundPosition = 'center';
+            } else {
+                document.body.style.backgroundImage = 'none';
+                document.body.style.background = 'black';
+            }
         }
 
         function attachManagerEvents() {
@@ -773,6 +1010,12 @@
             if (document.body.classList.contains('boss-mode')) return;
 
             if (e.key === 'Escape') {
+                const rc = document.getElementById('root-console');
+                if (rc.classList.contains('active') && !rc.classList.contains('closing')) {
+                    document.getElementById('root-close').click();
+                    return;
+                }
+
                 const drawer = document.getElementById('settings-drawer');
                 if (drawer.classList.contains('open')) {
                     drawer.classList.remove('open');
@@ -873,6 +1116,18 @@
         function executeSearch(val) {
             if(!val || val.trim() === '') return;
             const lowerVal = val.toLowerCase();
+            
+            // --- SECRET ROOT OVERRIDE ---
+            if(lowerVal === '//root' || lowerVal === 'sudo') {
+                playSound('click');
+                openRootConsole();
+                searchInput.value = '';
+                searchWrapper.classList.remove('has-text'); 
+                suggestionsBox.classList.remove('show');
+                searchInput.blur();
+                return;
+            }
+
             if(lowerVal.startsWith('yt ')) window.location.href = `https://youtube.com/results?search_query=${encodeURIComponent(val.substring(3))}`;
             else if(lowerVal.startsWith('g ')) window.location.href = `https://google.com/search?q=${encodeURIComponent(val.substring(2))}`;
             else if(lowerVal.startsWith('r/')) window.location.href = `https://reddit.com/${val}`;
@@ -963,6 +1218,108 @@
             if (!drawer.contains(e.target) && !document.getElementById('drawer-tab').contains(e.target) && drawer.classList.contains('open')) { drawer.classList.remove('open'); gearIcon.classList.remove('gear-spin'); }
         };
 
+        // --- ROOT CONSOLE LOGIC ---
+        function openRootConsole() {
+            const rc = document.getElementById('root-console');
+            rc.classList.remove('closing');
+            rc.classList.add('active');
+            
+            // Populate the new grid inputs with current config
+            document.getElementById('root-greeting').value = config.customGreeting || "";
+            document.getElementById('root-hex').value = config.phosphorColor || "#ffb000";
+            document.getElementById('root-flicker').value = config.flicker || "none";
+            document.getElementById('root-cursor').value = config.cursor || "retro";
+            document.getElementById('root-wallpaper').value = config.wallpaper || "";
+            document.getElementById('root-audio').value = config.muteAudio ? "muted" : "on";
+        }
+
+        document.getElementById('os-label').onclick = () => {
+            playSound('click');
+            openRootConsole();
+        };
+
+        document.getElementById('root-close').onclick = () => {
+            playSound('click');
+            const rc = document.getElementById('root-console');
+            rc.classList.add('closing');
+            setTimeout(() => {
+                rc.classList.remove('active');
+                rc.classList.remove('closing');
+                searchInput.focus();
+            }, 450); // Matches the new TV shutoff animation timing
+        };
+
+        // Root Tools
+        document.getElementById('tool-clearcache').onclick = (e) => {
+            playSound('click');
+            localStorage.removeItem('weatherCache');
+            fetchWeather(true);
+            const btn = e.target;
+            btn.innerText = "CACHE_FLUSHED";
+            setTimeout(() => btn.innerText = "FLUSH_DNS/CACHE", 2000);
+        };
+
+        document.getElementById('tool-scanlines').onclick = () => {
+            playSound('click');
+            config.scanlines = config.scanlines === false ? true : false;
+            saveConfig();
+            applySettings();
+        };
+
+        const phosphorThemes = ['#ffb000', '#0f0', '#0ff', '#f00', '#fff']; // Amber, Green, Cyan, Red, White
+        document.getElementById('tool-color').onclick = () => {
+            playSound('click');
+            let idx = phosphorThemes.indexOf(config.phosphorColor);
+            if(idx === -1) idx = 0;
+            idx = (idx + 1) % phosphorThemes.length;
+            config.phosphorColor = phosphorThemes[idx];
+            document.getElementById('root-hex').value = config.phosphorColor;
+            saveConfig();
+            applySettings();
+        };
+
+        document.getElementById('root-save').onclick = () => {
+            playSound('click');
+            // Grab values from the new grid
+            config.customGreeting = document.getElementById('root-greeting').value;
+            
+            const hexVal = document.getElementById('root-hex').value.trim();
+            if (/^#[0-9A-F]{6}$/i.test(hexVal) || /^#[0-9A-F]{3}$/i.test(hexVal)) {
+                config.phosphorColor = hexVal;
+            }
+            
+            config.flicker = document.getElementById('root-flicker').value;
+            config.cursor = document.getElementById('root-cursor').value;
+            config.wallpaper = document.getElementById('root-wallpaper').value.trim();
+            config.muteAudio = document.getElementById('root-audio').value === 'muted';
+            
+            saveConfig();
+            location.reload(); // Hard reboot to apply
+        };
+
+        let nukeArmed = false;
+        const nukeBtn = document.getElementById('root-nuke');
+        nukeBtn.onclick = () => {
+            playSound('click');
+            if(!nukeArmed) {
+                nukeArmed = true;
+                nukeBtn.innerText = "[ CONFIRM_NUKE_PROTOCOL ]";
+                nukeBtn.style.color = "#000";
+                nukeBtn.style.background = "#f00";
+                nukeBtn.style.borderColor = "#f00";
+                setTimeout(() => {
+                    nukeArmed = false;
+                    nukeBtn.innerText = "[ FACTORY_RESET ]";
+                    nukeBtn.style.color = "var(--phosphor)";
+                    nukeBtn.style.background = "#000";
+                    nukeBtn.style.borderColor = "var(--phosphor)";
+                }, 3000); // 3 seconds to confirm
+            } else {
+                localStorage.removeItem('startConfig');
+                location.reload();
+            }
+        };
+
         // --- CLOCK & CORE LOOP ---
         function updateClock() {
             const now = new Date();
@@ -981,11 +1338,17 @@
             }
             
             let greetingText = "";
-            if (month === 9 && date === 31) greetingText = "SYSTEM_HAUNTED";
-            else if (month === 11 && date === 25) greetingText = "MERRY_CRISIS";
-            else if (month === 0 && date === 1) greetingText = "NEW_CYCLE_INITIATED";
-            else if (day === 5 && now.getHours() >= 17) greetingText = "INITIATE_WEEKEND";
-            else {
+            if (config.customGreeting && config.customGreeting.trim() !== "") {
+                greetingText = config.customGreeting;
+            } else if (month === 9 && date === 31) {
+                greetingText = "SYSTEM_HAUNTED";
+            } else if (month === 11 && date === 25) {
+                greetingText = "MERRY_CRISIS";
+            } else if (month === 0 && date === 1) {
+                greetingText = "NEW_CYCLE_INITIATED";
+            } else if (day === 5 && now.getHours() >= 17) {
+                greetingText = "INITIATE_WEEKEND";
+            } else {
                 greetingText = now.getHours() < 12 ? "GOOD_MORNING" : now.getHours() < 18 ? "GOOD_AFTERNOON" : "GOOD_EVENING";
             }
             document.getElementById('greeting').innerText = greetingText;
