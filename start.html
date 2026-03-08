@@ -426,54 +426,11 @@
             background: repeating-linear-gradient(0deg, rgba(0,0,0,0.2), rgba(0,0,0,0.2) 2px, transparent 2px, transparent 4px);
             pointer-events: none; z-index: 10;
         }
-
-        /* --- AI CO-PROCESSOR MODAL --- */
-        #ai-modal {
-            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 90%; max-width: 700px; background: rgba(5, 5, 5, 0.95); border: 2px solid #0ff;
-            color: #0ff; font-family: 'PixeloidSans', sans-serif; z-index: 2000;
-            box-shadow: 0 0 30px rgba(0, 255, 255, 0.15), inset 0 0 20px rgba(0, 255, 255, 0.05); 
-            padding: 30px; box-sizing: border-box; backdrop-filter: blur(5px);
-        }
-        #ai-modal.active { display: flex; flex-direction: column; animation: modalBoot 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
-        @keyframes modalBoot { 0% { transform: translate(-50%, -45%); opacity: 0; filter: blur(4px); } 100% { transform: translate(-50%, -50%); opacity: 1; filter: blur(0); } }
-        
-        .ai-header { 
-            position: relative; font-family: 'PixeloidSansBold', sans-serif; font-size: 16px; border-bottom: 1px dashed #0ff; 
-            padding-bottom: 16px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
-            letter-spacing: 2px; text-shadow: 0 0 8px rgba(0, 255, 255, 0.4);
-        }
-        .ai-close { 
-            position: absolute; top: 0; right: 0; background: transparent !important; border: none !important; box-shadow: none !important; 
-            color: #0ff; font-family: 'PixeloidSansBold', sans-serif; font-size: 18px; cursor: pointer; transition: 0.2s; padding: 4px; line-height: 1; 
-        }
-        .ai-close:hover { color: #fff !important; text-shadow: 0 0 10px #fff !important; transform: scale(1.2); background: transparent !important; }
-        
-        .ai-content { font-size: 14px; line-height: 1.6; white-space: pre-wrap; overflow-y: auto; max-height: 50vh; padding-right: 10px; }
-        .ai-loading::after { content: '_'; animation: blink 1s infinite; }
-        .ai-content::-webkit-scrollbar-thumb { background: #0ff; }
-        .ai-content a { color: #fff; text-decoration: underline; text-decoration-color: #0ff; }
-
-        .ai-btn {
-            background: #000; border: 1px solid #0ff; color: #0ff; padding: 8px 16px; cursor: pointer;
-            font-family: 'PixeloidSansBold', sans-serif; font-size: 10px; transition: 0.2s;
-            text-transform: uppercase; letter-spacing: 2px; margin-top: 15px; display: inline-block;
-        }
-        .ai-btn:hover { background: #0ff; color: #000; box-shadow: 0 0 10px #0ff; }
     </style>
 </head>
 <body>
 
     <div id="boss-screen">C:\&gt; </div>
-
-    <!-- AI MODAL -->
-    <div id="ai-modal">
-        <div class="ai-header">
-            <span>NEURAL_COPROCESSOR // ON-LINE</span>
-            <button class="ai-close" id="ai-close-btn">X</button>
-        </div>
-        <div class="ai-content" id="ai-output"></div>
-    </div>
 
     <!-- ROOT CONSOLE OVERLAY -->
     <div id="root-console">
@@ -505,8 +462,6 @@
                 <div class="cheat-sheet">
                     <b>yt [query]</b> -> YouTube<br>
                     <b>g  [query]</b> -> Google<br>
-                    <b>ai [query]</b> -> Neural Coprocessor<br>
-                    <b>scan</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-> ✨ Visual Scanner<br>
                     <b>r/[sub]</b> &nbsp;&nbsp;&nbsp;-> Subreddit<br>
                     <b>Default</b> &nbsp;&nbsp;-> Selected Engine
                 </div>
@@ -547,7 +502,6 @@
             <div class="setting-section">
                 <span class="section-label">Link Manager</span>
                 <div id="manager-list"></div>
-                <button class="btn-add" id="ai-organize-btn" style="margin-bottom: 8px; border-color: #0ff; color: #0ff; text-shadow: 0 0 5px rgba(0,255,255,0.4);">✨ AUTO-ORGANIZE (AI)</button>
                 <button class="btn-add" id="addNewGroupBtn" style="margin-bottom: 24px;">+ ADD GROUP</button>
             </div>
 
@@ -612,148 +566,6 @@
         savedConfig = sanitizeConfig(savedConfig);
         let config = { ...DEFAULT_CONFIG, ...savedConfig }; 
         const saveConfig = () => localStorage.setItem('startConfig', JSON.stringify(config));
-
-        // --- GEMINI API INTEGRATION ---
-        const apiKey = ""; // Injected by execution environment
-
-        async function fetchWithRetry(url, options, retries = 5) {
-            const delays = [1000, 2000, 4000, 8000, 16000];
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const response = await fetch(url, options);
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                    return await response.json();
-                } catch (err) {
-                    if (i === retries - 1) throw err;
-                    await new Promise(r => setTimeout(r, delays[i]));
-                }
-            }
-        }
-
-        async function generateAIResponse(prompt) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-                systemInstruction: { parts: [{ text: "You are an integrated AI co-processor inside a retro terminal OS called MIKEVOID_OS. Keep responses concise, helpful, and maintain a cool, slightly robotic/hacker aesthetic. Do not use markdown bolding." }] }
-            };
-            const result = await fetchWithRetry(url, { method: 'POST', headers:{'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-            return result.candidates?.[0]?.content?.parts?.[0]?.text || "ERROR: CORE_DUMP_FAILED";
-        }
-
-        function openAIModal(query) {
-            const modal = document.getElementById('ai-modal');
-            const output = document.getElementById('ai-output');
-            modal.classList.add('active');
-            output.innerHTML = `<span style="color:#005555;">> ${query}</span><br><br><span class="ai-loading">PROCESSING_QUERY</span>`;
-            
-            generateAIResponse(query).then(res => {
-                output.innerHTML = `<span style="color:#005555;">> ${query}</span><br><br>`;
-                typeWriter(res, output, true);
-            }).catch(err => {
-                output.innerHTML = `<span style="color:#005555;">> ${query}</span><br><br><span style="color:#f00; text-shadow: 0 0 5px #f00;">[ERR]: NEURAL_LINK_SEVERED</span>`;
-            });
-        }
-
-        function openAIImageModal(base64, mimeType) {
-            const modal = document.getElementById('ai-modal');
-            const output = document.getElementById('ai-output');
-            modal.classList.add('active');
-            
-            output.innerHTML = `<span style="color:#005555;">> EXECUTE: TACTICAL_VISUAL_SCAN</span><br><br><span class="ai-loading">UPLOADING_VISUAL_DATA</span>`;
-            
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const payload = {
-                contents: [{
-                    parts: [
-                        { text: "Analyze this image. Provide a tactical, retro-cyberpunk AI system scan report. Point out key features using military/hacker terminology. Be concise and highly analytical." },
-                        { inlineData: { mimeType: mimeType, data: base64 } }
-                    ]
-                }],
-                systemInstruction: { parts: [{ text: "You are an integrated AI scanner inside a retro terminal OS. Respond with a cool, slightly robotic/hacker aesthetic. No markdown bolding." }] }
-            };
-            
-            fetchWithRetry(url, { method: 'POST', headers:{'Content-Type': 'application/json'}, body: JSON.stringify(payload) })
-            .then(res => {
-                const text = res.candidates?.[0]?.content?.parts?.[0]?.text || "ERROR: NO_DATA";
-                output.innerHTML = `<span style="color:#005555;">> VISUAL_SCAN_COMPLETE</span><br><br><img src="data:${mimeType};base64,${base64}" style="max-width:300px; border:1px solid #0ff; margin-bottom:15px; display:block;"><br>`;
-                typeWriter(text, output, true);
-            }).catch(err => {
-                output.innerHTML = `<span style="color:#005555;">> EXECUTE: VISUAL_SCAN</span><br><br><span style="color:#f00; text-shadow: 0 0 5px #f00;">[ERR]: UPLINK_FAILED</span>`;
-            });
-        }
-
-        async function playTTS(text, btnElement) {
-            btnElement.innerText = "✨ [ SYNTHESIZING_AUDIO... ]";
-            btnElement.style.pointerEvents = 'none';
-            try {
-                const ttsUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
-                const ttsPayload = {
-                    contents: [{ parts: [{ text: "Read this in a calculated, robotic voice: " + text.substring(0, 1000) }] }],
-                    generationConfig: {
-                        responseModalities: ["AUDIO"],
-                        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } }
-                    }
-                };
-                const result = await fetchWithRetry(ttsUrl, { method: 'POST', headers:{'Content-Type': 'application/json'}, body: JSON.stringify(ttsPayload) });
-                const audioPart = result.candidates[0].content.parts[0].inlineData;
-                const sampleRate = parseInt((audioPart.mimeType.match(/rate=(\d+)/) || [])[1]) || 24000;
-                
-                const blob = pcmToWav(audioPart.data, sampleRate);
-                const audio = new Audio(URL.createObjectURL(blob));
-                audio.play();
-                btnElement.innerText = "✨ [ AUDIO_LINK_ESTABLISHED ]";
-                audio.onended = () => { btnElement.innerText = "✨ [ REPLAY_AUDIO_TRANSMISSION ]"; btnElement.style.pointerEvents = 'auto'; };
-            } catch (err) {
-                btnElement.innerText = "[ AUDIO_FAIL ]";
-                setTimeout(() => { btnElement.innerText = "✨ [ PLAY_AUDIO_TRANSMISSION ]"; btnElement.style.pointerEvents = 'auto'; }, 2000);
-            }
-        }
-
-        function pcmToWav(base64, sampleRate) {
-            const binaryString = atob(base64);
-            const bytes = new Uint8Array(binaryString.length);
-            for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
-            const buffer = new ArrayBuffer(44 + bytes.length);
-            const view = new DataView(buffer);
-            const writeStr = (offset, str) => { for (let i=0; i<str.length; i++) view.setUint8(offset + i, str.charCodeAt(i)); };
-            writeStr(0, 'RIFF'); view.setUint32(4, 36 + bytes.length, true); writeStr(8, 'WAVE'); writeStr(12, 'fmt ');
-            view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
-            view.setUint32(24, sampleRate, true); view.setUint32(28, sampleRate * 2, true);
-            view.setUint16(32, 2, true); view.setUint16(34, 16, true); writeStr(36, 'data');
-            view.setUint32(40, bytes.length, true); new Uint8Array(buffer, 44).set(bytes);
-            return new Blob([view], { type: 'audio/wav' });
-        }
-
-        function typeWriter(text, element, addTTS = false) {
-            let i = 0;
-            element.innerHTML += '<span id="tw-cursor" style="background:#0ff; color:#000;">_</span>';
-            function type() {
-                if (i < text.length) {
-                    document.getElementById('tw-cursor').insertAdjacentText('beforebegin', text.charAt(i));
-                    i++;
-                    if(i % 3 === 0) playSound('type');
-                    setTimeout(type, 10);
-                } else {
-                    document.getElementById('tw-cursor').remove();
-                    if (addTTS) {
-                        const btn = document.createElement('button');
-                        btn.className = 'ai-btn';
-                        btn.innerText = "✨ [ PLAY_AUDIO_TRANSMISSION ]";
-                        btn.onclick = () => playTTS(text, btn);
-                        element.appendChild(document.createElement('br'));
-                        element.appendChild(btn);
-                    }
-                }
-            }
-            type();
-        }
-
-        document.getElementById('ai-close-btn').onclick = () => {
-            document.getElementById('ai-modal').classList.remove('active');
-            playSound('click');
-            const searchInput = document.getElementById('web-search');
-            if(searchInput) searchInput.focus();
-        };
 
         // --- AUDIO ENGINE ---
         const audioAssets = {
@@ -1015,12 +827,6 @@
             if (document.body.classList.contains('boss-mode')) return;
 
             if (e.key === 'Escape') {
-                const aiModal = document.getElementById('ai-modal');
-                if (aiModal.classList.contains('active')) {
-                    document.getElementById('ai-close-btn').click();
-                    return;
-                }
-
                 const drawer = document.getElementById('settings-drawer');
                 if (drawer.classList.contains('open')) {
                     drawer.classList.remove('open');
@@ -1065,14 +871,12 @@
             if (query.length > 0) searchWrapper.classList.add('has-text');
             else searchWrapper.classList.remove('has-text');
 
-            if (lowerQuery.startsWith('yt ')) { badge.className = 'show youtube'; badge.innerText = 'YOUTUBE'; badge.style.cssText = ''; }
-            else if (lowerQuery.startsWith('g ')) { badge.className = 'show google'; badge.innerText = 'GOOGLE'; badge.style.cssText = ''; }
-            else if (lowerQuery.startsWith('r/')) { badge.className = 'show reddit'; badge.innerText = 'REDDIT'; badge.style.cssText = ''; }
-            else if (lowerQuery.startsWith('ai ')) { badge.className = 'show'; badge.innerText = 'AI_CORE'; badge.style.borderColor = '#0ff'; badge.style.color = '#0ff'; badge.style.boxShadow = '0 0 10px rgba(0,255,255,0.2)'; }
-            else if (lowerQuery === 'scan') { badge.className = 'show'; badge.innerText = 'VISUAL_SCAN'; badge.style.borderColor = '#f0f'; badge.style.color = '#f0f'; badge.style.boxShadow = '0 0 10px rgba(255,0,255,0.2)'; }
-            else { badge.className = ''; badge.style.cssText = ''; }
+            if (lowerQuery.startsWith('yt ')) { badge.className = 'show youtube'; badge.innerText = 'YOUTUBE'; }
+            else if (lowerQuery.startsWith('g ')) { badge.className = 'show google'; badge.innerText = 'GOOGLE'; }
+            else if (lowerQuery.startsWith('r/')) { badge.className = 'show reddit'; badge.innerText = 'REDDIT'; }
+            else { badge.className = ''; }
 
-            if (query.length === 0 || lowerQuery.startsWith('yt ') || lowerQuery.startsWith('g ') || lowerQuery.startsWith('r/') || lowerQuery.startsWith('ai ') || lowerQuery === 'scan') { 
+            if (query.length === 0 || lowerQuery.startsWith('yt ') || lowerQuery.startsWith('g ') || lowerQuery.startsWith('r/')) { 
                 suggestionsBox.classList.remove('show'); 
                 return; 
             }
@@ -1134,33 +938,6 @@
                 suggestionsBox.classList.remove('show');
                 searchInput.blur();
                 return;
-            } else if (lowerVal.startsWith('ai ')) {
-                playSound('click');
-                openAIModal(val.substring(3));
-                searchInput.value = '';
-                searchWrapper.classList.remove('has-text'); 
-                suggestionsBox.classList.remove('show');
-                searchInput.blur();
-                return;
-            } else if (lowerVal === 'scan') {
-                playSound('click');
-                const fileInput = document.createElement('input');
-                fileInput.type = 'file';
-                fileInput.accept = 'image/*';
-                fileInput.onchange = (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (ev) => openAIImageModal(ev.target.result.split(',')[1], file.type);
-                        reader.readAsDataURL(file);
-                    }
-                };
-                fileInput.click();
-                searchInput.value = '';
-                searchWrapper.classList.remove('has-text'); 
-                suggestionsBox.classList.remove('show');
-                searchInput.blur();
-                return;
             }
 
             if(lowerVal.startsWith('yt ')) window.location.href = `https://youtube.com/results?search_query=${encodeURIComponent(val.substring(3))}`;
@@ -1202,61 +979,6 @@
         document.getElementById('toggle-military').onchange = (e) => { config.militaryTime = e.target.checked; saveConfig(); updateClock(); };
         document.getElementById('engine-select').onchange = (e) => { config.engine = e.target.value; saveConfig(); };
         
-        // --- AI AUTO-ORGANIZER ---
-        document.getElementById('ai-organize-btn').onclick = async (e) => {
-            e.stopPropagation(); playSound('click');
-            const btn = e.target;
-            
-            let allLinks = [];
-            config.linkGroups.forEach(g => allLinks.push(...g.links));
-            if(allLinks.length === 0) return;
-
-            btn.innerText = "[ PROCESSING_DATA_STREAMS... ]";
-            btn.style.pointerEvents = 'none';
-
-            try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-                const payload = {
-                    contents: [{ parts: [{ text: JSON.stringify(allLinks) }] }],
-                    systemInstruction: { parts: [{ text: "Take these links and categorize them into logical, thematic groups. Keep groupNames uppercase and short. Assign a vibrant, fitting hex color to each group. Respond strictly in JSON." }] },
-                    generationConfig: {
-                        responseMimeType: "application/json",
-                        responseSchema: {
-                            type: "ARRAY",
-                            items: {
-                                type: "OBJECT",
-                                properties: {
-                                    groupName: { type: "STRING" },
-                                    color: { type: "STRING" },
-                                    links: {
-                                        type: "ARRAY",
-                                        items: {
-                                            type: "OBJECT",
-                                            properties: { name: { type: "STRING" }, url: { type: "STRING" } }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                };
-                const result = await fetchWithRetry(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-                const newGroups = JSON.parse(result.candidates[0].content.parts[0].text);
-                
-                config.linkGroups = newGroups;
-                saveConfig();
-                renderManager();
-                renderMainUI();
-            } catch(err) {
-                btn.style.borderColor = '#f00'; btn.style.color = '#f00';
-                btn.innerText = "ERR: ORGANIZATION_FAILED";
-                setTimeout(() => { btn.style.borderColor = '#0ff'; btn.style.color = '#0ff'; }, 2000);
-            } finally {
-                if (btn.innerText === "[ PROCESSING_DATA_STREAMS... ]") btn.innerText = "✨ AUTO-ORGANIZE (AI)";
-                btn.style.pointerEvents = 'auto';
-            }
-        };
-
         // Add a brand new Group
         document.getElementById('addNewGroupBtn').onclick = (e) => { 
             e.stopPropagation(); playSound('click'); 
