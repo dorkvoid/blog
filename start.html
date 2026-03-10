@@ -21,10 +21,10 @@
 
         img { image-rendering: pixelated; }
 
-        a, button, .suggestion-item, #drawer-tab, select, .handle, .toggle-btn, .link-card, .link-card *, .clear-btn {
+        a, button, .suggestion-item, #drawer-tab, select, .handle, .toggle-btn, .link-card, .link-card *, .clear-btn, .enter-btn {
             cursor: url('images/link-select.png'), pointer !important;
         }
-        a:active, button:active, .suggestion-item:active, #drawer-tab:active, select:active, .link-card:active, .link-card:active *, .clear-btn:active {
+        a:active, button:active, .suggestion-item:active, #drawer-tab:active, select:active, .link-card:active, .link-card:active *, .clear-btn:active, .enter-btn:active {
             cursor: url('images/link-select-click.png'), pointer !important;
         }
 
@@ -106,7 +106,7 @@
             margin: 0 auto;
         }
         
-        .search-wrapper.has-text { max-width: 718px; }
+        .search-wrapper.has-text { max-width: 786px; }
 
         .search-wrapper::before {
             content: '>'; position: absolute; left: 24px; top: 50%; transform: translateY(-50%);
@@ -147,13 +147,12 @@
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.15), inset 0 0 15px rgba(255,255,255,0.05); 
         }
 
-        /* --- THE DETACHED "X" BOX --- */
-        .clear-btn {
+        /* --- THE DETACHED "ENTER" & "X" BOXES --- */
+        .clear-btn, .enter-btn {
             width: 0px; height: 60px; 
             flex-shrink: 0; 
             background: #000; 
             border: 2px solid transparent; 
-            color: #f00; 
             font-family: 'PixeloidSansBold', sans-serif; font-size: 22px; 
             display: flex; align-items: center; justify-content: center;
             opacity: 0; pointer-events: none; overflow: hidden;
@@ -164,12 +163,18 @@
             line-height: 1;
         }
         
-        .search-wrapper.has-text .clear-btn {
+        .clear-btn { color: #f00; }
+        .enter-btn { color: #0f0; font-size: 26px; }
+
+        .search-wrapper.has-text .clear-btn,
+        .search-wrapper.has-text .enter-btn {
             width: 60px; 
             margin-left: 8px; 
-            border-color: #f00; 
             opacity: 1; pointer-events: auto;
         }
+        
+        .search-wrapper.has-text .clear-btn { border-color: #f00; }
+        .search-wrapper.has-text .enter-btn { border-color: #0f0; }
         
         .clear-btn:hover { 
             background: #f00 !important; 
@@ -178,8 +183,16 @@
             box-shadow: 0 0 15px rgba(255, 0, 0, 0.6);
         }
 
+        .enter-btn:hover { 
+            background: #0f0 !important; 
+            color: #000 !important; 
+            border-color: #0f0 !important;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.6);
+        }
+
         /* --- BRACKET KILLSWITCH --- */
         .clear-btn::before, .clear-btn::after, 
+        .enter-btn::before, .enter-btn::after, 
         .btn-del::before, .btn-del::after, 
         #save-weather-btn::before, #save-weather-btn::after,
         #export-btn::before, #export-btn::after,
@@ -285,18 +298,18 @@
         #shortcut-badge.google { border-color: #00ff00; color: #00ff00; box-shadow: 0 0 10px rgba(0,255,0,0.2); }
         #shortcut-badge.reddit { border-color: #ff8800; color: #ff8800; box-shadow: 0 0 10px rgba(255,136,0,0.2); }
 
-        /* --- SETTINGS DRAWER --- */
+        /* --- SETTINGS DRAWER (DOM) --- */
         #settings-drawer {
-            position: fixed; top: 0; right: -350px; width: 350px; height: 100vh;
-            background: #000; border-left: 2px solid #333; z-index: 100;
-            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: fixed; top: 0; left: -350px; width: 350px; height: 100vh;
+            background: #000; border-right: 2px solid #333; z-index: 100;
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             color: white; font-family: 'PixeloidSans', sans-serif; display: flex; flex-direction: column;
         }
-        #settings-drawer.open { right: 0; }
+        #settings-drawer.open { left: 0; }
         
         #drawer-tab {
-            position: absolute; left: -52px; bottom: 40px; width: 50px; height: 50px; 
-            background: #000; border: 2px solid #333; border-right: none;
+            position: absolute; right: -50px; top: 24px; width: 50px; height: 50px; 
+            background: #000; border: 2px solid #333; border-left: none;
             display: flex; align-items: center; justify-content: center;
         }
         #drawer-tab img { width: 36px; height: 36px; pointer-events: none; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1); }
@@ -320,7 +333,7 @@
         .handle { padding: 0 4px; color: #333; font-size: 16px; line-height: 1; }
         .manager-input { background: black; border: 1px solid #333; color: #ccc; padding: 0 8px; margin: 0; height: 26px; line-height: 24px; box-sizing: border-box; font-family: 'PixeloidSans', sans-serif; font-size: 12px; outline: none; flex-grow: 1; }
         .manager-input.edit-name { flex-grow: 0; width: 64px; }
-        .manager-input.edit-color { flex-grow: 0; width: 36px; padding: 0; cursor: pointer; border: 1px solid #333; }
+        .manager-input.edit-color { flex-grow: 0; width: 36px; padding: 0; border: 1px solid #333; }
         .manager-input.edit-color::-webkit-color-swatch-wrapper { padding: 0; }
         .manager-input.edit-color::-webkit-color-swatch { border: none; }
         
@@ -346,7 +359,6 @@
             position: relative; 
             border: 2px solid #333; 
             box-sizing: border-box; 
-            cursor: pointer;
             transition: 0.2s;
         }
         .toggle-btn::after { 
@@ -375,7 +387,6 @@
             width: 100%; 
             outline: none; 
             font-size: 12px; 
-            cursor: pointer;
             transition: 0.2s;
         }
         select:hover, select:focus { border-color: #fff; color: #fff; }
@@ -385,66 +396,13 @@
         .weather-module { display: flex; align-items: center; gap: 10px; color: #666; }
         .weather-icon { width: 24px; height: 24px; image-rendering: pixelated; }
         #temp-val { color: #888; }
-
-        /* --- SECRET ROOT CONSOLE --- */
-        #root-console {
-            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: #020202; color: #0f0; z-index: 9999; padding: 40px; box-sizing: border-box;
-            font-family: 'Courier New', Courier, monospace; font-size: 14px;
-            text-shadow: 0 0 8px rgba(0, 255, 0, 0.6);
-            flex-direction: column; gap: 20px;
-            box-shadow: inset 0 0 150px rgba(0,255,0,0.15);
-        }
-        #root-console.active { display: flex; animation: crtTurnOn 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
-        
-        @keyframes crtTurnOn {
-            0% { transform: scale(1, 0.01); opacity: 0; }
-            40% { transform: scale(1, 0.01); opacity: 1; }
-            100% { transform: scale(1, 1); }
-        }
-
-        .root-header { font-size: 24px; font-weight: bold; border-bottom: 2px solid #0f0; padding-bottom: 10px; animation: rootBlink 2s infinite; letter-spacing: 4px; }
-        @keyframes rootBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
-        
-        #root-editor {
-            flex-grow: 1; background: rgba(0, 20, 0, 0.5); border: 1px solid #0f0; color: #0f0;
-            padding: 20px; font-family: inherit; font-size: 14px; resize: none; outline: none;
-            text-shadow: inherit; transition: 0.2s;
-        }
-        #root-editor::-webkit-scrollbar-thumb { background: #0f0; }
-        
-        .root-actions { display: flex; gap: 20px; flex-wrap: wrap; }
-        .root-btn {
-            background: #000; border: 1px solid #0f0; color: #0f0; padding: 12px 24px; cursor: pointer;
-            font-family: inherit; font-size: 14px; font-weight: bold; text-shadow: inherit; transition: 0.2s;
-            text-transform: uppercase; letter-spacing: 2px;
-        }
-        .root-btn:hover { background: #0f0; color: #000; text-shadow: none; box-shadow: 0 0 20px rgba(0,255,0,0.6); }
-        
-        .root-scanline {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.2), rgba(0,0,0,0.2) 2px, transparent 2px, transparent 4px);
-            pointer-events: none; z-index: 10;
-        }
     </style>
 </head>
 <body>
 
     <div id="boss-screen">C:\&gt; </div>
 
-    <!-- ROOT CONSOLE OVERLAY -->
-    <div id="root-console">
-        <div class="root-header">SYS.OVERRIDE // RAW DATA ACCESS</div>
-        <div style="color: #0a0;">// WARNING: Direct modification of system JSON may cause corruption.</div>
-        <textarea id="root-editor" spellcheck="false"></textarea>
-        <div class="root-actions">
-            <button id="root-save" class="root-btn" onmouseenter="playSound('hover')">[ COMPILE_AND_REBOOT ]</button>
-            <button id="root-nuke" class="root-btn" onmouseenter="playSound('hover')">[ FACTORY_RESET ]</button>
-            <button id="root-close" class="root-btn" onmouseenter="playSound('hover')" style="margin-left: auto;">[ EXIT_TERMINAL ]</button>
-        </div>
-        <div class="root-scanline"></div>
-    </div>
-
+    <!-- DOM SETTINGS DRAWER -->
     <div id="settings-drawer">
         <div id="drawer-tab">
             <img src="images/gear.png" id="gear-icon" alt="Settings">
@@ -526,7 +484,8 @@
                 <div id="shortcut-badge"></div>
                 <div id="suggestions-box"></div>
             </div>
-            <button id="clear-search" class="clear-btn">X</button>
+            <button id="enter-search" class="enter-btn" title="Execute Command">↵</button>
+            <button id="clear-search" class="clear-btn" title="Clear Search">X</button>
         </div>
     </div>
 
@@ -551,7 +510,6 @@
         };
         
         function sanitizeConfig(cfg) {
-            // Migrates old flat links into the new Group structure automatically
             if (cfg.links && !cfg.linkGroups) {
                 cfg.linkGroups = [{ groupName: "GENERAL", color: "#ffffff", links: cfg.links }];
                 delete cfg.links;
@@ -732,14 +690,12 @@
         }
 
         function attachManagerEvents() {
-            // Sortable Magic: Groups
             if (typeof Sortable !== 'undefined') {
                 Sortable.create(document.getElementById('manager-list'), {
                     handle: '.group-handle', animation: 150,
                     onEnd: () => { syncDataFromManager(); renderMainUI(); renderManager(); }
                 });
                 
-                // Sortable Magic: Links inside groups (Allows dragging between groups!)
                 document.querySelectorAll('.manager-link-list').forEach(list => {
                     Sortable.create(list, {
                         group: 'shared-links', handle: '.link-handle', animation: 150,
@@ -748,7 +704,6 @@
                 });
             }
 
-            // Save on input change (Without collapsing the menu or dropping focus)
             document.querySelectorAll('.manager-input').forEach(input => {
                 input.addEventListener('input', () => {
                     syncDataFromManager(); 
@@ -756,7 +711,6 @@
                 });
             });
 
-            // Delete Link
             document.querySelectorAll('.del-link').forEach(btn => {
                 btn.onclick = (e) => {
                     e.stopPropagation(); playSound('click');
@@ -766,7 +720,6 @@
                 };
             });
 
-            // Delete Entire Group
             document.querySelectorAll('.del-group').forEach(btn => {
                 btn.onclick = (e) => {
                     e.stopPropagation(); playSound('click');
@@ -776,7 +729,6 @@
                 };
             });
 
-            // Add Link to specific group
             document.querySelectorAll('.add-link-btn').forEach(btn => {
                 btn.onclick = (e) => {
                     e.stopPropagation(); playSound('click');
@@ -790,6 +742,7 @@
         // --- SEARCH BAR & LOGIC ---
         const searchInput = document.getElementById('web-search');
         const clearBtn = document.getElementById('clear-search');
+        const enterBtn = document.getElementById('enter-search');
         const searchWrapper = document.getElementById('search-wrapper');
         const suggestionsBox = document.getElementById('suggestions-box');
         let debounceTimer;
@@ -811,6 +764,17 @@
             searchWrapper.classList.remove('has-text'); 
             suggestionsBox.classList.remove('show');
             searchInput.focus();
+        };
+
+        enterBtn.onmousedown = (e) => {
+            e.preventDefault();
+            playSound('click');
+            let items = suggestionsBox.querySelectorAll('.suggestion-item');
+            if (currentFocus > -1 && items.length > 0 && suggestionsBox.classList.contains('show')) {
+                items[currentFocus].click();
+            } else {
+                executeSearch(searchInput.value); 
+            }
         };
 
         window.addEventListener('keydown', (e) => {
@@ -927,19 +891,6 @@
         function executeSearch(val) {
             if(!val || val.trim() === '') return;
             const lowerVal = val.toLowerCase();
-            
-            // --- SECRET ROOT OVERRIDE ---
-            if(lowerVal === '//root' || lowerVal === 'sudo') {
-                playSound('click');
-                document.getElementById('root-console').classList.add('active');
-                document.getElementById('root-editor').value = JSON.stringify(config, null, 4);
-                searchInput.value = '';
-                searchWrapper.classList.remove('has-text'); 
-                suggestionsBox.classList.remove('show');
-                searchInput.blur();
-                return;
-            }
-
             if(lowerVal.startsWith('yt ')) window.location.href = `https://youtube.com/results?search_query=${encodeURIComponent(val.substring(3))}`;
             else if(lowerVal.startsWith('g ')) window.location.href = `https://google.com/search?q=${encodeURIComponent(val.substring(2))}`;
             else if(lowerVal.startsWith('r/')) window.location.href = `https://reddit.com/${val}`;
@@ -979,7 +930,6 @@
         document.getElementById('toggle-military').onchange = (e) => { config.militaryTime = e.target.checked; saveConfig(); updateClock(); };
         document.getElementById('engine-select').onchange = (e) => { config.engine = e.target.value; saveConfig(); };
         
-        // Add a brand new Group
         document.getElementById('addNewGroupBtn').onclick = (e) => { 
             e.stopPropagation(); playSound('click'); 
             syncDataFromManager();
@@ -1026,55 +976,8 @@
         document.getElementById('drawer-tab').onclick = (e) => { e.stopPropagation(); playSound('click'); drawer.classList.toggle('open'); gearIcon.classList.toggle('gear-spin'); };
         
         window.onclick = (e) => { 
-            if (e.target !== searchInput && e.target !== clearBtn && !e.target.closest('#suggestions-box')) suggestionsBox.classList.remove('show');
+            if (e.target !== searchInput && e.target !== clearBtn && e.target !== enterBtn && !e.target.closest('#suggestions-box')) suggestionsBox.classList.remove('show');
             if (!drawer.contains(e.target) && !document.getElementById('drawer-tab').contains(e.target) && drawer.classList.contains('open')) { drawer.classList.remove('open'); gearIcon.classList.remove('gear-spin'); }
-        };
-
-        // --- ROOT CONSOLE LOGIC ---
-        document.getElementById('root-close').onclick = () => {
-            playSound('click');
-            document.getElementById('root-console').classList.remove('active');
-            searchInput.focus();
-        };
-
-        document.getElementById('root-save').onclick = () => {
-            try {
-                const newConfig = JSON.parse(document.getElementById('root-editor').value);
-                localStorage.setItem('startConfig', JSON.stringify(newConfig));
-                location.reload();
-            } catch (err) {
-                playSound('click');
-                const editor = document.getElementById('root-editor');
-                editor.style.borderColor = '#f00';
-                editor.style.boxShadow = 'inset 0 0 30px rgba(255,0,0,0.4)';
-                setTimeout(() => {
-                    editor.style.borderColor = '#0f0';
-                    editor.style.boxShadow = 'none';
-                }, 800);
-            }
-        };
-
-        let nukeArmed = false;
-        const nukeBtn = document.getElementById('root-nuke');
-        nukeBtn.onclick = () => {
-            playSound('click');
-            if(!nukeArmed) {
-                nukeArmed = true;
-                nukeBtn.innerText = "[ CONFIRM_NUKE_PROTOCOL ]";
-                nukeBtn.style.color = "#000";
-                nukeBtn.style.background = "#f00";
-                nukeBtn.style.borderColor = "#f00";
-                setTimeout(() => {
-                    nukeArmed = false;
-                    nukeBtn.innerText = "[ FACTORY_RESET ]";
-                    nukeBtn.style.color = "#0f0";
-                    nukeBtn.style.background = "#000";
-                    nukeBtn.style.borderColor = "#0f0";
-                }, 3000); // 3 seconds to confirm
-            } else {
-                localStorage.removeItem('startConfig');
-                location.reload();
-            }
         };
 
         // --- CLOCK & CORE LOOP ---
