@@ -18,6 +18,12 @@
             font-smooth: never;
         }
         *:active { cursor: url('images/cursor-click.png'), auto !important; }
+        
+        /* Fallback for system cursors */
+        body.sys-cursor * { cursor: auto !important; }
+        body.sys-cursor a, body.sys-cursor button, body.sys-cursor .suggestion-item, body.sys-cursor #drawer-tab, body.sys-cursor select, body.sys-cursor .handle, body.sys-cursor .toggle-btn, body.sys-cursor .link-card, body.sys-cursor .link-card *, body.sys-cursor .clear-btn, body.sys-cursor .go-btn, body.sys-cursor #os-label {
+            cursor: pointer !important;
+        }
 
         img { image-rendering: pixelated; }
 
@@ -44,6 +50,7 @@
             box-sizing: border-box;
         }
         body.low-power { filter: brightness(0.7); }
+        body.no-scanlines::after { display: none !important; }
         
         body::after {
             content: '';
@@ -53,6 +60,15 @@
             background-size: 100% 4px;
             pointer-events: none; 
             z-index: 999;
+        }
+        
+        /* CRT Flicker Effects */
+        body.flicker-low { animation: screenFlicker 0.4s infinite; }
+        body.flicker-high { animation: screenFlicker 0.12s infinite; }
+        @keyframes screenFlicker {
+            0% { opacity: 0.98; }
+            50% { opacity: 0.94; }
+            100% { opacity: 1; }
         }
 
         /* --- BOSS MODE --- */
@@ -165,7 +181,7 @@
         }
         
         .clear-btn { color: #f00; font-size: 22px; }
-        .go-btn { color: var(--phosphor, #0f0); font-size: 18px; }
+        .go-btn { color: var(--phosphor, #ffb000); font-size: 18px; }
 
         .search-wrapper.has-text .clear-btn,
         .search-wrapper.has-text .go-btn {
@@ -175,15 +191,15 @@
         }
         
         .search-wrapper.has-text .clear-btn { border-color: #f00; }
-        .search-wrapper.has-text .go-btn { border-color: var(--phosphor, #0f0); }
+        .search-wrapper.has-text .go-btn { border-color: var(--phosphor, #ffb000); }
         
         .clear-btn:hover { 
             background: #f00 !important; color: #000 !important; 
             border-color: #f00 !important; box-shadow: 0 0 15px rgba(255, 0, 0, 0.6);
         }
         .go-btn:hover { 
-            background: var(--phosphor, #0f0) !important; color: #000 !important; 
-            border-color: var(--phosphor, #0f0) !important; box-shadow: 0 0 15px var(--phosphor, #0f0);
+            background: var(--phosphor, #ffb000) !important; color: #000 !important; 
+            border-color: var(--phosphor, #ffb000) !important; box-shadow: 0 0 15px var(--phosphor, #ffb000);
             text-shadow: none;
         }
 
@@ -243,7 +259,15 @@
             gap: 20px; 
             width: 100%; max-width: 1000px; margin-top: 40px; z-index: 2;
             overflow-y: auto; padding-bottom: 80px;
+            
+            /* Nuke the scrollbar visually but keep scrolling functional */
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE/Edge */
         }
+        .dashboard::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
+
         .group-container { 
             border: 2px solid #222;
             background: #050505;
@@ -268,7 +292,8 @@
             background: transparent; border: none; padding: 0; 
             text-decoration: none; text-align: left;
             transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
-            display: flex; align-items: center; justify-content: flex-start;
+            display: flex; align-items: flex-start; justify-content: flex-start;
+            width: 100%;
         }
         .link-card::before {
             content: '>';
@@ -277,11 +302,16 @@
             margin-right: 8px;
             font-size: 12px;
             transition: color 0.2s;
+            margin-top: 1px;
         }
         .link-card:hover { border: none; background: transparent; transform: translateX(6px); box-shadow: none; }
         .link-card:hover::before { color: var(--group-color, #fff); }
-        .link-label { color: #888; font-family: 'PixeloidSansBold', sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; transition: color 0.2s; text-align: left;}
-        .link-card:hover .link-label { color: #fff; text-shadow: 0 0 8px var(--group-color, rgba(255,255,255,0.4)); }
+        .link-label { 
+            color: #888; font-family: 'PixeloidSansBold', sans-serif; font-size: 12px; 
+            text-transform: uppercase; letter-spacing: 2px; transition: color 0.2s; text-align: left;
+            white-space: normal; word-break: break-word; 
+        }
+        .link-card:hover .link-label { color: var(--group-color, #fff); text-shadow: 0 0 8px var(--group-color, rgba(255,255,255,0.4)); }
 
         /* --- SHORTCUT BADGE --- */
         #shortcut-badge {
@@ -305,7 +335,7 @@
         #settings-drawer.open { right: 0; }
         
         #drawer-tab {
-            position: absolute; left: -52px; bottom: 24px; width: 50px; height: 50px; 
+            position: absolute; left: -52px; bottom: 40px; width: 50px; height: 50px; 
             background: #000; border: 2px solid #333; border-right: none;
             display: flex; align-items: center; justify-content: center;
         }
@@ -356,6 +386,7 @@
             position: relative; 
             border: 2px solid #333; 
             box-sizing: border-box; 
+            cursor: pointer;
             transition: 0.2s;
         }
         .toggle-btn::after { 
@@ -384,22 +415,275 @@
             width: 100%; 
             outline: none; 
             font-size: 12px; 
+            cursor: pointer;
             transition: 0.2s;
         }
         select:hover, select:focus { border-color: #fff; color: #fff; }
 
         /* --- MINIMAL STATUS BAR --- */
         .status-bar { position: fixed; bottom: 24px; left: 32px; font-family: 'PixeloidSansBold', sans-serif; font-size: 14px; line-height: 14px; color: #444; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; gap: 16px; z-index: 5; }
+        #os-label { cursor: pointer; transition: color 0.2s, text-shadow 0.2s; pointer-events: auto; }
+        #os-label:hover { color: var(--phosphor, #ffb000); text-shadow: 0 0 10px var(--phosphor, #ffb000); }
         .weather-module { display: flex; align-items: center; gap: 10px; color: #666; }
         .weather-icon { width: 24px; height: 24px; image-rendering: pixelated; }
         #temp-val { color: #888; }
+
+        /* --- SECRET ROOT CONSOLE (CLEAN TERMINAL THEME) --- */
+        :root { --phosphor: #ffb000; }
+        #root-console {
+            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #000; color: var(--phosphor); z-index: 9999; box-sizing: border-box;
+            font-family: 'Courier New', Courier, monospace; font-size: 14px;
+            overflow: hidden; text-shadow: 0 0 4px rgba(255, 176, 0, 0.4);
+        }
+        #root-console.active { display: flex; animation: terminalBoot 0.3s ease-out forwards; }
+        #root-console.closing { display: flex; animation: tvShutOff 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards; pointer-events: none; }
+        
+        #root-console-inner {
+            width: 100%; max-width: 960px; margin: 0 auto; padding: 50px 20px;
+            display: flex; flex-direction: column; gap: 20px; height: 100%;
+            position: relative; z-index: 2; box-sizing: border-box;
+        }
+
+        @keyframes terminalBoot {
+            0% { filter: brightness(3) contrast(2); opacity: 0; }
+            100% { filter: brightness(1) contrast(1); opacity: 1; }
+        }
+        @keyframes tvShutOff {
+            0% { transform: scale(1, 1); filter: brightness(1) contrast(1); opacity: 1; }
+            40% { transform: scale(1, 0.005); filter: brightness(3) contrast(2); opacity: 1; }
+            70% { transform: scale(0.005, 0.005); filter: brightness(5) contrast(3); opacity: 1; box-shadow: 0 0 50px var(--phosphor); }
+            100% { transform: scale(0, 0); opacity: 0; }
+        }
+
+        .root-header-container { z-index: 2; display: flex; flex-direction: column; gap: 8px; border-bottom: 1px dashed var(--phosphor); padding-bottom: 16px; margin-bottom: 10px; }
+        .root-header { 
+            font-weight: normal; font-size: 24px; margin: 0; letter-spacing: 2px; line-height: 1.2;
+        }
+        .root-sub { font-size: 16px; font-weight: normal; display: flex; align-items: center; opacity: 0.8; }
+        .cursor-blink { display: inline-block; width: 10px; height: 18px; background: var(--phosphor); margin-left: 6px; animation: blink 1s step-end infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        
+        .root-tools { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 10px; z-index: 2; }
+        .tool-btn { font-size: 14px; padding: 6px 12px; }
+
+        /* Terminal Grid Settings */
+        .root-settings-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; 
+            flex-grow: 1; align-content: start; margin-top: 10px; z-index: 2;
+        }
+        .root-setting-item { 
+            display: flex; flex-direction: column; gap: 8px; 
+            padding: 0 0 0 16px; border-left: 2px solid var(--phosphor);
+        }
+        .root-label { color: var(--phosphor); font-weight: normal; font-size: 14px; letter-spacing: 1px; display: flex; align-items: center;}
+        
+        .root-info {
+            display: inline-flex; margin-left: 10px; color: #000; background: var(--phosphor); 
+            padding: 0 6px; cursor: help; position: relative; font-weight: bold; font-size: 12px;
+        }
+        .root-info-text {
+            visibility: hidden; position: absolute; bottom: 130%; left: 0; width: 220px;
+            background: #000; border: 1px solid var(--phosphor); color: var(--phosphor);
+            padding: 10px; font-size: 12px; font-weight: normal; z-index: 10; opacity: 0;
+            transition: opacity 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.8); line-height: 1.4;
+        }
+        .root-info:hover .root-info-text { visibility: visible; opacity: 1; }
+
+        .root-input {
+            background: transparent; border: 1px dashed var(--phosphor); color: var(--phosphor);
+            padding: 10px 14px; font-family: inherit; font-size: 14px; outline: none; transition: 0.2s; width: 100%; box-sizing: border-box;
+        }
+        .root-input:focus { background: rgba(255, 176, 0, 0.1); border-style: solid; text-shadow: none; }
+        select.root-input { cursor: pointer; }
+        
+        .root-actions { display: flex; gap: 16px; flex-wrap: wrap; margin-top: auto; z-index: 2; align-items: center; border-top: 1px dashed var(--phosphor); padding-top: 20px;}
+        .root-btn {
+            background: transparent; border: 1px solid var(--phosphor); color: var(--phosphor); padding: 10px 20px; cursor: pointer;
+            font-family: inherit; font-size: 14px; font-weight: normal; text-shadow: inherit; transition: 0.1s;
+            text-transform: uppercase; letter-spacing: 2px;
+        }
+        .root-btn:hover { background: var(--phosphor); color: #000; box-shadow: 0 0 10px var(--phosphor); text-shadow: none; }
+        .root-btn:active { transform: scale(0.98); }
+        
+        .root-scanline {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.3), rgba(0,0,0,0.3) 2px, transparent 2px, transparent 4px);
+            pointer-events: none; z-index: 10; opacity: 0.8;
+        }
+
+        /* Clean ASCII Mascot */
+        .mascot-container {
+            position: absolute; bottom: 100px; right: 20px; z-index: 5;
+            display: flex; flex-direction: column; align-items: flex-end;
+        }
+        .mascot-label {
+            font-family: inherit; font-size: 12px; color: var(--phosphor); 
+            margin-bottom: 8px; letter-spacing: 1px; opacity: 0.8;
+        }
+        .ascii-mascot {
+            color: var(--phosphor); font-family: inherit; font-size: 14px;
+            pointer-events: none; white-space: pre; line-height: 1.2; margin: 0;
+            text-align: left; opacity: 0.9;
+        }
+        .cat-eyes { display: inline-block; animation: catBlink 4s infinite; transform-origin: center; }
+        @keyframes catBlink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(0.1); } }
+
+        /* --- AI CO-PROCESSOR MODAL --- */
+        #ai-modal {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 90%; max-width: 700px; background: rgba(5, 5, 5, 0.95); border: 2px solid #0ff;
+            color: #0ff; font-family: 'PixeloidSans', sans-serif; z-index: 2000;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.15), inset 0 0 20px rgba(0, 255, 255, 0.05); 
+            padding: 30px; box-sizing: border-box; backdrop-filter: blur(5px);
+        }
+        #ai-modal.active { display: flex; flex-direction: column; animation: modalBoot 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
+        @keyframes modalBoot { 0% { transform: translate(-50%, -45%); opacity: 0; filter: blur(4px); } 100% { transform: translate(-50%, -50%); opacity: 1; filter: blur(0); } }
+        
+        .ai-header { 
+            position: relative; font-family: 'PixeloidSansBold', sans-serif; font-size: 16px; border-bottom: 1px dashed #0ff; 
+            padding-bottom: 16px; margin-bottom: 20px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+            letter-spacing: 2px; text-shadow: 0 0 8px rgba(0, 255, 255, 0.4);
+            padding-right: 30px;
+        }
+        .ai-close { 
+            position: absolute; top: 15px; right: 15px; 
+            background: transparent !important; border: none !important; box-shadow: none !important; 
+            color: #0ff; font-family: 'PixeloidSansBold', sans-serif; font-size: 20px; cursor: pointer; transition: 0.2s; padding: 10px; line-height: 1; z-index: 10;
+        }
+        .ai-close:hover { color: #fff !important; text-shadow: 0 0 10px #fff !important; transform: scale(1.2); background: transparent !important; }
+        
+        .ai-content { font-size: 14px; line-height: 1.6; white-space: pre-wrap; overflow-y: auto; max-height: 50vh; padding-right: 10px; }
+        .ai-loading::after { content: '_'; animation: blink 1s infinite; }
+        .ai-content::-webkit-scrollbar-thumb { background: #0ff; }
+        .ai-content a { color: #fff; text-decoration: underline; text-decoration-color: #0ff; }
+
+        .ai-btn {
+            background: #000; border: 1px solid #0ff; color: #0ff; padding: 8px 16px; cursor: pointer;
+            font-family: 'PixeloidSansBold', sans-serif; font-size: 10px; transition: 0.2s;
+            text-transform: uppercase; letter-spacing: 2px; margin-top: 15px; display: inline-block;
+        }
+        .ai-btn:hover { background: #0ff; color: #000; box-shadow: 0 0 10px #0ff; }
     </style>
 </head>
 <body>
 
     <div id="boss-screen">C:\&gt; </div>
 
-    <!-- DOM SETTINGS DRAWER -->
+    <!-- AI MODAL -->
+    <div id="ai-modal">
+        <button class="ai-close" id="ai-close-btn">X</button>
+        <div class="ai-header">
+            <span>NEURAL_COPROCESSOR // ON-LINE</span>
+        </div>
+        <div class="ai-content" id="ai-output"></div>
+    </div>
+
+    <!-- SECRET ROOT CONSOLE (CLEAN TERMINAL THEME) -->
+    <div id="root-console">
+        <div id="root-console-inner">
+            <div class="root-header-container">
+                <h1 class="root-header">MIKE_OS v1.09 // SYSTEM_OVERRIDE</h1>
+                <div class="root-sub">ROOT_ACCESS_GRANTED<span class="cursor-blink"></span></div>
+            </div>
+            
+            <div class="root-tools">
+                <button class="root-btn tool-btn" id="tool-clearcache" onmouseenter="playSound('hover')">[ FLUSH_DNS/CACHE ]</button>
+                <button class="root-btn tool-btn" id="tool-scanlines" onmouseenter="playSound('hover')">[ TOGGLE_CRT_SCANLINES ]</button>
+                <button class="root-btn tool-btn" id="tool-color" onmouseenter="playSound('hover')">[ CYCLE_PHOSPHOR_THEME ]</button>
+            </div>
+
+            <div class="root-settings-grid">
+                <div class="root-setting-item">
+                    <span class="root-label">> SYS.GREETING_OVERRIDE
+                        <span class="root-info">?
+                            <span class="root-info-text">Replaces the default clock greeting (e.g. GOOD_MORNING) with whatever you type here.</span>
+                        </span>
+                    </span>
+                    <input type="text" id="root-greeting" class="root-input" placeholder="e.g. WAKE_UP_NEO...">
+                </div>
+                <div class="root-setting-item">
+                    <span class="root-label">> PHOSPHOR_HEX_CODE
+                        <span class="root-info">?
+                            <span class="root-info-text">Accepts any valid #hex color code to change the global accent color for this terminal.</span>
+                        </span>
+                    </span>
+                    <input type="text" id="root-hex" class="root-input" placeholder="#ffb000">
+                </div>
+                <div class="root-setting-item">
+                    <span class="root-label">> CRT_FLICKER_INTENSITY
+                        <span class="root-info">?
+                            <span class="root-info-text">Simulates a dying CRT monitor. High flicker might cause eye strain, use with caution.</span>
+                        </span>
+                    </span>
+                    <select id="root-flicker" class="root-input">
+                        <option value="none">DISABLED (Stable)</option>
+                        <option value="low">LOW (Subtle Pulse)</option>
+                        <option value="high">HIGH (Aggressive Flicker)</option>
+                    </select>
+                </div>
+                <div class="root-setting-item">
+                    <span class="root-label">> CUSTOM_CURSOR_INJECTION
+                        <span class="root-info">?
+                            <span class="root-info-text">Overrides the retro pixel hand cursor and restores your normal system pointer.</span>
+                        </span>
+                    </span>
+                    <select id="root-cursor" class="root-input">
+                        <option value="retro">RETRO PIXEL (Default)</option>
+                        <option value="system">SYSTEM DEFAULT</option>
+                    </select>
+                </div>
+                <div class="root-setting-item">
+                    <span class="root-label">> SYS.WALLPAPER_INJECTION
+                        <span class="root-info">?
+                            <span class="root-info-text">Paste a direct image or .gif URL here to set a custom background behind the scanlines.</span>
+                        </span>
+                    </span>
+                    <input type="text" id="root-wallpaper" class="root-input" placeholder="https://... (Leave blank for black)">
+                </div>
+                <div class="root-setting-item">
+                    <span class="root-label">> MASTER_AUDIO_SYSTEM
+                        <span class="root-info">?
+                            <span class="root-info-text">Hard killswitch for all UI sound effects (typing, clicking, hovering).</span>
+                        </span>
+                    </span>
+                    <select id="root-audio" class="root-input">
+                        <option value="on">ENABLED (Default)</option>
+                        <option value="muted">MUTED (Stealth Mode)</option>
+                    </select>
+                </div>
+                <div class="root-setting-item">
+                    <span class="root-label">> API_KEY_OVERRIDE
+                        <span class="root-info">?
+                            <span class="root-info-text">Paste your Google Gemini API key here if you are running this OS locally on your machine.</span>
+                        </span>
+                    </span>
+                    <input type="password" id="root-apikey" class="root-input" placeholder="AIzaSy...">
+                </div>
+            </div>
+
+            <div class="root-actions">
+                <button id="root-save" class="root-btn" onmouseenter="playSound('hover')">[ COMPILE_AND_REBOOT ]</button>
+                <button id="root-nuke" class="root-btn" onmouseenter="playSound('hover')" style="border-color: #f00; color: #f00;">[ FACTORY_RESET ]</button>
+                <button id="root-close" class="root-btn" onmouseenter="playSound('hover')" style="margin-left: auto;">[ EXIT_TERMINAL ]</button>
+            </div>
+            
+            <div class="mascot-container">
+                <div class="mascot-label">DAEMON_PROCESS_ACTIVE</div>
+                <pre class="ascii-mascot">
+    /\_/\
+   (<span class="cat-eyes"> o.o </span>)
+    > ^ <
+   /  _  \
+  / /| |\ \
+ ( ( | | ) )
+  \__|_|__/
+                </pre>
+            </div>
+        </div>
+        <div class="root-scanline"></div>
+    </div>
+
     <div id="settings-drawer">
         <div id="drawer-tab">
             <img src="images/gear.png" id="gear-icon" alt="Settings">
@@ -417,6 +701,9 @@
                 <div class="cheat-sheet">
                     <b>yt [query]</b> -> YouTube<br>
                     <b>g  [query]</b> -> Google<br>
+                    <b>ai [query]</b> -> Neural Coprocessor<br>
+                    <b>scan</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-> ✨ Visual Scanner<br>
+                    <b>draw [img]</b>&nbsp;-> ✨ AI Wallpaper<br>
                     <b>r/[sub]</b> &nbsp;&nbsp;&nbsp;-> Subreddit<br>
                     <b>Default</b> &nbsp;&nbsp;-> Selected Engine
                 </div>
@@ -457,6 +744,7 @@
             <div class="setting-section">
                 <span class="section-label">Link Manager</span>
                 <div id="manager-list"></div>
+                <button class="btn-add" id="ai-organize-btn" style="margin-bottom: 8px; border-color: #0ff; color: #0ff; text-shadow: 0 0 5px rgba(0,255,255,0.4);">✨ AUTO-ORGANIZE (AI)</button>
                 <button class="btn-add" id="addNewGroupBtn" style="margin-bottom: 24px;">+ ADD GROUP</button>
             </div>
 
@@ -481,15 +769,15 @@
                 <div id="shortcut-badge"></div>
                 <div id="suggestions-box"></div>
             </div>
-            <button id="submit-search" class="go-btn" title="Execute Command">GO</button>
-            <button id="clear-search" class="clear-btn" title="Clear Search">X</button>
+            <button id="submit-search" class="go-btn">GO</button>
+            <button id="clear-search" class="clear-btn">X</button>
         </div>
     </div>
 
     <div id="dashboard" class="dashboard"></div>
 
     <div class="status-bar" id="status-bar">
-        <span>MIKEVOID_OS</span>
+        <span id="os-label" title="Access System Root">MIKEVOID_OS</span>
         <span>//</span>
         <div class="weather-module" id="weather-display">
             <img src="images/sunny.png" class="weather-icon" id="weather-img">
@@ -501,6 +789,8 @@
         // --- CORE CONFIGURATION & MIGRATION ---
         const DEFAULT_CONFIG = { 
             showStatus: true, lowPower: false, newTab: true, militaryTime: false, weatherLoc: "", engine: "duckduckgo", 
+            scanlines: true, phosphorColor: "#ffb000", customGreeting: "", flicker: "none", cursor: "retro",
+            wallpaper: "", muteAudio: false, geminiKey: "",
             linkGroups: [
                 { groupName: "MAIN", color: "#ffffff", links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}] }
             ] 
@@ -534,6 +824,8 @@
         let lastMouseIdx = 0; 
 
         const playSound = (type) => {
+            if (config.muteAudio) return; // Hard killswitch for audio
+
             let sound, vol = 0.4;
             if (type === 'hover') { sound = audioAssets.hover; } 
             else if (type === 'click') { sound = audioAssets.click; } 
@@ -546,6 +838,185 @@
 
         window.addEventListener('mousedown', () => playSound('mouseDown'));
         window.addEventListener('mouseup', () => playSound('mouseUp'));
+
+        // --- GEMINI API INTEGRATION ---
+        const envApiKey = ""; // Injected by execution environment
+
+        async function fetchWithRetry(url, options, retries = 5) {
+            const delays = [1000, 2000, 4000, 8000, 16000];
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    return await response.json();
+                } catch (err) {
+                    if (i === retries - 1) throw err;
+                    await new Promise(r => setTimeout(r, delays[i]));
+                }
+            }
+        }
+
+        async function generateAIResponse(prompt) {
+            const activeKey = envApiKey || config.geminiKey;
+            if (!activeKey || activeKey.trim() === "") throw new Error("NO_API_KEY");
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${activeKey.trim()}`;
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: "You are an integrated AI co-processor inside a retro terminal OS called MIKEVOID_OS. Keep responses concise, helpful, and maintain a cool, slightly robotic/hacker aesthetic. Do not use markdown bolding." }] }
+            };
+            const result = await fetchWithRetry(url, { method: 'POST', headers:{'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+            return result.candidates?.[0]?.content?.parts?.[0]?.text || "ERROR: CORE_DUMP_FAILED";
+        }
+
+        function openAIModal(query) {
+            const modal = document.getElementById('ai-modal');
+            const output = document.getElementById('ai-output');
+            modal.classList.add('active');
+            
+            output.innerHTML = `<span style="color:#005555;">> ${query}</span><br><br><span class="ai-loading">PROCESSING_QUERY</span>`;
+            generateAIResponse(query).then(res => {
+                output.innerHTML = `<span style="color:#005555;">> ${query}</span><br><br>`;
+                typeWriter(res, output, true);
+            }).catch(err => {
+                output.innerHTML = `<span style="color:#005555;">> ${query}</span><br><br><span style="color:#f00; text-shadow: 0 0 5px #f00;">[ERR]: NEURAL_LINK_SEVERED<br>Check your API key or connection.</span>`;
+            });
+        }
+
+        function openAIImageModal(base64, mimeType) {
+            const modal = document.getElementById('ai-modal');
+            const output = document.getElementById('ai-output');
+            modal.classList.add('active');
+            
+            output.innerHTML = `<span style="color:#005555;">> EXECUTE: TACTICAL_VISUAL_SCAN</span><br><br><span class="ai-loading">UPLOADING_VISUAL_DATA</span>`;
+            
+            const activeKey = envApiKey || config.geminiKey;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${activeKey.trim()}`;
+            const payload = {
+                contents: [{
+                    parts: [
+                        { text: "Analyze this image. Provide a tactical, retro-cyberpunk AI system scan report. Point out key features using military/hacker terminology. Be concise and highly analytical." },
+                        { inlineData: { mimeType: mimeType, data: base64 } }
+                    ]
+                }],
+                systemInstruction: { parts: [{ text: "You are an integrated AI scanner inside a retro terminal OS. Respond with a cool, slightly robotic/hacker aesthetic. No markdown bolding." }] }
+            };
+            
+            fetchWithRetry(url, { method: 'POST', headers:{'Content-Type': 'application/json'}, body: JSON.stringify(payload) })
+            .then(res => {
+                const text = res.candidates?.[0]?.content?.parts?.[0]?.text || "ERROR: NO_DATA";
+                output.innerHTML = `<span style="color:#005555;">> VISUAL_SCAN_COMPLETE</span><br><br><img src="data:${mimeType};base64,${base64}" style="max-width:300px; border:1px solid #0ff; margin-bottom:15px; display:block;"><br>`;
+                typeWriter(text, output, true);
+            }).catch(err => {
+                output.innerHTML = `<span style="color:#005555;">> EXECUTE: VISUAL_SCAN</span><br><br><span style="color:#f00; text-shadow: 0 0 5px #f00;">[ERR]: UPLINK_FAILED</span>`;
+            });
+        }
+
+        async function generateWallpaper(prompt) {
+            const modal = document.getElementById('ai-modal');
+            const output = document.getElementById('ai-output');
+            modal.classList.add('active');
+            
+            output.innerHTML = `<span style="color:#005555;">> EXECUTE: SYNTHESIZE_WALLPAPER</span><br><br><span class="ai-loading">GENERATING_VISUAL_DATA</span>`;
+            
+            try {
+                const activeKey = envApiKey || config.geminiKey;
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${activeKey.trim()}`;
+                const payload = {
+                    instances: { prompt: "Retro 90s cyberpunk pixel art aesthetic, dark terminal OS background, " + prompt },
+                    parameters: { sampleCount: 1 }
+                };
+                
+                const result = await fetchWithRetry(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                
+                if (result.predictions && result.predictions[0]) {
+                    const base64 = result.predictions[0].bytesBase64Encoded;
+                    const dataUrl = `data:image/png;base64,${base64}`;
+                    document.body.style.backgroundImage = `url('${dataUrl}')`;
+                    document.body.style.backgroundSize = 'cover';
+                    document.body.style.backgroundPosition = 'center';
+                    
+                    output.innerHTML = `<span style="color:#005555;">> VISUALS_SYNTHESIZED</span><br><br>Background successfully overwritten with query: [${prompt}]`;
+                } else {
+                    throw new Error("No image data");
+                }
+            } catch(err) {
+                output.innerHTML = `<span style="color:#005555;">> EXECUTE: SYNTHESIZE_WALLPAPER</span><br><br><span style="color:#f00; text-shadow: 0 0 5px #f00;">[ERR]: SYNTHESIS_FAILED</span>`;
+            }
+        }
+
+        async function playTTS(text, btnElement) {
+            btnElement.innerText = "✨ [ SYNTHESIZING_AUDIO... ]";
+            btnElement.style.pointerEvents = 'none';
+            try {
+                const activeKey = envApiKey || config.geminiKey;
+                const ttsUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${activeKey.trim()}`;
+                const ttsPayload = {
+                    contents: [{ parts: [{ text: "Read this in a calculated, robotic voice: " + text.substring(0, 1000) }] }],
+                    generationConfig: {
+                        responseModalities: ["AUDIO"],
+                        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } }
+                    }
+                };
+                const result = await fetchWithRetry(ttsUrl, { method: 'POST', headers:{'Content-Type': 'application/json'}, body: JSON.stringify(ttsPayload) });
+                const audioPart = result.candidates[0].content.parts[0].inlineData;
+                const sampleRate = parseInt((audioPart.mimeType.match(/rate=(\d+)/) || [])[1]) || 24000;
+                
+                const blob = pcmToWav(audioPart.data, sampleRate);
+                const audio = new Audio(URL.createObjectURL(blob));
+                audio.play();
+                btnElement.innerText = "✨ [ AUDIO_LINK_ESTABLISHED ]";
+                audio.onended = () => { btnElement.innerText = "✨ [ REPLAY_AUDIO_TRANSMISSION ]"; btnElement.style.pointerEvents = 'auto'; };
+            } catch (err) {
+                btnElement.innerText = "[ AUDIO_FAIL ]";
+                setTimeout(() => { btnElement.innerText = "✨ [ PLAY_AUDIO_TRANSMISSION ]"; btnElement.style.pointerEvents = 'auto'; }, 2000);
+            }
+        }
+
+        function pcmToWav(base64, sampleRate) {
+            const binaryString = atob(base64);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
+            const buffer = new ArrayBuffer(44 + bytes.length);
+            const view = new DataView(buffer);
+            const writeStr = (offset, str) => { for (let i=0; i<str.length; i++) view.setUint8(offset + i, str.charCodeAt(i)); };
+            writeStr(0, 'RIFF'); view.setUint32(4, 36 + bytes.length, true); writeStr(8, 'WAVE'); writeStr(12, 'fmt ');
+            view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+            view.setUint32(24, sampleRate, true); view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true); view.setUint16(34, 16, true); writeStr(36, 'data');
+            view.setUint32(40, bytes.length, true); new Uint8Array(buffer, 44).set(bytes);
+            return new Blob([view], { type: 'audio/wav' });
+        }
+
+        function typeWriter(text, element, addTTS = false) {
+            let i = 0;
+            element.innerHTML += '<span id="tw-cursor" style="background:#0ff; color:#000;">_</span>';
+            function type() {
+                if (i < text.length) {
+                    document.getElementById('tw-cursor').insertAdjacentText('beforebegin', text.charAt(i));
+                    i++;
+                    if(i % 3 === 0) playSound('type');
+                    setTimeout(type, 10);
+                } else {
+                    document.getElementById('tw-cursor').remove();
+                    if (addTTS) {
+                        const btn = document.createElement('button');
+                        btn.className = 'ai-btn';
+                        btn.innerText = "✨ [ PLAY_AUDIO_TRANSMISSION ]";
+                        btn.onclick = () => playTTS(text, btn);
+                        element.appendChild(document.createElement('br'));
+                        element.appendChild(btn);
+                    }
+                }
+            }
+            type();
+        }
+
+        document.getElementById('ai-close-btn').onclick = () => {
+            document.getElementById('ai-modal').classList.remove('active');
+            playSound('click');
+            const searchInput = document.getElementById('web-search');
+            if(searchInput) searchInput.focus();
+        };
 
         // --- WEATHER MODULE ---
         async function fetchWeather(force = false) {
@@ -684,6 +1155,28 @@
             document.getElementById('engine-select').value = config.engine;
             document.getElementById('weather-loc-input').value = config.weatherLoc;
             config.lowPower ? document.body.classList.add('low-power') : document.body.classList.remove('low-power');
+            
+            // Apply new Root/Global settings
+            document.body.style.setProperty('--phosphor', config.phosphorColor || '#0f0');
+            
+            if (config.scanlines === false) document.body.classList.add('no-scanlines');
+            else document.body.classList.remove('no-scanlines');
+
+            if (config.cursor === 'system') document.body.classList.add('sys-cursor');
+            else document.body.classList.remove('sys-cursor');
+
+            document.body.classList.remove('flicker-low', 'flicker-high');
+            if (config.flicker === 'low') document.body.classList.add('flicker-low');
+            else if (config.flicker === 'high') document.body.classList.add('flicker-high');
+
+            if (config.wallpaper && config.wallpaper.trim() !== "") {
+                document.body.style.backgroundImage = `url('${config.wallpaper}')`;
+                document.body.style.backgroundSize = 'cover';
+                document.body.style.backgroundPosition = 'center';
+            } else {
+                document.body.style.backgroundImage = 'none';
+                document.body.style.background = 'black';
+            }
         }
 
         function attachManagerEvents() {
@@ -783,6 +1276,18 @@
             if (document.body.classList.contains('boss-mode')) return;
 
             if (e.key === 'Escape') {
+                const aiModal = document.getElementById('ai-modal');
+                if (aiModal.classList.contains('active')) {
+                    document.getElementById('ai-close-btn').click();
+                    return;
+                }
+
+                const rc = document.getElementById('root-console');
+                if (rc && rc.classList.contains('active') && !rc.classList.contains('closing')) {
+                    document.getElementById('root-close').click();
+                    return;
+                }
+
                 const drawer = document.getElementById('settings-drawer');
                 if (drawer.classList.contains('open')) {
                     drawer.classList.remove('open');
@@ -827,12 +1332,15 @@
             if (query.length > 0) searchWrapper.classList.add('has-text');
             else searchWrapper.classList.remove('has-text');
 
-            if (lowerQuery.startsWith('yt ')) { badge.className = 'show youtube'; badge.innerText = 'YOUTUBE'; }
-            else if (lowerQuery.startsWith('g ')) { badge.className = 'show google'; badge.innerText = 'GOOGLE'; }
-            else if (lowerQuery.startsWith('r/')) { badge.className = 'show reddit'; badge.innerText = 'REDDIT'; }
-            else { badge.className = ''; }
+            if (lowerQuery.startsWith('yt ')) { badge.className = 'show youtube'; badge.innerText = 'YOUTUBE'; badge.style.cssText = ''; }
+            else if (lowerQuery.startsWith('g ')) { badge.className = 'show google'; badge.innerText = 'GOOGLE'; badge.style.cssText = ''; }
+            else if (lowerQuery.startsWith('r/')) { badge.className = 'show reddit'; badge.innerText = 'REDDIT'; badge.style.cssText = ''; }
+            else if (lowerQuery.startsWith('ai ')) { badge.className = 'show'; badge.innerText = 'AI_CORE'; badge.style.borderColor = '#0ff'; badge.style.color = '#0ff'; badge.style.boxShadow = '0 0 10px rgba(0,255,255,0.2)'; }
+            else if (lowerQuery.startsWith('draw ')) { badge.className = 'show'; badge.innerText = 'IMG_GEN'; badge.style.borderColor = '#0f0'; badge.style.color = '#0f0'; badge.style.boxShadow = '0 0 10px rgba(0,255,0,0.2)'; }
+            else if (lowerQuery === 'scan') { badge.className = 'show'; badge.innerText = 'VISUAL_SCAN'; badge.style.borderColor = '#f0f'; badge.style.color = '#f0f'; badge.style.boxShadow = '0 0 10px rgba(255,0,255,0.2)'; }
+            else { badge.className = ''; badge.style.cssText = ''; }
 
-            if (query.length === 0 || lowerQuery.startsWith('yt ') || lowerQuery.startsWith('g ') || lowerQuery.startsWith('r/')) { 
+            if (query.length === 0 || lowerQuery.startsWith('yt ') || lowerQuery.startsWith('g ') || lowerQuery.startsWith('r/') || lowerQuery.startsWith('ai ') || lowerQuery.startsWith('draw ') || lowerQuery === 'scan') { 
                 suggestionsBox.classList.remove('show'); 
                 return; 
             }
@@ -884,6 +1392,52 @@
             if(!val || val.trim() === '') return;
             const lowerVal = val.toLowerCase();
             
+            // --- SECRET ROOT OVERRIDE ---
+            if(lowerVal === '//root' || lowerVal === 'sudo') {
+                playSound('click');
+                openRootConsole();
+                searchInput.value = '';
+                searchWrapper.classList.remove('has-text'); 
+                suggestionsBox.classList.remove('show');
+                searchInput.blur();
+                return;
+            } else if (lowerVal.startsWith('ai ')) {
+                playSound('click');
+                openAIModal(val.substring(3));
+                searchInput.value = '';
+                searchWrapper.classList.remove('has-text'); 
+                suggestionsBox.classList.remove('show');
+                searchInput.blur();
+                return;
+            } else if (lowerVal === 'scan') {
+                playSound('click');
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'image/*';
+                fileInput.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (ev) => openAIImageModal(ev.target.result.split(',')[1], file.type);
+                        reader.readAsDataURL(file);
+                    }
+                };
+                fileInput.click();
+                searchInput.value = '';
+                searchWrapper.classList.remove('has-text'); 
+                suggestionsBox.classList.remove('show');
+                searchInput.blur();
+                return;
+            } else if (lowerVal.startsWith('draw ')) {
+                playSound('click');
+                generateWallpaper(val.substring(5));
+                searchInput.value = '';
+                searchWrapper.classList.remove('has-text'); 
+                suggestionsBox.classList.remove('show');
+                searchInput.blur();
+                return;
+            }
+
             if(lowerVal.startsWith('yt ')) window.location.href = `https://youtube.com/results?search_query=${encodeURIComponent(val.substring(3))}`;
             else if(lowerVal.startsWith('g ')) window.location.href = `https://google.com/search?q=${encodeURIComponent(val.substring(2))}`;
             else if(lowerVal.startsWith('r/')) window.location.href = `https://reddit.com/${val}`;
@@ -923,6 +1477,70 @@
         document.getElementById('toggle-military').onchange = (e) => { config.militaryTime = e.target.checked; saveConfig(); updateClock(); };
         document.getElementById('engine-select').onchange = (e) => { config.engine = e.target.value; saveConfig(); };
         
+        // --- AI AUTO-ORGANIZER ---
+        document.getElementById('ai-organize-btn').onclick = async (e) => {
+            e.stopPropagation(); playSound('click');
+            const btn = e.target;
+            
+            const activeKey = envApiKey || config.geminiKey;
+            if (!activeKey || activeKey.trim() === "") {
+                btn.style.borderColor = '#f00'; btn.style.color = '#f00';
+                btn.innerText = "ERR: MISSING_API_KEY";
+                setTimeout(() => { btn.style.borderColor = '#0ff'; btn.style.color = '#0ff'; btn.innerText = "✨ AUTO-ORGANIZE (AI)"; }, 2000);
+                return;
+            }
+
+            let allLinks = [];
+            config.linkGroups.forEach(g => allLinks.push(...g.links));
+            if(allLinks.length === 0) return;
+
+            btn.innerText = "[ PROCESSING_DATA_STREAMS... ]";
+            btn.style.pointerEvents = 'none';
+
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${activeKey.trim()}`;
+                const payload = {
+                    contents: [{ parts: [{ text: JSON.stringify(allLinks) }] }],
+                    systemInstruction: { parts: [{ text: "Take these links and categorize them into logical, thematic groups. Keep groupNames uppercase and short. Assign a vibrant, fitting hex color to each group. Respond strictly in JSON." }] },
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "ARRAY",
+                            items: {
+                                type: "OBJECT",
+                                properties: {
+                                    groupName: { type: "STRING" },
+                                    color: { type: "STRING" },
+                                    links: {
+                                        type: "ARRAY",
+                                        items: {
+                                            type: "OBJECT",
+                                            properties: { name: { type: "STRING" }, url: { type: "STRING" } }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+                const result = await fetchWithRetry(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                const newGroups = JSON.parse(result.candidates[0].content.parts[0].text);
+                
+                config.linkGroups = newGroups;
+                saveConfig();
+                renderManager();
+                renderMainUI();
+            } catch(err) {
+                btn.style.borderColor = '#f00'; btn.style.color = '#f00';
+                btn.innerText = "ERR: ORGANIZATION_FAILED";
+                setTimeout(() => { btn.style.borderColor = '#0ff'; btn.style.color = '#0ff'; }, 2000);
+            } finally {
+                if (btn.innerText === "[ PROCESSING_DATA_STREAMS... ]") btn.innerText = "✨ AUTO-ORGANIZE (AI)";
+                btn.style.pointerEvents = 'auto';
+            }
+        };
+
+        // Add a brand new Group
         document.getElementById('addNewGroupBtn').onclick = (e) => { 
             e.stopPropagation(); playSound('click'); 
             syncDataFromManager();
@@ -973,6 +1591,129 @@
             if (!drawer.contains(e.target) && !document.getElementById('drawer-tab').contains(e.target) && drawer.classList.contains('open')) { drawer.classList.remove('open'); gearIcon.classList.remove('gear-spin'); }
         };
 
+        // --- ROOT CONSOLE LOGIC ---
+        function openRootConsole() {
+            const rc = document.getElementById('root-console');
+            if(rc) {
+                rc.classList.remove('closing');
+                rc.classList.add('active');
+                
+                // Populate the new grid inputs with current config
+                document.getElementById('root-greeting').value = config.customGreeting || "";
+                document.getElementById('root-hex').value = config.phosphorColor || "#ffb000";
+                document.getElementById('root-flicker').value = config.flicker || "none";
+                document.getElementById('root-cursor').value = config.cursor || "retro";
+                document.getElementById('root-wallpaper').value = config.wallpaper || "";
+                document.getElementById('root-audio').value = config.muteAudio ? "muted" : "on";
+                document.getElementById('root-apikey').value = config.geminiKey || "";
+            }
+        }
+
+        document.getElementById('os-label').onclick = () => {
+            playSound('click');
+            openRootConsole();
+        };
+
+        const rootClose = document.getElementById('root-close');
+        if(rootClose) {
+            rootClose.onclick = () => {
+                playSound('click');
+                const rc = document.getElementById('root-console');
+                rc.classList.add('closing');
+                setTimeout(() => {
+                    rc.classList.remove('active');
+                    rc.classList.remove('closing');
+                    searchInput.focus();
+                }, 450); // Matches the new TV shutoff animation timing
+            };
+        }
+
+        // Root Tools
+        const toolCache = document.getElementById('tool-clearcache');
+        if(toolCache) {
+            toolCache.onclick = (e) => {
+                playSound('click');
+                localStorage.removeItem('weatherCache');
+                fetchWeather(true);
+                const btn = e.target;
+                btn.innerText = "[ CACHE_FLUSHED ]";
+                setTimeout(() => btn.innerText = "[ FLUSH_DNS/CACHE ]", 2000);
+            };
+        }
+
+        const toolScan = document.getElementById('tool-scanlines');
+        if(toolScan) {
+            toolScan.onclick = () => {
+                playSound('click');
+                config.scanlines = config.scanlines === false ? true : false;
+                saveConfig();
+                applySettings();
+            };
+        }
+
+        const phosphorThemes = ['#ffb000', '#0f0', '#0ff', '#f00', '#fff']; // Amber, Green, Cyan, Red, White
+        const toolColor = document.getElementById('tool-color');
+        if(toolColor) {
+            toolColor.onclick = () => {
+                playSound('click');
+                let idx = phosphorThemes.indexOf(config.phosphorColor);
+                if(idx === -1) idx = 0;
+                idx = (idx + 1) % phosphorThemes.length;
+                config.phosphorColor = phosphorThemes[idx];
+                document.getElementById('root-hex').value = config.phosphorColor;
+                saveConfig();
+                applySettings();
+            };
+        }
+
+        const rootSave = document.getElementById('root-save');
+        if(rootSave) {
+            rootSave.onclick = () => {
+                playSound('click');
+                // Grab values from the new grid
+                config.customGreeting = document.getElementById('root-greeting').value;
+                
+                const hexVal = document.getElementById('root-hex').value.trim();
+                if (/^#[0-9A-F]{6}$/i.test(hexVal) || /^#[0-9A-F]{3}$/i.test(hexVal)) {
+                    config.phosphorColor = hexVal;
+                }
+                
+                config.flicker = document.getElementById('root-flicker').value;
+                config.cursor = document.getElementById('root-cursor').value;
+                config.wallpaper = document.getElementById('root-wallpaper').value.trim();
+                config.muteAudio = document.getElementById('root-audio').value === 'muted';
+                config.geminiKey = document.getElementById('root-apikey').value.trim();
+                
+                saveConfig();
+                location.reload(); // Hard reboot to apply
+            };
+        }
+
+        let nukeArmed = false;
+        const nukeBtn = document.getElementById('root-nuke');
+        if(nukeBtn) {
+            nukeBtn.onclick = () => {
+                playSound('click');
+                if(!nukeArmed) {
+                    nukeArmed = true;
+                    nukeBtn.innerText = "[ CONFIRM_NUKE_PROTOCOL ]";
+                    nukeBtn.style.color = "#000";
+                    nukeBtn.style.background = "#f00";
+                    nukeBtn.style.borderColor = "#f00";
+                    setTimeout(() => {
+                        nukeArmed = false;
+                        nukeBtn.innerText = "[ FACTORY_RESET ]";
+                        nukeBtn.style.color = "var(--phosphor)";
+                        nukeBtn.style.background = "transparent";
+                        nukeBtn.style.borderColor = "var(--phosphor)";
+                    }, 3000); // 3 seconds to confirm
+                } else {
+                    localStorage.removeItem('startConfig');
+                    location.reload();
+                }
+            };
+        }
+
         // --- CLOCK & CORE LOOP ---
         function updateClock() {
             const now = new Date();
@@ -991,11 +1732,17 @@
             }
             
             let greetingText = "";
-            if (month === 9 && date === 31) greetingText = "SYSTEM_HAUNTED";
-            else if (month === 11 && date === 25) greetingText = "MERRY_CRISIS";
-            else if (month === 0 && date === 1) greetingText = "NEW_CYCLE_INITIATED";
-            else if (day === 5 && now.getHours() >= 17) greetingText = "INITIATE_WEEKEND";
-            else {
+            if (config.customGreeting && config.customGreeting.trim() !== "") {
+                greetingText = config.customGreeting;
+            } else if (month === 9 && date === 31) {
+                greetingText = "SYSTEM_HAUNTED";
+            } else if (month === 11 && date === 25) {
+                greetingText = "MERRY_CRISIS";
+            } else if (month === 0 && date === 1) {
+                greetingText = "NEW_CYCLE_INITIATED";
+            } else if (day === 5 && now.getHours() >= 17) {
+                greetingText = "INITIATE_WEEKEND";
+            } else {
                 greetingText = now.getHours() < 12 ? "GOOD_MORNING" : now.getHours() < 18 ? "GOOD_AFTERNOON" : "GOOD_EVENING";
             }
             document.getElementById('greeting').innerText = greetingText;
