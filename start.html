@@ -28,7 +28,7 @@
             cursor: url('images/link-select-click.png'), pointer !important;
         }
 
-        /* --- CUSTOM SCROLLBARS --- */
+        /* --- CUSTOM SCROLLBARS (For Drawer) --- */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #000; border-left: 1px solid #111; }
         ::-webkit-scrollbar-thumb { background: #333; }
@@ -165,7 +165,7 @@
         }
         
         .clear-btn { color: #f00; font-size: 22px; }
-        .go-btn { color: var(--phosphor, #0f0); font-size: 18px; }
+        .go-btn { color: #0f0; font-size: 18px; }
 
         .search-wrapper.has-text .clear-btn,
         .search-wrapper.has-text .go-btn {
@@ -175,15 +175,15 @@
         }
         
         .search-wrapper.has-text .clear-btn { border-color: #f00; }
-        .search-wrapper.has-text .go-btn { border-color: var(--phosphor, #0f0); }
+        .search-wrapper.has-text .go-btn { border-color: #0f0; }
         
         .clear-btn:hover { 
             background: #f00 !important; color: #000 !important; 
             border-color: #f00 !important; box-shadow: 0 0 15px rgba(255, 0, 0, 0.6);
         }
         .go-btn:hover { 
-            background: var(--phosphor, #0f0) !important; color: #000 !important; 
-            border-color: var(--phosphor, #0f0) !important; box-shadow: 0 0 15px var(--phosphor, #0f0);
+            background: #0f0 !important; color: #000 !important; 
+            border-color: #0f0 !important; box-shadow: 0 0 15px #0f0;
             text-shadow: none;
         }
 
@@ -243,7 +243,7 @@
             gap: 20px; 
             width: 100%; max-width: 1000px; margin-top: 40px; z-index: 2;
             overflow-y: auto; padding-bottom: 80px;
-            
+
             /* Hide the scrollbar visually but keep scrolling functional */
             scrollbar-width: none; /* Firefox */
             -ms-overflow-style: none; /* IE/Edge */
@@ -561,24 +561,25 @@
         window.addEventListener('mousedown', () => playSound('mouseDown'));
         window.addEventListener('mouseup', () => playSound('mouseUp'));
 
-        // --- WEATHER MODULE ---
+        // --- WEATHER MODULE (Upgraded to OpenStreetMap) ---
         async function fetchWeather(force = false) {
             const cacheKey = 'weatherCache';
             const cachedData = JSON.parse(localStorage.getItem(cacheKey));
             const now = new Date().getTime();
             
             if (!force && cachedData && (now - cachedData.timestamp < 900000)) {
-                applyWeatherUI(cachedData.temp, cachedData.code);
+                applyWeatherUI(cachedData.temp, cachedData.code, cachedData.wind);
                 return;
             }
             try {
                 let lat, lon;
                 if (config.weatherLoc && config.weatherLoc.trim() !== "") {
-                    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(config.weatherLoc)}&count=1`);
+                    // OpenStreetMap Handles states and ZIP codes properly without crashing
+                    const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(config.weatherLoc)}&format=json&limit=1`);
                     const geoData = await geoRes.json();
-                    if (geoData.results && geoData.results.length > 0) {
-                        lat = geoData.results[0].latitude;
-                        lon = geoData.results[0].longitude;
+                    if (geoData && geoData.length > 0) {
+                        lat = geoData[0].lat;
+                        lon = geoData[0].lon;
                     } else throw new Error("Location not found");
                 } else {
                     const ipRes = await fetch("https://ipapi.co/json/");
@@ -587,15 +588,20 @@
                     lon = location.longitude;
                 }
 
-                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&temperature_unit=fahrenheit`);
+                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph`);
                 const data = await res.json();
-                const weatherInfo = { temp: Math.round(data.current.temperature_2m), code: data.current.weather_code, timestamp: now };
+                const weatherInfo = { 
+                    temp: Math.round(data.current.temperature_2m), 
+                    code: data.current.weather_code, 
+                    wind: data.current.wind_speed_10m,
+                    timestamp: now 
+                };
                 localStorage.setItem(cacheKey, JSON.stringify(weatherInfo));
-                applyWeatherUI(weatherInfo.temp, weatherInfo.code);
+                applyWeatherUI(weatherInfo.temp, weatherInfo.code, weatherInfo.wind);
             } catch (e) { document.getElementById('temp-val').innerText = "ERROR"; }
         }
 
-        function applyWeatherUI(temp, code) {
+        function applyWeatherUI(temp, code, wind) {
             document.getElementById('temp-val').innerText = `${temp}°F`;
             let icon = "sunny.png";
             
@@ -608,6 +614,9 @@
             
             const hour = new Date().getHours();
             if ((hour >= 20 || hour <= 5) && (code === 0 || code === 1 || code === 2)) icon = "night.png";
+            
+            // Show windy icon if it's blowing hard and not already raining/storming
+            if (wind >= 20 && code <= 3) icon = "windy.png";
             
             document.getElementById('weather-img').src = `images/${icon}`;
         }
