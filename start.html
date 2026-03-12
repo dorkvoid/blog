@@ -905,13 +905,26 @@
 
         function executeSearch(val) {
             if(!val || val.trim() === '') return;
-            const lowerVal = val.toLowerCase();
+            const rawVal = val.trim();
+            const lowerVal = rawVal.toLowerCase();
             
-            if(lowerVal.startsWith('yt ')) window.location.href = `https://youtube.com/results?search_query=${encodeURIComponent(val.substring(3))}`;
-            else if(lowerVal.startsWith('g ')) window.location.href = `https://google.com/search?q=${encodeURIComponent(val.substring(2))}`;
-            else if(lowerVal.startsWith('r/')) window.location.href = `https://reddit.com/${val}`;
+            // Bulletproof URL Detection (Handles http/https, www., domains, local IPs, and localhost)
+            const isUrl = /^(https?:\/\/)?(localhost(:\d+)?|(\d{1,3}\.){3}\d{1,3}(:\d+)?|([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(:\d+)?)(\/.*)?$/i.test(lowerVal) && !rawVal.includes(' ');
+
+            if(lowerVal.startsWith('yt ')) window.location.href = `https://youtube.com/results?search_query=${encodeURIComponent(rawVal.substring(3))}`;
+            else if(lowerVal.startsWith('g ')) window.location.href = `https://google.com/search?q=${encodeURIComponent(rawVal.substring(2))}`;
+            else if(lowerVal.startsWith('r/')) window.location.href = `https://reddit.com/${rawVal}`;
+            else if(isUrl) {
+                // If it's a URL but missing the protocol, automatically inject it
+                if (!lowerVal.startsWith('http://') && !lowerVal.startsWith('https://')) {
+                    const useHttp = lowerVal.startsWith('localhost') || /^(\d{1,3}\.){3}\d{1,3}/.test(lowerVal);
+                    window.location.href = `${useHttp ? 'http://' : 'https://'}${rawVal}`;
+                } else {
+                    window.location.href = rawVal;
+                }
+            }
             else {
-                const q = encodeURIComponent(val);
+                const q = encodeURIComponent(rawVal);
                 if(config.engine === 'google') window.location.href = `https://google.com/search?q=${q}`;
                 else if(config.engine === 'youtube') window.location.href = `https://youtube.com/results?search_query=${q}`;
                 else window.location.href = `https://duckduckgo.com/?q=${q}`;
