@@ -634,7 +634,7 @@
             </div>
             <div class="ttt-controls">
                 <button class="ttt-btn" id="ttt-mode-btn" onclick="toggleTTTMode()">MODE: ENDLESS</button>
-                <button class="ttt-btn" onclick="initTTT()">REBOOT</button>
+                <button class="ttt-btn" onclick="playSound('click'); initTTT()">REBOOT</button>
             </div>
         </div>
     </div>
@@ -698,13 +698,15 @@
             if (sound) { const clone = sound.cloneNode(); clone.volume = vol; clone.play().catch(()=>{}); }
         };
 
-        // Prevent global mouse sounds from double-playing when clicking buttons/links
+        // Prevent global mouse sounds from double-playing when clicking interactive elements
+        const ignoreSelectors = 'button, a, input, select, [onclick], .suggestion-item, .ttt-cell, .calc-btn, .clear-btn, .go-btn, .toggle-btn, #drawer-tab, .widget-close';
+        
         window.addEventListener('mousedown', (e) => {
-            if (e.target.closest('button, a, .suggestion-item, .ttt-cell, .calc-btn, .clear-btn, .go-btn, .toggle-btn')) return;
+            if (e.target.closest(ignoreSelectors)) return;
             playSound('mouseDown');
         });
         window.addEventListener('mouseup', (e) => {
-            if (e.target.closest('button, a, .suggestion-item, .ttt-cell, .calc-btn, .clear-btn, .go-btn, .toggle-btn')) return;
+            if (e.target.closest(ignoreSelectors)) return;
             playSound('mouseUp');
         });
 
@@ -1242,7 +1244,7 @@
         }
 
         function initTTT() {
-            playSound('click');
+            // Sound removed from here so it doesn't ghost-click on page load
             tttBoard = Array(9).fill(null);
             tttTurn = 'X'; xMoves = []; oMoves = []; tttActive = true;
             document.getElementById('ttt-stat').innerText = "X'S TURN";
