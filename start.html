@@ -495,6 +495,11 @@
             <div class="setting-section">
                 <span class="section-label">Interface</span>
                 <div class="option-row">
+                    <span>Mute OS Sounds</span>
+                    <input type="checkbox" id="toggle-mute" class="toggle-input">
+                    <label for="toggle-mute" class="toggle-btn"></label>
+                </div>
+                <div class="option-row">
                     <span>Low Power Mode</span>
                     <input type="checkbox" id="toggle-power" class="toggle-input">
                     <label for="toggle-power" class="toggle-btn"></label>
@@ -647,7 +652,7 @@
         // --- CORE CONFIGURATION & MIGRATION ---
         const DEFAULT_CONFIG = { 
             showStatus: true, lowPower: false, newTab: true, militaryTime: false, weatherLoc: "", engine: "duckduckgo", 
-            showCalc: false, showTTT: false,
+            showCalc: false, showTTT: false, muteAudio: false,
             linkGroups: [
                 { groupName: "MAIN", color: "#ffffff", links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}] }
             ] 
@@ -681,6 +686,8 @@
         let lastMouseIdx = 0; 
 
         const playSound = (type) => {
+            if (config.muteAudio) return; // Master Audio Killswitch
+            
             let sound, vol = 0.4;
             if (type === 'hover') { sound = audioAssets.hover; } 
             else if (type === 'click') { sound = audioAssets.click; } 
@@ -691,8 +698,15 @@
             if (sound) { const clone = sound.cloneNode(); clone.volume = vol; clone.play().catch(()=>{}); }
         };
 
-        window.addEventListener('mousedown', () => playSound('mouseDown'));
-        window.addEventListener('mouseup', () => playSound('mouseUp'));
+        // Prevent global mouse sounds from double-playing when clicking buttons/links
+        window.addEventListener('mousedown', (e) => {
+            if (e.target.closest('button, a, .suggestion-item, .ttt-cell, .calc-btn, .clear-btn, .go-btn, .toggle-btn')) return;
+            playSound('mouseDown');
+        });
+        window.addEventListener('mouseup', (e) => {
+            if (e.target.closest('button, a, .suggestion-item, .ttt-cell, .calc-btn, .clear-btn, .go-btn, .toggle-btn')) return;
+            playSound('mouseUp');
+        });
 
         // --- WEATHER MODULE (Upgraded to OpenStreetMap + God Mode) ---
         async function fetchWeather(force = false) {
@@ -847,6 +861,7 @@
             document.getElementById('toggle-power').checked = config.lowPower;
             document.getElementById('toggle-newtab').checked = config.newTab; 
             document.getElementById('toggle-military').checked = config.militaryTime; 
+            document.getElementById('toggle-mute').checked = config.muteAudio; 
             document.getElementById('engine-select').value = config.engine;
             document.getElementById('weather-loc-input').value = config.weatherLoc;
             config.lowPower ? document.body.classList.add('low-power') : document.body.classList.remove('low-power');
@@ -979,8 +994,9 @@
                 return;
             }
 
-            if (e.key !== 'Enter' && e.key !== 'Escape' && e.key.length === 1) { playSound('type'); }
-            if (e.key === 'Backspace') { playSound('type'); }
+            // Prevent shortcuts (Ctrl+T, Cmd+T) from triggering the typing sound
+            if (e.key !== 'Enter' && e.key !== 'Escape' && e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) { playSound('type'); }
+            if (e.key === 'Backspace' && !e.ctrlKey && !e.metaKey && !e.altKey) { playSound('type'); }
 
             if (document.activeElement !== searchInput && document.activeElement.tagName !== 'INPUT') {
                 if (e.key === 'Backspace') {
@@ -1113,6 +1129,7 @@
         document.getElementById('toggle-power').onchange = (e) => { config.lowPower = e.target.checked; saveConfig(); applySettings(); };
         document.getElementById('toggle-newtab').onchange = (e) => { config.newTab = e.target.checked; saveConfig(); renderMainUI(); };
         document.getElementById('toggle-military').onchange = (e) => { config.militaryTime = e.target.checked; saveConfig(); updateClock(); };
+        document.getElementById('toggle-mute').onchange = (e) => { config.muteAudio = e.target.checked; playSound('click'); saveConfig(); };
         document.getElementById('engine-select').onchange = (e) => { config.engine = e.target.value; saveConfig(); };
         
         document.getElementById('toggle-calc').onchange = (e) => { playSound('click'); config.showCalc = e.target.checked; saveConfig(); applySettings(); };
