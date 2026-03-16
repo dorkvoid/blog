@@ -407,6 +407,62 @@
         .weather-module { display: flex; align-items: center; gap: 10px; color: #666; }
         .weather-icon { width: 24px; height: 24px; image-rendering: pixelated; }
         #temp-val { color: #888; }
+
+        /* --- OS WIDGETS --- */
+        .os-widget {
+            position: absolute; top: 120px; left: 100px; width: 240px;
+            background: #000; border: 2px solid #333; z-index: 100;
+            display: none; flex-direction: column; font-family: 'PixeloidSans', sans-serif;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+        .os-widget.active { display: flex; }
+        .widget-header {
+            background: #222; color: #fff; padding: 6px 10px; font-size: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            cursor: grab; font-family: 'PixeloidSansBold', sans-serif; letter-spacing: 2px;
+            border-bottom: 2px solid #333; transition: 0.2s;
+        }
+        .widget-header:active { cursor: grabbing; background: #333; }
+        .widget-close { cursor: pointer; color: #f00; font-weight: bold; padding: 0 4px; }
+        .widget-close:hover { text-shadow: 0 0 8px #f00; color: #fff; }
+
+        /* Calculator Widget */
+        .calc-body { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+        .calc-display {
+            background: #050505; border: 1px solid #222; color: #0f0;
+            font-family: 'Courier New', monospace; font-size: 24px; text-align: right;
+            padding: 8px 12px; overflow: hidden; white-space: nowrap; box-shadow: inset 0 0 10px rgba(0,255,0,0.05);
+            margin-bottom: 4px; height: 30px; line-height: 30px;
+        }
+        .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+        .calc-btn {
+            background: #111; border: 1px solid #333; color: #fff;
+            padding: 12px 0; text-align: center; cursor: pointer; transition: 0.1s;
+            font-family: 'PixeloidSansBold', sans-serif; font-size: 14px;
+        }
+        .calc-btn:hover { background: #222; color: #0f0; border-color: #0f0; box-shadow: 0 0 10px rgba(0,255,0,0.2); }
+        .calc-btn:active { transform: scale(0.92); }
+        .calc-btn.op { color: #0ff; }
+        .calc-btn.eq { background: #003333; color: #0ff; border-color: #0ff; }
+
+        /* Endless Tic-Tac-Toe Widget */
+        .ttt-body { padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .ttt-status { font-size: 12px; color: #0f0; letter-spacing: 2px; text-transform: uppercase; text-align: center; height: 14px; font-family: 'PixeloidSansBold', sans-serif;}
+        .ttt-grid { display: grid; grid-template-columns: repeat(3, 60px); grid-template-rows: repeat(3, 60px); gap: 6px; }
+        .ttt-cell {
+            background: #111; border: 1px solid #333; color: #fff;
+            display: flex; justify-content: center; align-items: center;
+            font-family: 'PixeloidSansBold', sans-serif; font-size: 36px;
+            cursor: pointer; transition: 0.2s; padding-bottom: 4px;
+        }
+        .ttt-cell:hover { background: #222; border-color: #fff; }
+        .ttt-cell.x { color: #0f0; text-shadow: 0 0 12px rgba(0,255,0,0.6); }
+        .ttt-cell.o { color: #0ff; text-shadow: 0 0 12px rgba(0,255,255,0.6); }
+        .ttt-cell.fading { animation: pulseFade 1s infinite alternate; }
+        @keyframes pulseFade { from { opacity: 0.1; transform: scale(0.9); } to { opacity: 0.7; transform: scale(1); } }
+        .ttt-controls { display: flex; gap: 8px; width: 100%; }
+        .ttt-btn { flex: 1; background: #111; border: 1px solid #333; color: #fff; padding: 8px 0; cursor: pointer; font-size: 10px; font-family: 'PixeloidSansBold', sans-serif; transition: 0.2s; letter-spacing: 1px; text-align: center; }
+        .ttt-btn:hover { background: #ff8800; color: #000; border-color: #ff8800; box-shadow: 0 0 10px #ff8800; }
     </style>
 </head>
 <body>
@@ -460,6 +516,25 @@
                 </div>
             </div>
 
+            <!-- OS WIDGETS TOGGLES -->
+            <div class="setting-section">
+                <span class="section-label">OS Widgets</span>
+                <div class="option-row">
+                    <span>Calculator Utility</span>
+                    <input type="checkbox" id="toggle-calc" class="toggle-input">
+                    <label for="toggle-calc" class="toggle-btn"></label>
+                </div>
+                <div class="option-row">
+                    <span>Endless Tic-Tac-Toe</span>
+                    <input type="checkbox" id="toggle-ttt" class="toggle-input">
+                    <label for="toggle-ttt" class="toggle-btn"></label>
+                </div>
+                <div class="cheat-sheet">
+                    <b>TTT Rules</b><br>
+                    Toggle between Classic and Endless modes! In Endless, you only keep 3 active pieces. Your oldest fades and vanishes.
+                </div>
+            </div>
+
             <div class="setting-section">
                 <span class="section-label">Weather Override</span>
                 <div style="display: flex; gap: 6px; align-items: center;">
@@ -502,6 +577,60 @@
 
     <div id="dashboard" class="dashboard"></div>
 
+    <!-- FLOATING OS WIDGETS -->
+    <div class="os-widget" id="widget-calc">
+        <div class="widget-header">
+            <span>SYS.CALCULATOR</span>
+            <span class="widget-close" onclick="toggleWidget('calc')">X</span>
+        </div>
+        <div class="calc-body">
+            <div class="calc-display" id="calc-disp">0</div>
+            <div class="calc-grid">
+                <div class="calc-btn" onclick="calcInput('7')">7</div>
+                <div class="calc-btn" onclick="calcInput('8')">8</div>
+                <div class="calc-btn" onclick="calcInput('9')">9</div>
+                <div class="calc-btn op" onclick="calcInput('/')">/</div>
+                <div class="calc-btn" onclick="calcInput('4')">4</div>
+                <div class="calc-btn" onclick="calcInput('5')">5</div>
+                <div class="calc-btn" onclick="calcInput('6')">6</div>
+                <div class="calc-btn op" onclick="calcInput('*')">*</div>
+                <div class="calc-btn" onclick="calcInput('1')">1</div>
+                <div class="calc-btn" onclick="calcInput('2')">2</div>
+                <div class="calc-btn" onclick="calcInput('3')">3</div>
+                <div class="calc-btn op" onclick="calcInput('-')">-</div>
+                <div class="calc-btn" onclick="calcInput('C')">C</div>
+                <div class="calc-btn" onclick="calcInput('0')">0</div>
+                <div class="calc-btn eq" onclick="calcInput('=')">=</div>
+                <div class="calc-btn op" onclick="calcInput('+')">+</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="os-widget" id="widget-ttt" style="left: 360px;">
+        <div class="widget-header">
+            <span>SYS.TICTACTOE</span>
+            <span class="widget-close" onclick="toggleWidget('ttt')">X</span>
+        </div>
+        <div class="ttt-body">
+            <div class="ttt-status" id="ttt-stat">X'S TURN</div>
+            <div class="ttt-grid" id="ttt-board">
+                <div class="ttt-cell" onclick="tttMove(0)"></div>
+                <div class="ttt-cell" onclick="tttMove(1)"></div>
+                <div class="ttt-cell" onclick="tttMove(2)"></div>
+                <div class="ttt-cell" onclick="tttMove(3)"></div>
+                <div class="ttt-cell" onclick="tttMove(4)"></div>
+                <div class="ttt-cell" onclick="tttMove(5)"></div>
+                <div class="ttt-cell" onclick="tttMove(6)"></div>
+                <div class="ttt-cell" onclick="tttMove(7)"></div>
+                <div class="ttt-cell" onclick="tttMove(8)"></div>
+            </div>
+            <div class="ttt-controls">
+                <button class="ttt-btn" id="ttt-mode-btn" onclick="toggleTTTMode()">MODE: ENDLESS</button>
+                <button class="ttt-btn" onclick="initTTT()">REBOOT</button>
+            </div>
+        </div>
+    </div>
+
     <div class="status-bar" id="status-bar">
         <span>MIKEVOID_OS</span>
         <span>//</span>
@@ -515,6 +644,7 @@
         // --- CORE CONFIGURATION & MIGRATION ---
         const DEFAULT_CONFIG = { 
             showStatus: true, lowPower: false, newTab: true, militaryTime: false, weatherLoc: "", engine: "duckduckgo", 
+            showCalc: false, showTTT: false,
             linkGroups: [
                 { groupName: "MAIN", color: "#ffffff", links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}] }
             ] 
@@ -707,6 +837,19 @@
             document.getElementById('engine-select').value = config.engine;
             document.getElementById('weather-loc-input').value = config.weatherLoc;
             config.lowPower ? document.body.classList.add('low-power') : document.body.classList.remove('low-power');
+            
+            // Apply Widget States
+            document.getElementById('toggle-calc').checked = config.showCalc;
+            document.getElementById('toggle-ttt').checked = config.showTTT;
+            config.showCalc ? document.getElementById('widget-calc').classList.add('active') : document.getElementById('widget-calc').classList.remove('active');
+            config.showTTT ? document.getElementById('widget-ttt').classList.add('active') : document.getElementById('widget-ttt').classList.remove('active');
+        }
+
+        function toggleWidget(w) {
+            playSound('click');
+            if(w === 'calc') config.showCalc = !config.showCalc;
+            if(w === 'ttt') config.showTTT = !config.showTTT;
+            saveConfig(); applySettings();
         }
 
         function attachManagerEvents() {
@@ -959,6 +1102,9 @@
         document.getElementById('toggle-military').onchange = (e) => { config.militaryTime = e.target.checked; saveConfig(); updateClock(); };
         document.getElementById('engine-select').onchange = (e) => { config.engine = e.target.value; saveConfig(); };
         
+        document.getElementById('toggle-calc').onchange = (e) => { playSound('click'); config.showCalc = e.target.checked; saveConfig(); applySettings(); };
+        document.getElementById('toggle-ttt').onchange = (e) => { playSound('click'); config.showTTT = e.target.checked; saveConfig(); applySettings(); };
+        
         document.getElementById('addNewGroupBtn').onclick = (e) => { 
             e.stopPropagation(); playSound('click'); 
             syncDataFromManager();
@@ -1008,6 +1154,171 @@
             if (e.target !== searchInput && e.target !== clearBtn && e.target !== submitBtn && !e.target.closest('#suggestions-box')) suggestionsBox.classList.remove('show');
             if (!drawer.contains(e.target) && !document.getElementById('drawer-tab').contains(e.target) && drawer.classList.contains('open')) { drawer.classList.remove('open'); gearIcon.classList.remove('gear-spin'); }
         };
+
+        // --- OS WIDGET LOGIC ---
+        function makeDraggable(element) {
+            const header = element.querySelector('.widget-header');
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            header.onmousedown = (e) => {
+                e.preventDefault();
+                pos3 = e.clientX; pos4 = e.clientY;
+                document.onmouseup = () => { document.onmouseup = null; document.onmousemove = null; };
+                document.onmousemove = (ev) => {
+                    ev.preventDefault();
+                    pos1 = pos3 - ev.clientX; pos2 = pos4 - ev.clientY;
+                    pos3 = ev.clientX; pos4 = ev.clientY;
+                    element.style.top = (element.offsetTop - pos2) + "px";
+                    element.style.left = (element.offsetLeft - pos1) + "px";
+                };
+                document.querySelectorAll('.os-widget').forEach(w => w.style.zIndex = 100);
+                element.style.zIndex = 101;
+            };
+        }
+        makeDraggable(document.getElementById('widget-calc'));
+        makeDraggable(document.getElementById('widget-ttt'));
+
+        // Calculator Backend
+        let calcVal = "";
+        function calcInput(key) {
+            playSound('type');
+            const disp = document.getElementById('calc-disp');
+            if (key === 'C') { calcVal = ""; disp.innerText = "0"; return; }
+            if (key === '=') {
+                try { 
+                    calcVal = String(eval(calcVal)); 
+                    if(calcVal === "NaN" || calcVal === "Infinity") throw Error;
+                } catch(e) { calcVal = "ERR"; }
+                disp.innerText = calcVal;
+                calcVal = calcVal === "ERR" ? "" : calcVal;
+                return;
+            }
+            if (calcVal === "0" && key !== ".") calcVal = "";
+            calcVal += key;
+            disp.innerText = calcVal;
+        }
+
+        // Tic-Tac-Toe Backend
+        let tttBoard = Array(9).fill(null);
+        let tttTurn = 'X';
+        let xMoves = [], oMoves = [];
+        let tttActive = true;
+        let tttEndless = true;
+
+        function toggleTTTMode() {
+            playSound('click');
+            tttEndless = !tttEndless;
+            document.getElementById('ttt-mode-btn').innerText = tttEndless ? "MODE: ENDLESS" : "MODE: CLASSIC";
+            initTTT();
+        }
+
+        function initTTT() {
+            playSound('click');
+            tttBoard = Array(9).fill(null);
+            tttTurn = 'X'; xMoves = []; oMoves = []; tttActive = true;
+            document.getElementById('ttt-stat').innerText = "X'S TURN";
+            document.getElementById('ttt-stat').style.color = "#0f0";
+            updateTTTUI();
+        }
+
+        function makeAIMove() {
+            if (!tttActive || tttTurn !== 'O') return;
+            
+            let empty = [];
+            for (let i = 0; i < 9; i++) if (!tttBoard[i]) empty.push(i);
+            if (!empty.length) return;
+
+            let move = -1;
+            const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+
+            // 1. Can AI win right now? (Simulate placing piece and removing oldest)
+            for (let i of empty) {
+                let b = [...tttBoard], m = [...oMoves];
+                b[i] = 'O'; m.push(i);
+                if (tttEndless && m.length > 3) b[m.shift()] = null;
+                if (wins.some(c => c.every(idx => b[idx] === 'O'))) { move = i; break; }
+            }
+
+            // 2. Can X win on their next turn? Block them.
+            if (move === -1) {
+                for (let i of empty) {
+                    let b = [...tttBoard], m = [...xMoves];
+                    b[i] = 'X'; m.push(i);
+                    if (tttEndless && m.length > 3) b[m.shift()] = null;
+                    if (wins.some(c => c.every(idx => b[idx] === 'X'))) { move = i; break; }
+                }
+            }
+
+            // 3. Fallback to a random cell
+            if (move === -1) move = empty[Math.floor(Math.random() * empty.length)];
+
+            tttMove(move, true);
+        }
+
+        function tttMove(idx, isAI = false) {
+            // Prevent playing on filled spots, inactive games, or clicking during AI's turn
+            if (!tttActive || tttBoard[idx]) { if(!tttBoard[idx] && tttTurn === 'X') playSound('click'); return; }
+            if (tttTurn === 'O' && !isAI) return; 
+            
+            playSound('type');
+            
+            tttBoard[idx] = tttTurn;
+            const currentMoves = tttTurn === 'X' ? xMoves : oMoves;
+            currentMoves.push(idx);
+
+            // Endless Rule: Remove 1st piece if placing 4th
+            if (tttEndless && currentMoves.length > 3) {
+                const removedIdx = currentMoves.shift();
+                tttBoard[removedIdx] = null;
+            }
+
+            updateTTTUI();
+            
+            // Check for Win
+            const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            if (wins.some(combo => combo.every(i => tttBoard[i] === tttTurn))) {
+                document.getElementById('ttt-stat').innerText = tttTurn === 'X' ? "YOU WIN!" : "AI WINS!";
+                document.getElementById('ttt-stat').style.color = "#fff";
+                tttActive = false;
+                playSound('click'); 
+                return;
+            }
+
+            // Check for Draw (Classic Mode)
+            if (!tttEndless && !tttBoard.includes(null)) {
+                document.getElementById('ttt-stat').innerText = "DRAW!";
+                document.getElementById('ttt-stat').style.color = "#ff8800";
+                tttActive = false;
+                playSound('click');
+                return;
+            }
+
+            // Swap Turn
+            tttTurn = tttTurn === 'X' ? 'O' : 'X';
+            
+            if (tttTurn === 'O') {
+                document.getElementById('ttt-stat').innerText = "AI THINKING...";
+                document.getElementById('ttt-stat').style.color = "#0ff";
+                setTimeout(makeAIMove, 600); // Wait slightly so it feels like it's calculating
+            } else {
+                document.getElementById('ttt-stat').innerText = "X'S TURN";
+                document.getElementById('ttt-stat').style.color = "#0f0";
+            }
+            
+            updateTTTUI(); 
+        }
+
+        function updateTTTUI() {
+            const cells = document.querySelectorAll('.ttt-cell');
+            cells.forEach((cell, i) => {
+                cell.innerText = tttBoard[i] || "";
+                cell.className = 'ttt-cell ' + (tttBoard[i] ? tttBoard[i].toLowerCase() : '');
+                if (tttEndless && tttBoard[i]) {
+                    if (tttBoard[i] === 'X' && xMoves.length === 3 && xMoves[0] === i && tttTurn === 'X') cell.classList.add('fading');
+                    if (tttBoard[i] === 'O' && oMoves.length === 3 && oMoves[0] === i && tttTurn === 'O') cell.classList.add('fading');
+                }
+            });
+        }
+        setTimeout(initTTT, 100);
 
         // --- CLOCK & CORE LOOP ---
         function updateClock() {
