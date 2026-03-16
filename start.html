@@ -312,7 +312,7 @@
         /* --- SETTINGS DRAWER --- */
         #settings-drawer {
             position: fixed; top: 0; right: -350px; width: 350px; height: 100vh;
-            background: #000; border-left: 2px solid #333; z-index: 100;
+            background: #000; border-left: 2px solid #333; z-index: 9999;
             transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             color: white; font-family: 'PixeloidSans', sans-serif; display: flex; flex-direction: column;
         }
@@ -586,6 +586,9 @@
         <div class="calc-body">
             <div class="calc-display" id="calc-disp">0</div>
             <div class="calc-grid">
+                <div class="calc-btn op" style="grid-column: span 2;" onclick="calcInput('C')">CLEAR</div>
+                <div class="calc-btn op" onclick="calcInput('(')">(</div>
+                <div class="calc-btn op" onclick="calcInput(')')">)</div>
                 <div class="calc-btn" onclick="calcInput('7')">7</div>
                 <div class="calc-btn" onclick="calcInput('8')">8</div>
                 <div class="calc-btn" onclick="calcInput('9')">9</div>
@@ -598,8 +601,8 @@
                 <div class="calc-btn" onclick="calcInput('2')">2</div>
                 <div class="calc-btn" onclick="calcInput('3')">3</div>
                 <div class="calc-btn op" onclick="calcInput('-')">-</div>
-                <div class="calc-btn" onclick="calcInput('C')">C</div>
                 <div class="calc-btn" onclick="calcInput('0')">0</div>
+                <div class="calc-btn" onclick="calcInput('.')">.</div>
                 <div class="calc-btn eq" onclick="calcInput('=')">=</div>
                 <div class="calc-btn op" onclick="calcInput('+')">+</div>
             </div>
@@ -691,12 +694,22 @@
         window.addEventListener('mousedown', () => playSound('mouseDown'));
         window.addEventListener('mouseup', () => playSound('mouseUp'));
 
-        // --- WEATHER MODULE (Upgraded to OpenStreetMap) ---
+        // --- WEATHER MODULE (Upgraded to OpenStreetMap + God Mode) ---
         async function fetchWeather(force = false) {
             const cacheKey = 'weatherCache';
             const cachedData = JSON.parse(localStorage.getItem(cacheKey));
             const now = new Date().getTime();
             
+            // God Mode: Check if you manually typed an icon name
+            const loc = config.weatherLoc ? config.weatherLoc.trim().toLowerCase() : "";
+            const validIcons = ["sunny", "partly cloudy", "cloudy", "foggy", "rainy", "cold", "thunderstorm", "night", "windy"];
+            
+            if (validIcons.includes(loc)) {
+                document.getElementById('temp-val').innerText = "OVRIDE";
+                document.getElementById('weather-img').src = `images/${loc}.png`;
+                return; // Bypass API entirely
+            }
+
             if (!force && cachedData && (now - cachedData.timestamp < 900000)) {
                 applyWeatherUI(cachedData.temp, cachedData.code, cachedData.wind);
                 return;
@@ -1298,7 +1311,7 @@
             if (tttTurn === 'O') {
                 document.getElementById('ttt-stat').innerText = "AI THINKING...";
                 document.getElementById('ttt-stat').style.color = "#0ff";
-                setTimeout(makeAIMove, 600); // Wait slightly so it feels like it's calculating
+                setTimeout(makeAIMove, 600); 
             } else {
                 document.getElementById('ttt-stat').innerText = "X'S TURN";
                 document.getElementById('ttt-stat').style.color = "#0f0";
@@ -1313,8 +1326,9 @@
                 cell.innerText = tttBoard[i] || "";
                 cell.className = 'ttt-cell ' + (tttBoard[i] ? tttBoard[i].toLowerCase() : '');
                 if (tttEndless && tttBoard[i]) {
-                    if (tttBoard[i] === 'X' && xMoves.length === 3 && xMoves[0] === i && tttTurn === 'X') cell.classList.add('fading');
-                    if (tttBoard[i] === 'O' && oMoves.length === 3 && oMoves[0] === i && tttTurn === 'O') cell.classList.add('fading');
+                    // Removed the turn restriction so it ALWAYS pulses your oldest piece
+                    if (tttBoard[i] === 'X' && xMoves.length === 3 && xMoves[0] === i) cell.classList.add('fading');
+                    if (tttBoard[i] === 'O' && oMoves.length === 3 && oMoves[0] === i) cell.classList.add('fading');
                 }
             });
         }
