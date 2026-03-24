@@ -571,7 +571,7 @@
         
         <div class="search-wrapper" id="search-wrapper">
             <div class="search-box-container">
-                <input type="text" id="web-search" class="search-box" placeholder="type command..." autofocus autocomplete="nope" autocorrect="off" autocapitalize="none" spellcheck="false" data-lpignore="true">
+                <input type="text" id="web-search" class="search-box" placeholder="type command..." autofocus autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-1p-ignore="true" data-form-type="other">
                 <div id="shortcut-badge"></div>
                 <div id="suggestions-box"></div>
             </div>
@@ -588,7 +588,7 @@
             <span class="widget-close" onclick="toggleWidget('calc')">X</span>
         </div>
         <div class="calc-body">
-            <input type="text" class="calc-display" id="calc-disp" value="0" autocomplete="off" spellcheck="false">
+            <input type="text" class="calc-display" id="calc-disp" value="0" autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off" data-lpignore="true">
             <div class="calc-grid">
                 <div class="calc-btn op" style="grid-column: span 2;" onclick="calcInput('C')">CLEAR</div>
                 <div class="calc-btn op" onclick="calcInput('(')">(</div>
@@ -1030,6 +1030,7 @@
 
             if (query.length === 0 || lowerQuery.startsWith('yt ') || lowerQuery.startsWith('g ') || lowerQuery.startsWith('r/')) { 
                 suggestionsBox.classList.remove('show'); 
+                clearTimeout(debounceTimer); // Kill the background fetch so ghost boxes don't pop up
                 return; 
             }
 
@@ -1113,18 +1114,20 @@
 
         searchInput.onkeydown = (e) => { 
             let items = suggestionsBox.querySelectorAll('.suggestion-item');
-            if (e.key === 'ArrowDown') {
+            let isVisible = suggestionsBox.classList.contains('show');
+
+            if (e.key === 'ArrowDown' && isVisible) {
                 e.preventDefault();
                 currentFocus++;
                 addActive(items);
-            } else if (e.key === 'ArrowUp') {
+            } else if (e.key === 'ArrowUp' && isVisible) {
                 e.preventDefault();
                 currentFocus--;
                 addActive(items);
             } else if (e.key === 'Enter') { 
                 e.preventDefault();
                 playSound('click'); 
-                if (currentFocus > -1 && items.length > 0 && suggestionsBox.classList.contains('show')) {
+                if (currentFocus > -1 && items.length > 0 && isVisible) {
                     items[currentFocus].click();
                 } else {
                     executeSearch(searchInput.value); 
@@ -1205,8 +1208,18 @@
                     ev.preventDefault();
                     pos1 = pos3 - ev.clientX; pos2 = pos4 - ev.clientY;
                     pos3 = ev.clientX; pos4 = ev.clientY;
-                    element.style.top = (element.offsetTop - pos2) + "px";
-                    element.style.left = (element.offsetLeft - pos1) + "px";
+                    
+                    let newTop = element.offsetTop - pos2;
+                    let newLeft = element.offsetLeft - pos1;
+                    
+                    // Clamp widgets to screen bounds so you don't lose them in the void
+                    if (newTop < 0) newTop = 0;
+                    if (newLeft < 0) newLeft = 0;
+                    if (newTop > window.innerHeight - 40) newTop = window.innerHeight - 40;
+                    if (newLeft > window.innerWidth - 100) newLeft = window.innerWidth - 100;
+
+                    element.style.top = newTop + "px";
+                    element.style.left = newLeft + "px";
                 };
                 document.querySelectorAll('.os-widget').forEach(w => w.style.zIndex = 100);
                 element.style.zIndex = 101;
@@ -1236,6 +1249,11 @@
             } else if (e.key === 'Backspace') {
                 playSound('type');
             }
+        });
+
+        // Nuke pasted text so you can't exploit the eval() function
+        calcDisp.addEventListener('input', () => {
+            calcDisp.value = calcDisp.value.replace(/[^0-9\.\+\-\*\/\(\)xX]/g, '');
         });
 
         // Smart clear when focusing
