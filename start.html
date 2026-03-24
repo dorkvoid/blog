@@ -571,7 +571,7 @@
         
         <div class="search-wrapper" id="search-wrapper">
             <div class="search-box-container">
-                <input type="text" id="web-search" class="search-box" placeholder="type command..." autofocus autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                <input type="text" id="web-search" class="search-box" placeholder="type command..." autofocus autocomplete="nope" autocorrect="off" autocapitalize="none" spellcheck="false" data-lpignore="true">
                 <div id="shortcut-badge"></div>
                 <div id="suggestions-box"></div>
             </div>
@@ -1055,7 +1055,14 @@
                 data.slice(0, 5).forEach((item, index) => {
                     const div = document.createElement('div');
                     div.className = 'suggestion-item'; div.innerText = item.phrase;
-                    div.onmouseenter = () => { currentFocus = index; removeActive(suggestionsBox.querySelectorAll('.suggestion-item')); div.classList.add('active-item'); playSound('hover'); };
+                    div.onmousemove = () => { 
+                        if (currentFocus !== index) {
+                            currentFocus = index; 
+                            removeActive(suggestionsBox.querySelectorAll('.suggestion-item')); 
+                            div.classList.add('active-item'); 
+                            playSound('hover'); 
+                        }
+                    };
                     div.onclick = () => { playSound('click'); executeSearch(item.phrase); };
                     suggestionsBox.appendChild(div);
                 });
@@ -1213,6 +1220,7 @@
 
         // Keyboard support for Enter, Escape, and tying into the audio engine
         calcDisp.addEventListener('keydown', (e) => {
+            e.stopPropagation(); // Kill the global keyboard echo
             if (e.key === 'Enter') {
                 e.preventDefault();
                 calcInput('=');
