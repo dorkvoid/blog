@@ -2,6 +2,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
 import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, deleteDoc, updateDoc, doc, increment, setDoc, limit } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai"; // <-- AI IMPORT ADDED
 
 // --- 2. CONFIGURATION ---
 const firebaseConfig = {
@@ -57,9 +58,17 @@ const confirmNo = document.getElementById('confirmNo');
 const lightboxModal = document.getElementById('lightbox-modal');
 const lightboxImg = document.getElementById('lightbox-img');
 const lightboxClose = document.getElementById('lightbox-close');
-const lightboxPrev = document.getElementById('lightbox-prev'); // ADDED
-const lightboxNext = document.getElementById('lightbox-next'); // ADDED
+const lightboxPrev = document.getElementById('lightbox-prev'); 
+const lightboxNext = document.getElementById('lightbox-next'); 
 const backToTopBtn = document.getElementById('back-to-top');
+
+// --- AI SETUP ---
+const genAI = new GoogleGenerativeAI("YOUR_API_KEY_GOES_HERE"); // Grab one from Google AI Studio
+const aiModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+const aiEditorBox = document.getElementById('ai-editor-box');
+const aiPromptInput = document.getElementById('ai-prompt-input');
+const aiSubmitBtn = document.getElementById('ai-submit');
 
 // --- INIT UI TWEAKS ---
 
@@ -193,11 +202,13 @@ onAuthStateChanged(auth, (user) => {
         adminLoginBar.classList.remove('hidden'); 
         if (loginContainer) loginContainer.classList.add('hidden');
         if (adminMenu) adminMenu.classList.remove('hidden');
+        if (aiEditorBox) aiEditorBox.classList.remove('hidden'); // SHOW AI
     } else {
         isAdmin = false;
         document.body.classList.remove('admin-mode');
         if (loginContainer) loginContainer.classList.remove('hidden');
         if (adminMenu) adminMenu.classList.add('hidden');
+        if (aiEditorBox) aiEditorBox.classList.add('hidden'); // HIDE AI
     }
     setupSubscription(); 
 });
@@ -394,7 +405,7 @@ function updatePostButtonState() {
 
 textInput.addEventListener('input', () => {
     updatePostButtonState();
-    localStorage.setItem('draftPost', textInput.value); // UPDATED: Save to Draft
+    localStorage.setItem('draftPost', textInput.value); 
 });
 imageInput.addEventListener('input', updatePostButtonState);
 updatePostButtonState();
@@ -523,7 +534,7 @@ window.removeMedia = function(index) {
     playSound('delete');
     mediaStack.splice(index, 1);
     updateMediaStackUI();
-};
+}
 
 addMediaBtn.addEventListener('click', () => {
     const url = imageInput.value.trim();
@@ -603,7 +614,56 @@ function resetForm() {
     tagToggles.forEach(t => t.classList.remove('selected'));
     
     updatePostButtonState();
-    localStorage.removeItem('draftPost'); // Clean memory on success
+    localStorage.removeItem('draftPost'); 
+}
+
+// --- 8.5 AI EDITOR LOGIC ---
+async function runAiEdit() {
+    const currentText = textInput.value.trim();
+    const customInstruction = aiPromptInput.value.trim();
+    
+    if (!currentText) return showToast("TEXT BOX IS EMPTY");
+    if (!customInstruction) return showToast("TELL THE AI WHAT TO DO");
+
+    showToast("AI IS THINKING...");
+    playSound('hover');
+
+    const prompt = `Text to edit:\n\n${currentText}\n\nUser Instruction: ${customInstruction}\n\nExecute the exact instruction above on the provided text. Do not force a professional or academic tone unless explicitly asked. Maintain the original author's voice, vibe, and style. ONLY return the modified text. Do not add markdown blocks, quotes, or conversational filler.`;
+
+    try {
+        if (aiSubmitBtn) aiSubmitBtn.disabled = true;
+        
+        const result = await aiModel.generateContent(prompt);
+        textInput.value = result.response.text().trim();
+        
+        textInput.style.height = 'auto';
+        textInput.style.height = (textInput.scrollHeight) + 'px';
+        updatePostButtonState();
+        localStorage.setItem('draftPost', textInput.value); 
+        
+        showToast("TEXT UPDATED");
+        playSound('success');
+        aiPromptInput.value = ""; 
+    } catch (err) {
+        console.error("AI Error:", err);
+        showToast("AI CONNECTION FAILED");
+        playSound('error');
+    } finally {
+        if (aiSubmitBtn) aiSubmitBtn.disabled = false;
+    }
+}
+
+if (aiSubmitBtn) {
+    aiSubmitBtn.addEventListener('click', runAiEdit);
+}
+
+if (aiPromptInput) {
+    aiPromptInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            runAiEdit();
+        }
+    });
 }
 
 // --- 9. HELPERS ---
