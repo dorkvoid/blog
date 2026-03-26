@@ -877,55 +877,66 @@ function addPostToDOM(post) {
     if (pdfBtn) {
         pdfBtn.addEventListener('click', async () => {
             playSound('click');
-            pdfBtn.innerText = "[ SAVING... ]";
+            pdfBtn.innerText = "[ PROCESSING... ]";
             
             try {
-                // 1. Rip the raw data safely
+                // 1. Rip the raw data
                 const tsEl = postDiv.querySelector('.main-ts');
                 const postDate = tsEl ? tsEl.innerText : "Unknown Date";
                 
                 const textEl = postDiv.querySelector('.post-text');
                 const rawHTML = textEl ? textEl.innerHTML : "";
                 
-                const images = Array.from(postDiv.querySelectorAll('.post-image')).map(img => img.src);
+                const imageElements = Array.from(postDiv.querySelectorAll('.post-image'));
                 
-                // 2. THE FIX: Preload all images so html2pdf actually knows how tall they are
-                if (images.length > 0) {
-                    await Promise.all(images.map(src => {
-                        return new Promise(resolve => {
-                            const img = new Image();
-                            img.crossOrigin = "Anonymous"; // Prevents CORS rendering blocks
-                            img.onload = resolve;
-                            img.onerror = resolve; // Don't hang if an image is dead
-                            img.src = src;
-                        });
-                    }));
-                }
+                // 2. THE NUCLEAR FIX: Convert all images to Base64 so they literally cannot fail to load
+                const base64Images = await Promise.all(imageElements.map(img => {
+                    return new Promise(resolve => {
+                        const tempImg = new Image();
+                        tempImg.crossOrigin = "Anonymous"; // Bypass CORS blocking
+                        tempImg.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = tempImg.width;
+                            canvas.height = tempImg.height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(tempImg, 0, 0);
+                            try {
+                                // Bake the image into a raw string
+                                resolve(canvas.toDataURL('image/jpeg', 0.95));
+                            } catch (e) {
+                                // If it fails (strict CORS), fallback to normal URL
+                                resolve(img.src);
+                            }
+                        };
+                        tempImg.onerror = () => resolve(img.src); // Fallback on error
+                        tempImg.src = img.src;
+                    });
+                }));
 
                 // 3. Strip out spoiler formatting
                 let cleanHTML = rawHTML.replace(/<span class="spoiler"[^>]*>(.*?)<\/span>/g, '$1');
 
-                // 4. Build a pure HTML string with a fixed width so it formats like a document
+                // 4. Build a pure HTML string
                 let htmlString = `
-                    <div style="width: 800px; padding: 40px; font-family: Arial, Helvetica, sans-serif; color: #000; background: #fff; line-height: 1.6; box-sizing: border-box;">
+                    <div style="width: 100%; max-width: 800px; padding: 40px; font-family: Arial, Helvetica, sans-serif; color: #000; background: #fff; line-height: 1.6; box-sizing: border-box;">
                         <div style="border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 30px;">
                             <h1 style="margin: 0; font-size: 28px; text-transform: uppercase; font-family: 'Courier New', Courier, monospace;">MIKEVOID // ARCHIVE</h1>
                             <span style="color: #555; font-size: 14px; font-weight: bold; font-family: 'Courier New', Courier, monospace;">LOGGED: ${postDate}</span>
                         </div>
                         
-                        <div style="font-size: 14px; word-wrap: break-word;">
+                        <div style="font-size: 14px; word-wrap: break-word; margin-bottom: 40px;">
                             ${cleanHTML}
                         </div>
                 `;
 
-                if (images.length > 0) {
-                    htmlString += `<div style="margin-top: 40px; border-top: 1px dashed #ccc; padding-top: 30px;">`;
-                    images.forEach(src => {
-                        // THE FIX: page-break-inside: avoid keeps the image intact. 
-                        // Max-height: 900px ensures no single image is taller than an A4 page.
+                // 5. Build the image gallery
+                if (base64Images.length > 0) {
+                    htmlString += `<div style="border-top: 1px dashed #ccc; padding-top: 30px;">`;
+                    base64Images.forEach(src => {
+                        // We assign a specific class here so we can target it in the PDF config
                         htmlString += `
-                            <div style="page-break-inside: avoid; margin-bottom: 30px; text-align: center;">
-                                <img src="${src}" style="max-width: 100%; max-height: 900px; object-fit: contain; display: inline-block; border: 1px solid #ddd;">
+                            <div class="pdf-image-wrapper" style="margin-bottom: 30px; text-align: center;">
+                                <img src="${src}" style="max-width: 100%; max-height: 800px; object-fit: contain; display: block; margin: 0 auto; border: 1px solid #ddd;">
                             </div>
                         `;
                     });
@@ -934,22 +945,23 @@ function addPostToDOM(post) {
 
                 htmlString += `</div>`;
 
-                // 5. Configure PDF Options
+                // 6. Configure PDF Options
                 const opt = {
                     margin:       15,
                     filename:     `void-post-${id}.pdf`,
-                    image:        { type: 'jpeg', quality: 0.98 },
-                    pagebreak:    { mode: ['css', 'legacy'] }, // Let the inline CSS handle the breaks
+                    image:        { type: 'jpeg', quality: 1 },
+                    // THE FIX: Explicitly tell html2pdf to NEVER break a div with this class
+                    pagebreak:    { mode: 'css', avoid: '.pdf-image-wrapper' }, 
                     html2canvas:  { 
                         scale: 2, 
                         useCORS: true,
-                        scrollY: 0,  // THE FIX: Kills the scrolling text-shift bug dead
-                        windowY: 0   // Secondary failsafe for the scroll bug
+                        scrollY: 0,
+                        windowY: 0
                     },
                     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
                 };
 
-                // 6. Generate and save
+                // 7. Generate and save
                 await html2pdf().set(opt).from(htmlString).save();
                 pdfBtn.innerText = "[ PDF ]";
 
