@@ -888,108 +888,50 @@ function addPostToDOM(post) {
             
             const images = Array.from(postDiv.querySelectorAll('.post-image')).map(img => img.src);
             
-            // 2. Build a clean, visible-but-hidden container
-            const printBox = document.createElement('div');
-            printBox.style.position = 'absolute';
-            printBox.style.top = '0';
-            printBox.style.left = '0';
-            printBox.style.width = '800px'; 
-            printBox.style.zIndex = '-9999'; // Hide it behind your site
-            
-            // Strip out spoiler formatting so it's readable in the PDF
+            // 2. Strip out spoiler formatting so it's readable in the PDF
             let cleanHTML = rawHTML.replace(/<span class="spoiler".*?>(.*?)<\/span>/g, '$1');
 
-            // 3. Bake the styles directly into the template so html2canvas CANNOT ignore them
-            let template = `
-                <style>
-                    .pdf-clean-wrapper {
-                        padding: 40px;
-                        background: #ffffff;
-                        color: #000000;
-                        font-family: Arial, Helvetica, sans-serif;
-                    }
-                    .pdf-clean-wrapper h1, .pdf-clean-wrapper h2, .pdf-clean-wrapper h3 {
-                        border-bottom: 1px solid #ccc;
-                        padding-bottom: 5px;
-                        margin-top: 20px;
-                        margin-bottom: 10px;
-                    }
-                    .pdf-clean-wrapper p {
-                        margin-bottom: 15px;
-                        line-height: 1.6;
-                    }
-                    .pdf-clean-wrapper img {
-                        max-width: 100%;
-                        border: 1px solid #ddd;
-                        margin-top: 15px;
-                        page-break-inside: avoid;
-                        display: block;
-                    }
-                    .pdf-clean-wrapper a { color: #0000ee; text-decoration: none; }
-                    .pdf-clean-wrapper blockquote {
-                        border-left: 4px solid #ddd;
-                        padding-left: 15px;
-                        color: #555;
-                        margin: 15px 0;
-                    }
-                    .pdf-clean-wrapper pre, .pdf-clean-wrapper code {
-                        background: #f4f4f4;
-                        font-family: monospace;
-                    }
-                    .pdf-clean-wrapper pre {
-                        padding: 15px;
-                        border: 1px solid #ddd;
-                        white-space: pre-wrap; /* stops long code blocks from clipping */
-                        word-wrap: break-word;
-                    }
-                    .pdf-clean-wrapper code { padding: 2px 4px; }
-                </style>
-                
-                <div class="pdf-clean-wrapper">
+            // 3. Build a pure HTML string. We do NOT append this to the document.
+            let htmlString = `
+                <div style="padding: 20px; font-family: Arial, Helvetica, sans-serif; color: #000; background: #fff;">
                     <div style="border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 30px;">
-                        <h1 style="margin: 0; font-size: 28px; text-transform: uppercase; font-weight: bold; font-family: 'Courier New', Courier, monospace;">MIKEVOID // ARCHIVE</h1>
-                        <span style="color: #666; font-size: 14px; font-weight: bold; font-family: 'Courier New', Courier, monospace;">LOGGED: ${postDate}</span>
+                        <h1 style="margin: 0; font-size: 26px; text-transform: uppercase; font-family: 'Courier New', Courier, monospace;">MIKEVOID // ARCHIVE</h1>
+                        <span style="color: #555; font-size: 14px; font-weight: bold; font-family: 'Courier New', Courier, monospace;">LOGGED: ${postDate}</span>
                     </div>
-                    <div style="font-size: 14px; word-wrap: break-word;">
+                    
+                    <div style="font-size: 14px; line-height: 1.6; word-wrap: break-word;">
                         ${cleanHTML}
                     </div>
             `;
 
             if (images.length > 0) {
-                template += `<div style="margin-top: 40px; border-top: 1px dashed #ccc; padding-top: 20px;">`;
+                htmlString += `<div style="margin-top: 40px; border-top: 1px dashed #ccc; padding-top: 20px; display: flex; flex-direction: column; gap: 20px;">`;
                 images.forEach(src => {
-                    // Force page breaks to avoid chopping images in half
-                    template += `<img src="${src}" style="page-break-inside: avoid;">`;
+                    // max-width and block display ensure it fits the PDF. page-break-inside prevents slicing.
+                    htmlString += `<img src="${src}" style="max-width: 100%; display: block; border: 1px solid #ddd; page-break-inside: avoid;">`;
                 });
-                template += `</div>`;
+                htmlString += `</div>`;
             }
 
-            template += `</div>`;
+            htmlString += `</div>`;
 
-            printBox.innerHTML = template;
-            document.body.appendChild(printBox);
-
+            // 4. Configure PDF Options
             const opt = {
                 margin:       15,
                 filename:     `void-post-${id}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
                 pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }, 
-                html2canvas:  { 
-                    scale: 2, 
-                    backgroundColor: '#ffffff', // Explicitly white
-                    useCORS: true
-                },
+                html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            html2pdf().set(opt).from(printBox).save().then(() => {
+            // 5. Pass the raw string directly into html2pdf
+            html2pdf().set(opt).from(htmlString).save().then(() => {
                 pdfBtn.innerText = "[ PDF ]";
-                document.body.removeChild(printBox); // nuke it when done
             }).catch(err => {
                 console.error("PDF Export Error:", err);
                 pdfBtn.innerText = "[ ERROR ]";
                 setTimeout(() => pdfBtn.innerText = "[ PDF ]", 2000);
-                document.body.removeChild(printBox);
             });
         });
     }
