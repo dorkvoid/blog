@@ -888,27 +888,27 @@ function addPostToDOM(post) {
             
             const images = Array.from(postDiv.querySelectorAll('.post-image')).map(img => img.src);
             
-            // 2. Strip out spoiler formatting so it's readable in the PDF
-            let cleanHTML = rawHTML.replace(/<span class="spoiler".*?>(.*?)<\/span>/g, '$1');
+            // 2. Strip out spoiler formatting so it's readable
+            let cleanHTML = rawHTML.replace(/<span class="spoiler"[^>]*>(.*?)<\/span>/g, '$1');
 
-            // 3. Build a pure HTML string. We do NOT append this to the document.
+            // 3. Build a pure HTML string
             let htmlString = `
-                <div style="padding: 20px; font-family: Arial, Helvetica, sans-serif; color: #000; background: #fff;">
-                    <div style="border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 30px;">
-                        <h1 style="margin: 0; font-size: 26px; text-transform: uppercase; font-family: 'Courier New', Courier, monospace;">MIKEVOID // ARCHIVE</h1>
+                <div style="padding: 20px; font-family: Arial, Helvetica, sans-serif; color: #000; background: #fff; line-height: 1.5;">
+                    <div style="border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;">
+                        <h1 style="margin: 0; font-size: 24px; text-transform: uppercase; font-family: 'Courier New', Courier, monospace;">MIKEVOID // ARCHIVE</h1>
                         <span style="color: #555; font-size: 14px; font-weight: bold; font-family: 'Courier New', Courier, monospace;">LOGGED: ${postDate}</span>
                     </div>
                     
-                    <div style="font-size: 14px; line-height: 1.6; word-wrap: break-word;">
+                    <div style="font-size: 14px; word-wrap: break-word;">
                         ${cleanHTML}
                     </div>
             `;
 
             if (images.length > 0) {
-                htmlString += `<div style="margin-top: 40px; border-top: 1px dashed #ccc; padding-top: 20px; display: flex; flex-direction: column; gap: 20px;">`;
+                htmlString += `<div style="margin-top: 30px; border-top: 1px dashed #ccc; padding-top: 20px;">`;
                 images.forEach(src => {
-                    // max-width and block display ensure it fits the PDF. page-break-inside prevents slicing.
-                    htmlString += `<img src="${src}" style="max-width: 100%; display: block; border: 1px solid #ddd; page-break-inside: avoid;">`;
+                    // THE FIX: Restrict max-height to 800px so it physically can't overrun an A4 page
+                    htmlString += `<img src="${src}" style="max-width: 100%; max-height: 800px; object-fit: contain; display: block; margin: 0 auto 20px auto; page-break-inside: avoid;">`;
                 });
                 htmlString += `</div>`;
             }
@@ -920,12 +920,17 @@ function addPostToDOM(post) {
                 margin:       15,
                 filename:     `void-post-${id}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }, 
-                html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
+                pagebreak:    { mode: ['css', 'legacy'], avoid: 'img' }, // Force it to respect image boundaries
+                html2canvas:  { 
+                    scale: 2, 
+                    useCORS: true, 
+                    scrollY: 0, // Kills the blank space / shifting bug dead
+                    scrollX: 0
+                },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // 5. Pass the raw string directly into html2pdf
+            // 5. Pass the raw string directly
             html2pdf().set(opt).from(htmlString).save().then(() => {
                 pdfBtn.innerText = "[ PDF ]";
             }).catch(err => {
