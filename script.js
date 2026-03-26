@@ -879,96 +879,85 @@ function addPostToDOM(post) {
             playSound('click');
             pdfBtn.innerText = "[ SAVING... ]";
             
-            // 1. Rip the raw data safely
-            const tsEl = postDiv.querySelector('.main-ts');
-            const postDate = tsEl ? tsEl.innerText : "Unknown Date";
-            
-            const textEl = postDiv.querySelector('.post-text');
-            const rawHTML = textEl ? textEl.innerHTML : "";
-            
-            const images = Array.from(postDiv.querySelectorAll('.post-image')).map(img => img.src);
-            
-            // 2. Strip out spoiler formatting
-            let cleanHTML = rawHTML.replace(/<span class="spoiler"[^>]*>(.*?)<\/span>/g, '$1');
-
-            // 3. Build a hidden DOM element (NOT just a string) so we can track image loading
-            const printBox = document.createElement('div');
-            printBox.style.position = 'absolute';
-            printBox.style.left = '-9999px'; // Yeet it off screen
-            printBox.style.top = '0';
-            printBox.style.width = '800px';  // Fixed width so text wraps properly
-            printBox.style.padding = '20px';
-            printBox.style.fontFamily = 'Arial, Helvetica, sans-serif';
-            printBox.style.color = '#000';
-            printBox.style.background = '#fff';
-            printBox.style.lineHeight = '1.5';
-
-            let innerTemplate = `
-                <div style="border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;">
-                    <h1 style="margin: 0; font-size: 24px; text-transform: uppercase; font-family: 'Courier New', Courier, monospace;">MIKEVOID // ARCHIVE</h1>
-                    <span style="color: #555; font-size: 14px; font-weight: bold; font-family: 'Courier New', Courier, monospace;">LOGGED: ${postDate}</span>
-                </div>
+            try {
+                // 1. Rip the raw data safely
+                const tsEl = postDiv.querySelector('.main-ts');
+                const postDate = tsEl ? tsEl.innerText : "Unknown Date";
                 
-                <div style="font-size: 14px; word-wrap: break-word;">
-                    ${cleanHTML}
-                </div>
-            `;
+                const textEl = postDiv.querySelector('.post-text');
+                const rawHTML = textEl ? textEl.innerHTML : "";
+                
+                const images = Array.from(postDiv.querySelectorAll('.post-image')).map(img => img.src);
+                
+                // 2. THE FIX: Preload all images so html2pdf actually knows how tall they are
+                if (images.length > 0) {
+                    await Promise.all(images.map(src => {
+                        return new Promise(resolve => {
+                            const img = new Image();
+                            img.crossOrigin = "Anonymous"; // Prevents CORS rendering blocks
+                            img.onload = resolve;
+                            img.onerror = resolve; // Don't hang if an image is dead
+                            img.src = src;
+                        });
+                    }));
+                }
 
-            if (images.length > 0) {
-                innerTemplate += `<div style="margin-top: 30px; border-top: 1px dashed #ccc; padding-top: 20px;">`;
-                images.forEach(src => {
-                    // THE FIX: Wrap images in a block div that tells the renderer NOT to split it.
-                    // Max-height dropped to 700px so it definitely won't overflow an A4 page height.
-                    innerTemplate += `
-                        <div style="page-break-inside: avoid; margin-bottom: 20px; text-align: center;">
-                            <img src="${src}" style="max-width: 100%; max-height: 700px; object-fit: contain; display: inline-block;">
+                // 3. Strip out spoiler formatting
+                let cleanHTML = rawHTML.replace(/<span class="spoiler"[^>]*>(.*?)<\/span>/g, '$1');
+
+                // 4. Build a pure HTML string with a fixed width so it formats like a document
+                let htmlString = `
+                    <div style="width: 800px; padding: 40px; font-family: Arial, Helvetica, sans-serif; color: #000; background: #fff; line-height: 1.6; box-sizing: border-box;">
+                        <div style="border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 30px;">
+                            <h1 style="margin: 0; font-size: 28px; text-transform: uppercase; font-family: 'Courier New', Courier, monospace;">MIKEVOID // ARCHIVE</h1>
+                            <span style="color: #555; font-size: 14px; font-weight: bold; font-family: 'Courier New', Courier, monospace;">LOGGED: ${postDate}</span>
                         </div>
-                    `;
-                });
-                innerTemplate += `</div>`;
-            }
+                        
+                        <div style="font-size: 14px; word-wrap: break-word;">
+                            ${cleanHTML}
+                        </div>
+                `;
 
-            printBox.innerHTML = innerTemplate;
-            document.body.appendChild(printBox);
+                if (images.length > 0) {
+                    htmlString += `<div style="margin-top: 40px; border-top: 1px dashed #ccc; padding-top: 30px;">`;
+                    images.forEach(src => {
+                        // THE FIX: page-break-inside: avoid keeps the image intact. 
+                        // Max-height: 900px ensures no single image is taller than an A4 page.
+                        htmlString += `
+                            <div style="page-break-inside: avoid; margin-bottom: 30px; text-align: center;">
+                                <img src="${src}" style="max-width: 100%; max-height: 900px; object-fit: contain; display: inline-block; border: 1px solid #ddd;">
+                            </div>
+                        `;
+                    });
+                    htmlString += `</div>`;
+                }
 
-            // 4. THE MAGIC: Force JS to wait for every image to finish loading
-            const imgElements = Array.from(printBox.querySelectorAll('img'));
-            const imagePromises = imgElements.map(img => {
-                return new Promise((resolve) => {
-                    if (img.complete) return resolve();
-                    img.onload = resolve;
-                    img.onerror = resolve; // Resolve on error too so it doesn't hang forever
-                });
-            });
+                htmlString += `</div>`;
 
-            // Pause execution until all images are fully rendered in the hidden box
-            await Promise.all(imagePromises);
+                // 5. Configure PDF Options
+                const opt = {
+                    margin:       15,
+                    filename:     `void-post-${id}.pdf`,
+                    image:        { type: 'jpeg', quality: 0.98 },
+                    pagebreak:    { mode: ['css', 'legacy'] }, // Let the inline CSS handle the breaks
+                    html2canvas:  { 
+                        scale: 2, 
+                        useCORS: true,
+                        scrollY: 0,  // THE FIX: Kills the scrolling text-shift bug dead
+                        windowY: 0   // Secondary failsafe for the scroll bug
+                    },
+                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                };
 
-            // 5. Configure PDF Options
-            const opt = {
-                margin:       15,
-                filename:     `void-post-${id}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                pagebreak:    { mode: ['css', 'legacy'] }, // Let the wrapper divs handle the breaks
-                html2canvas:  { 
-                    scale: 2, 
-                    useCORS: true, 
-                    scrollY: 0, 
-                    scrollX: 0
-                },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            // 6. Print that shit and clean up
-            html2pdf().set(opt).from(printBox).save().then(() => {
+                // 6. Generate and save
+                await html2pdf().set(opt).from(htmlString).save();
                 pdfBtn.innerText = "[ PDF ]";
-                document.body.removeChild(printBox); // Nuke the hidden div
-            }).catch(err => {
+
+            } catch (err) {
                 console.error("PDF Export Error:", err);
                 pdfBtn.innerText = "[ ERROR ]";
                 setTimeout(() => pdfBtn.innerText = "[ PDF ]", 2000);
-                document.body.removeChild(printBox);
-            });
+            }
         });
     }
 
