@@ -877,21 +877,63 @@ function addPostToDOM(post) {
     if (pdfBtn) {
         pdfBtn.addEventListener('click', () => {
             playSound('click');
-            const element = postDiv.cloneNode(true);
             
-            const uiClutter = element.querySelectorAll('.post-footer, .admin-buttons, .drag-handle, .pin-icon, .expand-btn');
-            uiClutter.forEach(el => el.remove());
+            // 1. Rip the raw data we actually want
+            const postDate = postDiv.querySelector('.main-ts').innerText;
+            const rawHTML = postDiv.querySelector('.post-text').innerHTML;
+            const images = Array.from(postDiv.querySelectorAll('.post-image')).map(img => img.src);
+            
+            // 2. Build a clean, invisible container just for the PDF
+            const printBox = document.createElement('div');
+            printBox.style.position = 'absolute';
+            printBox.style.left = '-9999px';
+            printBox.style.top = '-9999px';
+            printBox.style.width = '800px'; 
+            printBox.style.padding = '40px';
+            printBox.style.background = '#000000';
+            printBox.style.color = '#ffffff';
+            printBox.style.fontFamily = 'PixeloidSans, sans-serif'; 
+            
+            // Strip out the spoiler formatting so it's always readable in the PDF
+            let cleanHTML = rawHTML.replace(/<span class="spoiler".*?>(.*?)<\/span>/g, '$1');
 
-            element.querySelectorAll('.spoiler').forEach(s => s.classList.add('revealed'));
+            let template = `
+                <div style="border-bottom: 2px solid #fff; padding-bottom: 10px; margin-bottom: 20px;">
+                    <h1 style="margin: 0; font-size: 24px;">MIKEVOID // ARCHIVE</h1>
+                    <span style="color: #888; font-size: 14px;">LOGGED: ${postDate}</span>
+                </div>
+                <div style="font-size: 14px; line-height: 1.6; word-wrap: break-word;">
+                    ${cleanHTML}
+                </div>
+            `;
+
+            if (images.length > 0) {
+                template += `<div style="margin-top: 30px; display: flex; flex-direction: column; gap: 20px;">`;
+                images.forEach(src => {
+                    // page-break-inside avoid stops images from getting sliced across two pages
+                    template += `<img src="${src}" style="max-width: 100%; border: 1px solid #fff; page-break-inside: avoid;">`;
+                });
+                template += `</div>`;
+            }
+
+            printBox.innerHTML = template;
+            document.body.appendChild(printBox);
 
             const opt = {
-                margin: 10,
-                filename: `void-post-${id}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, backgroundColor: '#000000', useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                margin:       15,
+                filename:     `void-post-${id}.pdf`,
+                image:        { type: 'jpeg', quality: 1 },
+                pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }, 
+                html2canvas:  { scale: 2, backgroundColor: '#000000', useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
-            html2pdf().set(opt).from(element).save();
+
+            pdfBtn.innerText = "[ SAVING... ]";
+
+            html2pdf().set(opt).from(printBox).save().then(() => {
+                pdfBtn.innerText = "[ PDF ]";
+                document.body.removeChild(printBox); // wipe it from the DOM when done
+            });
         });
     }
 
