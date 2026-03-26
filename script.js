@@ -5,12 +5,12 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
 
 // --- 2. CONFIGURATION ---
 const firebaseConfig = {
-  apiKey: "AIzaSyCO3Kct2wiTpcrHtiMS31RlB5goRJ1Z4FI", 
-  authDomain: "scrumblogg.firebaseapp.com",
-  projectId: "scrumblogg",
-  storageBucket: "scrumblogg.firebasestorage.app",
-  messagingSenderId: "786010760570",
-  appId: "1:786010760570:web:6ccc2798124b9c1d44a2c3"
+    apiKey: "AIzaSyCO3Kct2wiTpcrHtiMS31RlB5goRJ1Z4FI", 
+    authDomain: "scrumblogg.firebaseapp.com",
+    projectId: "scrumblogg",
+    storageBucket: "scrumblogg.firebasestorage.app",
+    messagingSenderId: "786010760570",
+    appId: "1:786010760570:web:6ccc2798124b9c1d44a2c3"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -57,8 +57,8 @@ const confirmNo = document.getElementById('confirmNo');
 const lightboxModal = document.getElementById('lightbox-modal');
 const lightboxImg = document.getElementById('lightbox-img');
 const lightboxClose = document.getElementById('lightbox-close');
-const lightboxPrev = document.getElementById('lightbox-prev'); // ADDED
-const lightboxNext = document.getElementById('lightbox-next'); // ADDED
+const lightboxPrev = document.getElementById('lightbox-prev'); 
+const lightboxNext = document.getElementById('lightbox-next'); 
 const backToTopBtn = document.getElementById('back-to-top');
 
 // --- INIT UI TWEAKS ---
@@ -394,7 +394,7 @@ function updatePostButtonState() {
 
 textInput.addEventListener('input', () => {
     updatePostButtonState();
-    localStorage.setItem('draftPost', textInput.value); // UPDATED: Save to Draft
+    localStorage.setItem('draftPost', textInput.value); 
 });
 imageInput.addEventListener('input', updatePostButtonState);
 updatePostButtonState();
@@ -603,7 +603,7 @@ function resetForm() {
     tagToggles.forEach(t => t.classList.remove('selected'));
     
     updatePostButtonState();
-    localStorage.removeItem('draftPost'); // Clean memory on success
+    localStorage.removeItem('draftPost'); 
 }
 
 // --- 9. HELPERS ---
@@ -665,7 +665,7 @@ setInterval(() => {
             editSpan.innerText = `(edited ${timeAgo(new Date(parseInt(editSpan.dataset.editTs)))})`;
         }
     });
-}, 60000); // Check every 60 seconds
+}, 60000); 
 
 // --- 10. DRAG AND DROP ---
 let draggedItem = null;
@@ -825,7 +825,6 @@ function addPostToDOM(post) {
                     </button>
                 </div>`;
             } else {
-                // THE FIX: Added loading="lazy" so off-screen images don't lag the site
                 mediaHTML += `<div class="media-item"><img src="${url}" class="post-image click-to-zoom" loading="lazy"></div>`;
             }
         });
@@ -837,7 +836,6 @@ function addPostToDOM(post) {
     const postDate = rawDate ? rawDate.toDate() : new Date();
     const editDate = post.editedTimestamp ? post.editedTimestamp.toDate() : null;
 
-    // ADDED data-ts for live updating
     let metaContent = `<span class="main-ts" data-ts="${postDate.getTime()}">${timeAgo(postDate)}</span>`;
     if (editDate) {
         metaContent += `<span class="edited-ts" data-edit-ts="${editDate.getTime()}">(edited ${timeAgo(editDate)})</span>`;
@@ -866,12 +864,36 @@ function addPostToDOM(post) {
 
         <div class="post-footer">
             <span class="permalink-btn" title="Copy Link">[ LINK ]</span>
+            <span class="pdf-btn" title="Save as PDF">[ PDF ]</span>
         </div>
 
         <div class="admin-buttons"></div>
     `;
 
     feed.appendChild(postDiv);
+
+    // --- PDF EXPORT LOGIC ---
+    const pdfBtn = postDiv.querySelector('.pdf-btn');
+    if (pdfBtn) {
+        pdfBtn.addEventListener('click', () => {
+            playSound('click');
+            const element = postDiv.cloneNode(true);
+            
+            const uiClutter = element.querySelectorAll('.post-footer, .admin-buttons, .drag-handle, .pin-icon, .expand-btn');
+            uiClutter.forEach(el => el.remove());
+
+            element.querySelectorAll('.spoiler').forEach(s => s.classList.add('revealed'));
+
+            const opt = {
+                margin: 10,
+                filename: `void-post-${id}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, backgroundColor: '#000000', useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        });
+    }
 
     const tsWrapper = postDiv.querySelector('.timestamp-wrapper');
     if (tsWrapper) {
@@ -946,7 +968,6 @@ function addPostToDOM(post) {
         btnContainer.appendChild(deleteBtn);
     }
     
-    // MULTI-IMAGE LIGHTBOX UPGRADE
     const imgElements = postDiv.querySelectorAll('.click-to-zoom');
     const galleryUrls = Array.from(imgElements).map(img => img.src);
     
@@ -1029,15 +1050,13 @@ document.addEventListener('keydown', (e) => {
         }
         if (mediaBox && !mediaBox.classList.contains('hidden')) {
             mediaBox.classList.add('hidden');
-            mediaContent.innerHTML = ""; // Cuts off audio instantly
+            mediaContent.innerHTML = ""; 
             playSound('click');
         }
     }
 
-    // THE FIX: If the key is being held down, ignore it completely
     if (e.repeat) return;
 
-    // Flip through images with keyboard
     if (lightboxModal && !lightboxModal.classList.contains('hidden')) {
         if (e.key === "ArrowLeft") window.navigateLightbox(-1);
         if (e.key === "ArrowRight") window.navigateLightbox(1);
@@ -1091,7 +1110,6 @@ function formatTime(seconds) {
 window.launchMedia = function(url, type) {
     playSound('click');
     
-    // THE AUDIO KILL SWITCH
     const oldAudio = document.getElementById('raw-audio');
     if (oldAudio) {
         oldAudio.pause();
@@ -1119,7 +1137,6 @@ window.launchMedia = function(url, type) {
     else if (type === 'audio-file') {
         mediaTitle.innerText = "LOCAL AUDIO";
         
-        // Removed standard "autoplay" attribute to handle it manually
         mediaContent.innerHTML = `
             <div class="custom-audio-wrapper">
                 <audio id="raw-audio" src="${url}"></audio>
@@ -1136,13 +1153,12 @@ window.launchMedia = function(url, type) {
         const timeDisp = document.getElementById('audio-time');
         const durDisp = document.getElementById('audio-duration');
 
-        // THE FIX: Catch the Autoplay Promise
         const playPromise = audioEl.play();
         if (playPromise !== undefined) {
             playPromise.then(_ => {
-                playBtn.innerText = "||"; // It worked!
+                playBtn.innerText = "||"; 
             }).catch(error => {
-                playBtn.innerText = ">"; // Browser blocked it, wait for click
+                playBtn.innerText = ">"; 
             });
         }
 

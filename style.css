@@ -1132,3 +1132,21 @@ input[type=range].retro-scrub:hover::-webkit-slider-thumb {
         scrollbar-width: none;  /* Firefox */
     }
 }
+
+.pdf-btn {
+    color: #444;
+    user-select: none;
+    transition: color 0.2s;
+    font-family: 'PixeloidSans', sans-serif;
+    margin-left: 15px;
+    cursor: url('images/link-select.png'), pointer;
+}
+
+.pdf-btn:hover {
+    color: #00ff00; /* Subtle green for "download" */
+}
+
+/* Ensure PDF capture doesn't cut off content */
+.post {
+    page-break-inside: avoid;
+}
