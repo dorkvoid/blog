@@ -6,7 +6,6 @@
     <title>TERMINAL // START</title>
     <link rel="icon" type="image/png" href="images/plxeyestiny.png">
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     
     <style>
         /* --- FONTS --- */
@@ -30,8 +29,7 @@
 
         /* GLOBALLY APPLY SMALL TEXT FONT */
         body, input, button, select, textarea, .suggestion-item, .group-title, 
-        .link-label, .link-card::before, .drag-handle-group, .drag-handle-link, 
-        .inline-del-btn, .inline-add-btn, .inline-add-group-btn, #shortcut-badge, 
+        .link-label, .link-card::before, .inline-del-btn, .inline-add-btn, .inline-add-group-btn, #shortcut-badge, 
         #settings-drawer, .section-label, .cheat-sheet, .btn-add, .option-row, 
         .status-bar, .os-widget, .widget-header, .ttt-status, .ttt-btn, #greeting {
             font-family: 'DogicaPixelBold', sans-serif;
@@ -57,6 +55,16 @@
             image-rendering: crisp-edges;
         }
         *:active { cursor: url('images/cursor-click.png'), auto !important; }
+
+        /* --- TEXT HIGHLIGHTING OVERRIDE --- */
+        ::selection {
+            background: var(--retro-green);
+            color: #000;
+        }
+        ::-moz-selection {
+            background: var(--retro-green);
+            color: #000;
+        }
 
         a, button, .suggestion-item, #drawer-tab, select, .handle, .toggle-btn, .link-card, .link-card *, .clear-btn, .go-btn {
             cursor: url('images/link-select.png'), pointer !important;
@@ -114,13 +122,35 @@
         }
 
         .terminal-clock { 
+            position: relative;
             font-size: 100px; 
             line-height: 100px; 
             color: var(--retro-green); 
             margin-bottom: 0px; 
             letter-spacing: 4px; 
             text-shadow: 0 0 15px var(--retro-glow); 
+            z-index: 2;
+            white-space: nowrap;
         }
+
+        /* TRUE DITHERED DROP SHADOW */
+        .terminal-clock::after {
+            content: attr(data-time);
+            position: absolute;
+            left: 8px; /* Shadow X offset */
+            top: 8px;  /* Shadow Y offset */
+            color: var(--retro-green); 
+            z-index: -1;
+            /* 4x4 pixel checkerboard mask */
+            -webkit-mask-image: repeating-conic-gradient(#000 0% 25%, transparent 0% 50%);
+            -webkit-mask-size: 4px 4px;
+            mask-image: repeating-conic-gradient(#000 0% 25%, transparent 0% 50%);
+            mask-size: 4px 4px;
+            text-shadow: none;
+            opacity: 0.5;
+            white-space: nowrap; /* PREVENTS SHADOW FROM WRAPPING OUT OF BOUNDS */
+        }
+
         #greeting { 
             color: var(--retro-dim); 
             margin-top: 8px;
@@ -148,9 +178,23 @@
         .search-wrapper::before {
             content: '>'; position: absolute; left: 24px; top: 50%; transform: translateY(-50%);
             color: var(--retro-green); font-size: 40px; z-index: 5;
+            text-shadow: 0 0 5px var(--retro-glow);
+            pointer-events: none;
+        }
+        
+        .search-wrapper::after {
+            content: '_'; position: absolute; left: 44px; top: 50%; transform: translateY(-50%);
+            color: var(--retro-green); font-size: 40px; z-index: 5;
             animation: blink 1s infinite; text-shadow: 0 0 5px var(--retro-glow);
             pointer-events: none;
         }
+
+        /* Hide the fake underscore when actually typing so it doesn't overlap text */
+        .search-wrapper:focus-within::after,
+        .search-wrapper.has-text::after {
+            display: none;
+        }
+
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
         /* SHORT NEON SIGN FLICKER */
@@ -172,7 +216,7 @@
             height: 100%;
             background: var(--retro-bg); border: 2px solid var(--retro-dim); color: var(--retro-green); 
             font-size: 32px; 
-            padding: 0 20px 0 50px; 
+            padding: 0 20px 0 68px; 
             outline: none; text-align: left; box-sizing: border-box; 
             transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s; 
             box-shadow: inset 0 0 10px var(--retro-glow);
@@ -180,6 +224,7 @@
             background-size: 3px 100%;
             cursor: text !important;
             z-index: 2;
+            caret-color: var(--retro-green);
         }
         
         .search-box.flicker {
@@ -279,23 +324,17 @@
         .dashboard { 
             flex-grow: 1;
             display: grid; 
-            grid-template-columns: repeat(auto-fit, 180px); 
+            grid-template-columns: repeat(auto-fit, 220px); 
             justify-content: center;
             align-content: start;
             gap: 20px; 
             width: 100%; max-width: 1000px; margin-top: 40px; z-index: 2;
             overflow-y: auto; padding-bottom: 80px;
-            transition: grid-template-columns 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 
             scrollbar-width: none;
             -ms-overflow-style: none;
         }
         .dashboard::-webkit-scrollbar { display: none; }
-
-        /* Widen the columns dynamically when Edit Mode is toggled to prevent crushing */
-        .dashboard.is-editing {
-            grid-template-columns: repeat(auto-fit, 260px);
-        }
 
         .group-container { 
             border: 2px solid var(--retro-dark);
@@ -306,54 +345,40 @@
             transition: border-color 0.3s;
             display: flex;
             flex-direction: column;
+            align-items: flex-start;
         }
         .group-container:hover { border-color: var(--retro-dim); }
 
-        .group-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: nowrap; }
+        .group-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; width: 100%; }
         .group-title { 
             background: var(--group-color, var(--retro-green)); color: #000; font-size: 10px; 
             padding: 4px 8px; letter-spacing: 2px; text-transform: uppercase; 
             display: inline-block; width: fit-content; text-align: left; margin: 0;
             transition: 0.2s;
         }
-        .group-title.editing-title {
-            cursor: pointer; outline: 1px dotted #000; outline-offset: -1px;
-        }
 
         .quick-links { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; width: 100%; min-height: 20px; }
         
-        .link-wrapper { display: flex; align-items: center; width: 100%; gap: 6px; }
+        .link-wrapper { display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 6px; }
         .link-card { 
             background: transparent; border: none; padding: 0; 
             text-decoration: none; text-align: left;
-            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
             display: flex; align-items: flex-start; justify-content: flex-start;
-            flex: 1 1 0; min-width: 0; /* Prevents flexbox from forcing breaks on large words */
         }
         .link-card::before {
             content: '>'; color: var(--retro-dim); margin-right: 8px; font-size: 10px; transition: color 0.2s; margin-top: 1px;
         }
-        .link-card:hover { border: none; background: transparent; transform: translateX(6px); box-shadow: none; }
+        .link-card:hover { border: none; background: transparent; box-shadow: none; }
         .link-card:hover::before { color: var(--group-color, var(--retro-green)); }
         
         .link-label { 
             color: var(--retro-dim); font-size: 10px; 
             text-transform: uppercase; letter-spacing: 2px; transition: color 0.2s; text-align: left;
-            white-space: normal; word-break: normal; overflow-wrap: break-word; 
+            white-space: normal; word-break: break-word; 
         }
-        .link-label.editing-label {
-            border-bottom: 1px dotted var(--retro-dim); padding-bottom: 1px;
-        }
-        .link-card:hover .link-label { color: var(--group-color, var(--retro-green)); text-shadow: 0 0 8px var(--retro-glow); }
+        .link-card:hover .link-label { color: var(--group-color, var(--retro-green)); }
 
         /* INLINE EDIT CONTROLS */
-        .drag-handle-group, .drag-handle-link { 
-            cursor: grab; color: var(--retro-dim); font-size: 12px; user-select: none; 
-            flex-shrink: 0; opacity: 0.5; transition: 0.2s;
-        }
-        .drag-handle-group:hover, .drag-handle-link:hover { opacity: 1; }
-        .drag-handle-group:active, .drag-handle-link:active { cursor: grabbing; color: var(--retro-green); opacity: 1; }
-        
         .inline-del-btn { 
             background: transparent; color: #ff0033; border: none; cursor: pointer; padding: 0 4px; font-size: 12px;
             margin-left: auto; flex-shrink: 0; opacity: 0.8; transition: 0.2s;
@@ -706,7 +731,6 @@
                 delete cfg.links;
             }
             if (cfg.linkGroups) {
-                // Force legacy white or classic green groups to the new mint green
                 cfg.linkGroups.forEach(g => { 
                     if(!g.color || g.color === "#ffffff" || g.color === "#fff" || g.color === "#00ff41") g.color = "#55ffcc"; 
                 });
@@ -743,7 +767,7 @@
             if (sound) { const clone = sound.cloneNode(); clone.volume = vol; clone.play().catch(()=>{}); }
         };
 
-        const ignoreSelectors = 'button, a, input, select, [onclick], .suggestion-item, .ttt-cell, .calc-btn, .clear-btn, .go-btn, .toggle-btn, #drawer-tab, .widget-close, .drag-handle-group, .drag-handle-link, .inline-color-picker';
+        const ignoreSelectors = 'button, a, input, select, [onclick], .suggestion-item, .ttt-cell, .calc-btn, .clear-btn, .go-btn, .toggle-btn, #drawer-tab, .widget-close, .inline-color-picker';
         
         window.addEventListener('mousedown', (e) => {
             if (e.target.closest(ignoreSelectors)) return;
@@ -756,19 +780,10 @@
 
         // --- DASHBOARD & INLINE EDITING ---
         let editMode = false;
-        let sortableGroups = null;
-        let sortableLinks = [];
 
         function renderMainUI() {
             const dashboard = document.getElementById('dashboard');
             dashboard.innerHTML = '';
-            
-            if (editMode) dashboard.classList.add('is-editing');
-            else dashboard.classList.remove('is-editing');
-
-            if(sortableGroups) sortableGroups.destroy();
-            sortableLinks.forEach(s => s.destroy());
-            sortableLinks = [];
 
             config.linkGroups.forEach((group, gIdx) => {
                 // Hide empty groups when not editing to keep dashboard clean
@@ -780,10 +795,9 @@
                 groupDiv.style.setProperty('--group-color', group.color || '#00ff41');
                 
                 let linksHTML = group.links.map((link, lIdx) => `
-                    <div class="link-wrapper" data-lidx="${lIdx}" data-name="${link.name}" data-url="${link.url}">
-                        ${editMode ? `<div class="drag-handle-link">::</div>` : ''}
+                    <div class="link-wrapper">
                         <a href="${editMode ? '#' : link.url}" target="${(!editMode && config.newTab) ? "_blank" : "_self"}" class="link-card" onmouseenter="playSound('hover')" onclick="${editMode ? `event.preventDefault(); editLink(${gIdx}, ${lIdx})` : 'playSound(\'click\')'}">
-                            <div class="link-label ${editMode ? 'editing-label' : ''}">${link.name}</div>
+                            <div class="link-label">${link.name}</div>
                         </a>
                         ${editMode ? `<button class="inline-del-btn" onclick="deleteLink(${gIdx}, ${lIdx})">X</button>` : ''}
                     </div>
@@ -791,67 +805,29 @@
 
                 groupDiv.innerHTML = `
                     <div class="group-header">
-                        ${editMode ? `<div class="drag-handle-group">::</div>` : ''}
-                        <div class="group-title ${editMode ? 'editing-title' : ''}" ${editMode ? `onclick="editGroup(${gIdx})"` : ''}>${group.groupName}</div>
+                        <div class="group-title" ${editMode ? `onclick="editGroup(${gIdx})" style="cursor:pointer;"` : ''}>${group.groupName}</div>
                         ${editMode ? `
                             <input type="color" class="inline-color-picker" value="${group.color || '#00ff41'}" onchange="changeGroupColor(${gIdx}, this.value)">
                             <button class="inline-del-btn" onclick="deleteGroup(${gIdx})">X</button>
                         ` : ''}
                     </div>
-                    <div class="quick-links" data-gidx="${gIdx}">${linksHTML}</div>
+                    <div class="quick-links">${linksHTML}</div>
                     ${editMode ? `<button class="inline-add-btn" onclick="addLink(${gIdx})">+ ADD LINK</button>` : ''}
                 `;
                 dashboard.appendChild(groupDiv);
             });
 
-            // If Edit Mode is ON, initialize drag and drop sorting + the Add Group button
+            // Add Group button if in Edit Mode
             if (editMode) {
                 const addGroupBtn = document.createElement('button');
                 addGroupBtn.className = 'inline-add-group-btn';
                 addGroupBtn.innerText = '+ ADD NEW GROUP';
                 addGroupBtn.onclick = addGroup;
                 dashboard.appendChild(addGroupBtn);
-
-                if (typeof Sortable !== 'undefined') {
-                    sortableGroups = Sortable.create(dashboard, {
-                        handle: '.drag-handle-group',
-                        animation: 150,
-                        filter: '.inline-add-group-btn',
-                        onEnd: saveLayoutFromDOM
-                    });
-
-                    document.querySelectorAll('.quick-links').forEach(ql => {
-                        sortableLinks.push(Sortable.create(ql, {
-                            group: 'shared-links',
-                            handle: '.drag-handle-link',
-                            animation: 150,
-                            onEnd: saveLayoutFromDOM
-                        }));
-                    });
-                }
             }
         }
 
         // --- INLINE EDIT ACTIONS ---
-        function saveLayoutFromDOM() {
-            const newGroups = [];
-            document.querySelectorAll('.group-container').forEach(gDiv => {
-                const gIdx = gDiv.dataset.gidx;
-                const oldGroup = config.linkGroups[gIdx];
-                const groupName = oldGroup.groupName;
-                const color = oldGroup.color;
-                
-                const links = [];
-                gDiv.querySelectorAll('.link-wrapper').forEach(lDiv => {
-                    links.push({ name: lDiv.dataset.name, url: lDiv.dataset.url });
-                });
-                newGroups.push({ groupName, color, links });
-            });
-            config.linkGroups = newGroups;
-            saveConfig();
-            renderMainUI(); // Force re-render to update the index numbers
-        }
-
         function editLink(gIdx, lIdx) {
             playSound('click');
             const link = config.linkGroups[gIdx].links[lIdx];
@@ -1407,14 +1383,19 @@
             const day = now.getDay();
             let h = now.getHours(), m = String(now.getMinutes()).padStart(2, '0'), s = String(now.getSeconds()).padStart(2, '0');
             
+            let timeString = "";
             if (!config.militaryTime) {
                 const ampm = h >= 12 ? 'PM' : 'AM'; 
                 h = h % 12 || 12;
-                document.getElementById('clock').innerText = `${h}:${m}:${s} ${ampm}`;
+                timeString = `${h}:${m}:${s} ${ampm}`;
             } else {
                 h = String(h).padStart(2, '0');
-                document.getElementById('clock').innerText = `${h}:${m}:${s}`;
+                timeString = `${h}:${m}:${s}`;
             }
+            
+            const clockEl = document.getElementById('clock');
+            clockEl.textContent = timeString; // Use textContent so spaces are perfectly preserved
+            clockEl.setAttribute('data-time', timeString); // Sync the dithered shadow text
             
             let greetingText = "";
             if (month === 9 && date === 31) greetingText = "SYSTEM_HAUNTED";
