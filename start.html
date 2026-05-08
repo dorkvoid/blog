@@ -17,7 +17,7 @@
             --retro-green: #55ffcc;       /* Minty Phosphor Green */
             --retro-glow: rgba(85, 255, 204, 0.4);
             --retro-dim: #2a8066;         /* Muted Mint */
-            --retro-dark: #000605;        /* Deep background mint */
+            --retro-dark: #000806;        /* Deep background mint */
             --retro-bg: #000000;          /* Pure black */
         }
 
@@ -50,10 +50,13 @@
             -moz-osx-font-smoothing: grayscale; 
             text-rendering: optimizeSpeed;
             font-smooth: never;
+            /* FORCE NEAREST-NEIGHBOR / KILL MIPMAP BLUR */
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-crisp-edges;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
         }
         *:active { cursor: url('images/cursor-click.png'), auto !important; }
-
-        img { image-rendering: pixelated; }
 
         a, button, .suggestion-item, #drawer-tab, select, .handle, .toggle-btn, .link-card, .link-card *, .clear-btn, .go-btn {
             cursor: url('images/link-select.png'), pointer !important;
