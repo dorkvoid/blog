@@ -378,6 +378,25 @@ function setupSubscription() {
     }
 }
 
+// --- LOAD MORE POSTS LOGIC ---
+if (loadMoreBtn) {
+    loadMoreBtn.addEventListener('click', () => {
+        playSound('click');
+        loadMoreBtn.innerText = "LOADING..."; 
+        
+        // Bump the limit up by 10
+        feedLimit += 10; 
+        
+        // Re-run the subscription with the new limit
+        setupSubscription();
+        
+        // Reset button text after a short delay
+        setTimeout(() => {
+            loadMoreBtn.innerText = "LOAD OLDER DATA...";
+        }, 500);
+    });
+}
+
 // --- 8. POST & COMMAND LOGIC ---
 function updatePostButtonState() {
     const hasText = textInput.value.trim().length > 0;
