@@ -9,6 +9,40 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     
     <style>
+        /* --- RETRO COLOR PALETTE --- */
+        :root {
+            --retro-green: #55ffcc;       /* Minty Phosphor Green */
+            --retro-glow: rgba(85, 255, 204, 0.4);
+            --retro-dim: #2a8066;         /* Muted Mint */
+            --retro-dark: #00221a;        /* Deep background mint */
+            --retro-bg: #000504;          /* Almost black with mint tint */
+        }
+
+        /* --- FONTS --- */
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+        @font-face {
+            font-family: 'DogicaPixelBold';
+            src: url('dogicapixelbold.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        /* GLOBALLY APPLY SMALL TEXT FONT */
+        body, input, button, select, textarea, .suggestion-item, .group-title, 
+        .link-label, .link-card::before, .drag-handle-group, .drag-handle-link, 
+        .inline-del-btn, .inline-add-btn, .inline-add-group-btn, #shortcut-badge, 
+        #settings-drawer, .section-label, .cheat-sheet, .btn-add, .option-row, 
+        .status-bar, .os-widget, .widget-header, .ttt-status, .ttt-btn, #greeting {
+            font-family: 'DogicaPixelBold', sans-serif;
+        }
+
+        /* FORCIBLY APPLY BIG TEXT FONT */
+        #boss-screen, .terminal-clock, .search-wrapper::before, .search-box, 
+        .clear-btn, .go-btn, .drawer-header, .calc-display, .calc-btn, .ttt-cell {
+            font-family: 'VT323', monospace !important;
+        }
+
         /* --- GLOBAL UI, CURSORS, & PIXEL RENDERING --- */
         * { 
             cursor: url('images/cursor.png'), auto !important; 
@@ -30,9 +64,9 @@
 
         /* --- CUSTOM SCROLLBARS --- */
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #000; border-left: 1px solid #111; }
-        ::-webkit-scrollbar-thumb { background: #333; }
-        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        ::-webkit-scrollbar-track { background: var(--retro-bg); border-left: 1px solid var(--retro-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--retro-dim); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--retro-green); }
 
         /* --- GLOBAL SCANLINES (Subtle Texture) --- */
         body {
@@ -40,7 +74,9 @@
             flex-direction: column;
             align-items: center; 
             padding-top: 18vh;
-            height: 100vh; margin: 0; overflow: hidden; background: black;
+            height: 100vh; margin: 0; overflow: hidden; 
+            background: var(--retro-bg);
+            color: var(--retro-green);
             box-sizing: border-box;
         }
         body.low-power { filter: brightness(0.7); }
@@ -49,7 +85,7 @@
             content: '';
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            background: linear-gradient(rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.04) 50%);
+            background: linear-gradient(rgba(0, 0, 0, 0) 50%, rgba(0, 255, 65, 0.05) 50%);
             background-size: 100% 4px;
             pointer-events: none; 
             z-index: 999;
@@ -59,7 +95,7 @@
         #boss-screen {
             display: none;
             position: absolute; top: 20px; left: 20px;
-            color: #ccc; font-family: 'PixeloidSans', sans-serif; font-size: 16px;
+            color: var(--retro-green); font-size: 24px;
             z-index: 1000;
         }
         #boss-screen::after { content: '_'; animation: blink 1s infinite; }
@@ -75,20 +111,18 @@
         }
 
         .terminal-clock { 
-            font-family: 'PixeloidSansBold', sans-serif; 
-            font-size: 56px; 
-            line-height: 56px; 
-            color: white; 
+            font-size: 100px; 
+            line-height: 100px; 
+            color: var(--retro-green); 
             margin-bottom: 0px; 
-            letter-spacing: 2px; 
-            text-shadow: 0 0 10px rgba(255,255,255,0.1); 
+            letter-spacing: 4px; 
+            text-shadow: 0 0 15px var(--retro-glow); 
         }
         #greeting { 
-            font-family: 'PixeloidSansBold', sans-serif; 
-            color: #444; 
+            color: var(--retro-dim); 
             margin-top: 8px;
             margin-bottom: 24px; 
-            font-size: 12px; 
+            font-size: 10px; 
             line-height: 12px;
             letter-spacing: 4px; 
             text-transform: uppercase; 
@@ -110,11 +144,26 @@
 
         .search-wrapper::before {
             content: '>'; position: absolute; left: 24px; top: 50%; transform: translateY(-50%);
-            color: #fff; font-family: 'PixeloidSansBold', sans-serif; font-size: 24px; z-index: 5;
-            animation: blink 1s infinite; text-shadow: 0 0 5px rgba(255,255,255,0.3);
+            color: var(--retro-green); font-size: 40px; z-index: 5;
+            animation: blink 1s infinite; text-shadow: 0 0 5px var(--retro-glow);
             pointer-events: none;
         }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* AGGRESSIVE FLICKER AWAKE ANIMATION */
+        @keyframes flickerAwake {
+            0%   { opacity: 0; background-color: var(--retro-green); box-shadow: 0 0 50px var(--retro-glow); }
+            10%  { opacity: 1; background-color: transparent; color: var(--retro-green); box-shadow: none; }
+            15%  { opacity: 0; }
+            25%  { opacity: 1; background-color: var(--retro-green); color: #000; box-shadow: inset 0 0 20px #000; }
+            35%  { opacity: 0; background-color: transparent; color: var(--retro-green); }
+            45%  { opacity: 1; box-shadow: inset 0 0 10px var(--retro-green); text-shadow: 0 0 10px var(--retro-green); }
+            50%  { opacity: 0.2; }
+            60%  { opacity: 1; }
+            70%  { opacity: 0.5; }
+            80%  { opacity: 1; box-shadow: none; text-shadow: none; }
+            100% { opacity: 1; }
+        }
 
         .search-box-container {
             position: relative;
@@ -125,26 +174,27 @@
         .search-box { 
             width: 100%;
             height: 100%;
-            background: #050505; border: 2px solid #222; color: white; 
-            font-family: 'PixeloidSans', sans-serif; font-size: 20px; 
+            background: var(--retro-bg); border: 2px solid var(--retro-dim); color: var(--retro-green); 
+            font-size: 32px; 
             padding: 0 20px 0 50px; 
             outline: none; text-align: left; box-sizing: border-box; 
             transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s; 
-            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.02);
-            background-image: linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.02));
+            box-shadow: inset 0 0 10px var(--retro-glow);
+            background-image: linear-gradient(90deg, rgba(0, 255, 65, 0.05), rgba(0, 255, 65, 0.01), transparent);
             background-size: 3px 100%;
             cursor: text !important;
             z-index: 2;
         }
         
         .search-box.flicker {
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.2) !important;
-            border-color: #fff !important;
+            animation: flickerAwake 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
+            box-shadow: 0 0 30px var(--retro-glow), inset 0 0 20px var(--retro-glow) !important;
+            border-color: var(--retro-green) !important;
         }
 
         .search-box:focus { 
-            border-color: #fff; background-color: #0a0a0a; 
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.15), inset 0 0 15px rgba(255,255,255,0.05); 
+            border-color: var(--retro-green); background-color: #000; 
+            box-shadow: 0 0 20px var(--retro-glow), inset 0 0 15px var(--retro-glow); 
         }
 
         /* --- THE DETACHED ACTION BUTTONS ("GO" & "X") --- */
@@ -153,7 +203,6 @@
             flex-shrink: 0; 
             background: #000; 
             border: 2px solid transparent; 
-            font-family: 'PixeloidSansBold', sans-serif; 
             display: flex; align-items: center; justify-content: center;
             opacity: 0; pointer-events: none; overflow: hidden;
             transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
@@ -163,8 +212,8 @@
             line-height: 1;
         }
         
-        .clear-btn { color: #f00; font-size: 22px; }
-        .go-btn { color: #0f0; font-size: 18px; }
+        .clear-btn { color: #ff0033; font-size: 36px; }
+        .go-btn { color: var(--retro-green); font-size: 36px; }
 
         .search-wrapper.has-text .clear-btn,
         .search-wrapper.has-text .go-btn {
@@ -173,16 +222,16 @@
             opacity: 1; pointer-events: auto;
         }
         
-        .search-wrapper.has-text .clear-btn { border-color: #f00; }
-        .search-wrapper.has-text .go-btn { border-color: #0f0; }
+        .search-wrapper.has-text .clear-btn { border-color: #ff0033; }
+        .search-wrapper.has-text .go-btn { border-color: var(--retro-green); }
         
         .clear-btn:hover { 
-            background: #f00 !important; color: #000 !important; 
-            border-color: #f00 !important; box-shadow: 0 0 15px rgba(255, 0, 0, 0.6);
+            background: #ff0033 !important; color: #000 !important; 
+            border-color: #ff0033 !important; box-shadow: 0 0 15px rgba(255, 0, 51, 0.6);
         }
         .go-btn:hover { 
-            background: #0f0 !important; color: #000 !important; 
-            border-color: #0f0 !important; box-shadow: 0 0 15px #0f0;
+            background: var(--retro-green) !important; color: #000 !important; 
+            border-color: var(--retro-green) !important; box-shadow: 0 0 15px var(--retro-glow);
             text-shadow: none;
         }
 
@@ -201,7 +250,7 @@
             top: 100%; 
             left: 0; 
             width: 100%; 
-            background: #050505; border: 2px solid #fff; border-top: none; 
+            background: var(--retro-bg); border: 2px solid var(--retro-green); border-top: none; 
             display: flex; flex-direction: column; 
             z-index: 20; box-sizing: border-box;
             box-shadow: 0 10px 20px rgba(0,0,0,0.8);
@@ -223,12 +272,12 @@
         }
 
         .suggestion-item {
-            padding: 16px 24px; color: #ccc; font-family: 'PixeloidSans', sans-serif; font-size: 16px;
-            border-bottom: 1px solid #111; transition: 0.1s; display: flex; align-items: center;
+            padding: 16px 24px; color: var(--retro-dim); font-size: 10px;
+            border-bottom: 1px solid var(--retro-dark); transition: 0.1s; display: flex; align-items: center;
         }
         .suggestion-item:last-child { border-bottom: none; }
         .suggestion-item:hover, .suggestion-item.active-item { 
-            background: #1a1a1a; color: #fff; padding-left: 32px; border-left: 2px solid #fff;
+            background: var(--retro-dark); color: var(--retro-green); padding-left: 32px; border-left: 2px solid var(--retro-green);
         }
 
         /* --- DASHBOARD & INLINE EDITING --- */
@@ -248,8 +297,8 @@
         .dashboard::-webkit-scrollbar { display: none; }
 
         .group-container { 
-            border: 2px solid #222;
-            background: #050505;
+            border: 2px solid var(--retro-dark);
+            background: var(--retro-bg);
             padding: 12px;
             width: 100%;
             box-sizing: border-box;
@@ -257,11 +306,11 @@
             display: flex;
             flex-direction: column;
         }
-        .group-container:hover { border-color: var(--group-color, #fff); }
+        .group-container:hover { border-color: var(--retro-dim); }
 
         .group-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
         .group-title { 
-            background: var(--group-color, #fff); color: #000; font-family: 'PixeloidSansBold', sans-serif; font-size: 12px; 
+            background: var(--group-color, var(--retro-green)); color: #000; font-size: 10px; 
             padding: 4px 8px; letter-spacing: 2px; text-transform: uppercase; 
             display: inline-block; width: fit-content; text-align: left; margin: 0;
             transition: 0.2s;
@@ -277,88 +326,88 @@
             flex-grow: 1;
         }
         .link-card::before {
-            content: '>'; color: #555; font-family: 'PixeloidSansBold', sans-serif; margin-right: 8px; font-size: 12px; transition: color 0.2s; margin-top: 1px;
+            content: '>'; color: var(--retro-dim); margin-right: 8px; font-size: 10px; transition: color 0.2s; margin-top: 1px;
         }
         .link-card:hover { border: none; background: transparent; transform: translateX(6px); box-shadow: none; }
-        .link-card:hover::before { color: var(--group-color, #fff); }
+        .link-card:hover::before { color: var(--group-color, var(--retro-green)); }
         .link-label { 
-            color: #888; font-family: 'PixeloidSansBold', sans-serif; font-size: 12px; 
+            color: var(--retro-dim); font-size: 10px; 
             text-transform: uppercase; letter-spacing: 2px; transition: color 0.2s; text-align: left;
             white-space: normal; word-break: break-word; 
         }
-        .link-card:hover .link-label { color: var(--group-color, #fff); text-shadow: 0 0 8px var(--group-color, rgba(255,255,255,0.4)); }
+        .link-card:hover .link-label { color: var(--group-color, var(--retro-green)); text-shadow: 0 0 8px var(--retro-glow); }
 
         /* INLINE EDIT CONTROLS */
-        .drag-handle-group, .drag-handle-link { cursor: grab; color: #444; font-family: 'PixeloidSansBold', sans-serif; font-size: 14px; user-select: none; }
-        .drag-handle-group:active, .drag-handle-link:active { cursor: grabbing; color: #fff; }
-        .inline-del-btn { background: transparent; color: #f00; border: none; font-family: 'PixeloidSansBold', sans-serif; cursor: pointer; padding: 0 4px; font-size: 14px;}
-        .inline-del-btn:hover { text-shadow: 0 0 5px #f00; color: #fff; }
-        .inline-color-picker { width: 22px; height: 22px; padding: 0; border: 1px solid #333; background: #000; cursor: pointer; }
+        .drag-handle-group, .drag-handle-link { cursor: grab; color: var(--retro-dim); font-size: 12px; user-select: none; }
+        .drag-handle-group:active, .drag-handle-link:active { cursor: grabbing; color: var(--retro-green); }
+        .inline-del-btn { background: transparent; color: #ff0033; border: none; cursor: pointer; padding: 0 4px; font-size: 12px;}
+        .inline-del-btn:hover { text-shadow: 0 0 5px #ff0033; color: #ff0033; }
+        .inline-color-picker { width: 22px; height: 22px; padding: 0; border: 1px solid var(--retro-dim); background: #000; cursor: pointer; }
         .inline-color-picker::-webkit-color-swatch-wrapper { padding: 0; }
         .inline-color-picker::-webkit-color-swatch { border: none; }
         .inline-add-btn, .inline-add-group-btn {
-            background: transparent; border: 1px dashed #444; color: #888; width: 100%; font-family: 'PixeloidSansBold', sans-serif;
-            padding: 6px; cursor: pointer; margin-top: 8px; font-size: 10px; letter-spacing: 1px; transition: 0.2s;
+            background: transparent; border: 1px dashed var(--retro-dim); color: var(--retro-dim); width: 100%;
+            padding: 6px; cursor: pointer; margin-top: 8px; font-size: 8px; letter-spacing: 1px; transition: 0.2s;
         }
-        .inline-add-btn:hover, .inline-add-group-btn:hover { border-color: #fff; color: #fff; }
-        .inline-add-group-btn { margin-top: 0; height: 100%; min-height: 60px; border: 2px dashed #333; }
+        .inline-add-btn:hover, .inline-add-group-btn:hover { border-color: var(--retro-green); color: var(--retro-green); }
+        .inline-add-group-btn { margin-top: 0; height: 100%; min-height: 60px; border: 2px dashed var(--retro-dark); }
 
         /* --- SHORTCUT BADGE --- */
         #shortcut-badge {
             position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
-            padding: 4px 8px; font-family: 'PixeloidSansBold', sans-serif; font-size: 10px; letter-spacing: 2px;
-            background: #000; border: 1px solid #333; color: #fff;
+            padding: 4px 8px; font-size: 8px; letter-spacing: 2px;
+            background: #000; border: 1px solid var(--retro-dim); color: var(--retro-green);
             opacity: 0; pointer-events: none; transition: all 0.2s; z-index: 10;
         }
         #shortcut-badge.show { opacity: 1; right: 24px; }
-        #shortcut-badge.youtube { border-color: #f00; color: #f00; box-shadow: 0 0 10px rgba(255,0,0,0.2); }
-        #shortcut-badge.google { border-color: #00ff00; color: #00ff00; box-shadow: 0 0 10px rgba(0,255,0,0.2); }
+        #shortcut-badge.youtube { border-color: #ff0033; color: #ff0033; box-shadow: 0 0 10px rgba(255,0,51,0.2); }
+        #shortcut-badge.google { border-color: var(--retro-green); color: var(--retro-green); box-shadow: 0 0 10px var(--retro-glow); }
         #shortcut-badge.reddit { border-color: #ff8800; color: #ff8800; box-shadow: 0 0 10px rgba(255,136,0,0.2); }
 
         /* --- SETTINGS DRAWER --- */
         #settings-drawer {
             position: fixed; top: 0; right: -350px; width: 350px; height: 100vh;
-            background: #000; border-left: 2px solid #333; z-index: 9999;
+            background: #000; border-left: 2px solid var(--retro-dim); z-index: 9999;
             transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            color: white; font-family: 'PixeloidSans', sans-serif; display: flex; flex-direction: column;
+            color: var(--retro-green); display: flex; flex-direction: column;
         }
         #settings-drawer.open { right: 0; }
         
         #drawer-tab {
             position: absolute; left: -52px; bottom: 24px; width: 50px; height: 50px; 
-            background: #000; border: 2px solid #333; border-right: none;
+            background: #000; border: 2px solid var(--retro-dim); border-right: none;
             display: flex; align-items: center; justify-content: center;
         }
         #drawer-tab img { width: 36px; height: 36px; pointer-events: none; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1); }
         .gear-spin { transform: rotate(180deg); }
 
         .drawer-content { padding: 24px; flex-grow: 1; overflow-y: auto; }
-        .drawer-header { font-family: 'PixeloidSansBold', sans-serif; color: white; margin-bottom: 24px; font-size: 18px; border-bottom: 1px solid #222; padding-bottom: 12px; letter-spacing: 2px;}
+        .drawer-header { color: var(--retro-green); margin-bottom: 24px; font-size: 42px; border-bottom: 1px solid var(--retro-dim); padding-bottom: 12px; letter-spacing: 2px;}
 
         .setting-section { margin-bottom: 32px; }
-        .section-label { display: block; font-family: 'PixeloidSansBold', sans-serif; font-size: 12px; color: #555; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 2px; }
+        .section-label { display: block; font-size: 10px; color: var(--retro-dim); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 2px; }
         
-        .cheat-sheet { font-size: 10px; color: #444; line-height: 16px; background: #050505; padding: 12px; border: 1px solid #111; margin-top: 12px; }
-        .cheat-sheet b { color: #888; }
+        .cheat-sheet { font-size: 8px; color: var(--retro-green); line-height: 16px; background: var(--retro-bg); padding: 12px; border: 1px solid var(--retro-dark); margin-top: 12px; }
+        .cheat-sheet b { color: #fff; }
         
         .btn-add { 
-            width: 100%; background: #000; color: #fff; border: 1px solid #333; height: 36px; box-sizing: border-box; 
-            font-family: 'PixeloidSansBold', sans-serif; font-size: 12px; margin-top: 6px; transition: 0.2s; 
+            width: 100%; background: #000; color: var(--retro-green); border: 1px solid var(--retro-dim); height: 36px; box-sizing: border-box; 
+            font-size: 10px; margin-top: 6px; transition: 0.2s; 
             display: flex; align-items: center; justify-content: center;
         }
-        .btn-add:hover { background: #fff; color: #000; border-color: white; }
+        .btn-add:hover { background: var(--retro-green); color: #000; border-color: var(--retro-green); }
 
         /* --- FIXED UI COMPONENTS --- */
-        .option-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; min-height: 24px; font-size: 14px;}
+        .option-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; min-height: 24px; font-size: 10px;}
         
         .toggle-input { display: none; }
         .toggle-btn { 
             display: block; 
             width: 36px; 
             height: 18px; 
-            background: #111; 
+            background: var(--retro-bg); 
             position: relative; 
-            border: 2px solid #333; 
+            border: 2px solid var(--retro-dim); 
             box-sizing: border-box; 
             transition: 0.2s;
         }
@@ -367,91 +416,90 @@
             position: absolute; 
             width: 12px; 
             height: 12px; 
-            background: #444; 
+            background: var(--retro-dim); 
             top: 1px; 
             left: 1px; 
             transition: 0.2s cubic-bezier(0.25, 1, 0.5, 1); 
         }
-        .toggle-input:checked + .toggle-btn { background: #fff; border-color: #fff; }
+        .toggle-input:checked + .toggle-btn { background: var(--retro-green); border-color: var(--retro-green); }
         .toggle-input:checked + .toggle-btn::after { left: 19px; background: #000; }
         
         select { 
             appearance: none; 
             -webkit-appearance: none; 
-            background: #080808 url('data:image/svg+xml;utf8,<svg fill="%2355555" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>') no-repeat right 8px center;
-            border: 1px solid #333; 
-            color: #ccc; 
+            background: var(--retro-bg) url('data:image/svg+xml;utf8,<svg fill="%23008f11" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>') no-repeat right 8px center;
+            border: 1px solid var(--retro-dim); 
+            color: var(--retro-green); 
             padding: 0 32px 0 12px; 
             height: 36px; 
             box-sizing: border-box; 
-            font-family: 'PixeloidSans', sans-serif; 
             width: 100%; 
             outline: none; 
-            font-size: 12px; 
+            font-size: 10px; 
             transition: 0.2s;
         }
-        select:hover, select:focus { border-color: #fff; color: #fff; }
+        select:hover, select:focus { border-color: var(--retro-green); color: var(--retro-green); }
 
         /* --- MINIMAL STATUS BAR --- */
-        .status-bar { position: fixed; bottom: 24px; left: 32px; font-family: 'PixeloidSansBold', sans-serif; font-size: 14px; line-height: 14px; color: #444; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; gap: 16px; z-index: 5; }
+        .status-bar { position: fixed; bottom: 24px; left: 32px; font-size: 10px; line-height: 10px; color: var(--retro-dim); letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; gap: 16px; z-index: 5; }
 
         /* --- OS WIDGETS --- */
         .os-widget {
             position: absolute; top: 120px; left: 100px; width: 240px;
-            background: #000; border: 2px solid #333; z-index: 100;
-            display: none; flex-direction: column; font-family: 'PixeloidSans', sans-serif;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            background: #000; border: 2px solid var(--retro-green); z-index: 100;
+            display: none; flex-direction: column;
+            box-shadow: 0 10px 30px var(--retro-glow);
         }
         .os-widget.active { display: flex; }
         .widget-header {
-            background: #222; color: #fff; padding: 6px 10px; font-size: 12px;
+            background: var(--retro-dark); color: var(--retro-green); padding: 6px 10px; font-size: 10px;
             display: flex; justify-content: space-between; align-items: center;
-            cursor: grab; font-family: 'PixeloidSansBold', sans-serif; letter-spacing: 2px;
-            border-bottom: 2px solid #333; transition: 0.2s;
+            cursor: grab; letter-spacing: 2px;
+            border-bottom: 2px solid var(--retro-green); transition: 0.2s;
         }
-        .widget-header:active { cursor: grabbing; background: #333; }
-        .widget-close { cursor: pointer; color: #f00; font-weight: bold; padding: 0 4px; }
-        .widget-close:hover { text-shadow: 0 0 8px #f00; color: #fff; }
+        .widget-header:active { cursor: grabbing; background: var(--retro-dark); }
+        .widget-close { cursor: pointer; color: #ff0033; font-weight: bold; padding: 0 4px; }
+        .widget-close:hover { text-shadow: 0 0 8px #ff0033; color: #ff0033; }
 
         /* Calculator Widget */
         .calc-body { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
         .calc-display {
-            background: #050505; border: 1px solid #222; color: #0f0;
-            font-family: 'Courier New', monospace; font-size: 24px; text-align: right;
-            padding: 0 12px; box-shadow: inset 0 0 10px rgba(0,255,0,0.05);
-            margin-bottom: 4px; height: 36px; outline: none; width: 100%;
+            background: #000; border: 1px solid var(--retro-dim); color: var(--retro-green);
+            font-size: 38px; text-align: right;
+            padding: 0 12px; box-shadow: inset 0 0 10px var(--retro-glow);
+            margin-bottom: 4px; height: 42px; outline: none; width: 100%;
             box-sizing: border-box; transition: 0.2s;
         }
-        .calc-display:focus { border-color: #0f0; box-shadow: 0 0 10px rgba(0,255,0,0.2), inset 0 0 10px rgba(0,255,0,0.05); }
+        .calc-display:focus { border-color: var(--retro-green); box-shadow: 0 0 10px var(--retro-glow), inset 0 0 10px var(--retro-glow); }
         .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
         .calc-btn {
-            background: #111; border: 1px solid #333; color: #fff;
+            background: var(--retro-bg); border: 1px solid var(--retro-dim); color: var(--retro-dim);
             padding: 12px 0; text-align: center; cursor: pointer; transition: 0.1s;
-            font-family: 'PixeloidSansBold', sans-serif; font-size: 14px;
+            font-size: 30px;
         }
-        .calc-btn:hover { background: #222; color: #0f0; border-color: #0f0; box-shadow: 0 0 10px rgba(0,255,0,0.2); }
+        .calc-btn:hover { background: var(--retro-dim); color: #000; border-color: var(--retro-green); box-shadow: 0 0 10px var(--retro-glow); }
         .calc-btn:active { transform: scale(0.92); }
-        .calc-btn.op { color: #0ff; }
-        .calc-btn.eq { background: #003333; color: #0ff; border-color: #0ff; }
+        .calc-btn.op { color: var(--retro-green); }
+        .calc-btn.eq { background: var(--retro-dark); color: var(--retro-green); border-color: var(--retro-green); }
 
         /* Endless Tic-Tac-Toe Widget */
         .ttt-body { padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
-        .ttt-status { font-size: 12px; color: #0f0; letter-spacing: 2px; text-transform: uppercase; text-align: center; height: 14px; font-family: 'PixeloidSansBold', sans-serif;}
+        .ttt-status { font-size: 10px; color: var(--retro-green); letter-spacing: 2px; text-transform: uppercase; text-align: center; height: 14px; }
         .ttt-grid { display: grid; grid-template-columns: repeat(3, 60px); grid-template-rows: repeat(3, 60px); gap: 6px; }
         .ttt-cell {
-            background: #111; border: 1px solid #333; color: #fff;
+            background: var(--retro-bg); border: 1px solid var(--retro-dim); color: var(--retro-green);
             display: flex; justify-content: center; align-items: center;
-            font-family: 'PixeloidSansBold', sans-serif; font-size: 36px;
+            font-size: 64px;
             cursor: pointer; transition: 0.2s; padding-bottom: 4px;
         }
-        .ttt-cell:hover { background: #222; border-color: #fff; }
-        .ttt-cell.x { color: #0f0; text-shadow: 0 0 12px rgba(0,255,0,0.6); }
-        .ttt-cell.o { color: #0ff; text-shadow: 0 0 12px rgba(0,255,255,0.6); }
+        .ttt-cell:hover { background: var(--retro-dark); border-color: var(--retro-green); }
+        .ttt-cell.x { color: var(--retro-green); text-shadow: 0 0 12px var(--retro-glow); }
+        .ttt-cell.o { color: #fff; text-shadow: 0 0 12px rgba(255,255,255,0.6); }
         .ttt-cell.fading { animation: pulseFade 1s infinite alternate; }
         @keyframes pulseFade { from { opacity: 0.1; transform: scale(0.9); } to { opacity: 0.7; transform: scale(1); } }
         .ttt-controls { display: flex; gap: 8px; width: 100%; }
-        .ttt-btn { flex: 1; background: #111; border: 1px solid #333; color: #fff; padding: 8px 0; cursor: pointer; font-size: 10px; font-family: 'PixeloidSansBold', sans-serif; transition: 0.2s; letter-spacing: 1px; text-align: center; }
-        .ttt-btn:hover { background: #ff8800; color: #000; border-color: #ff8800; box-shadow: 0 0 10px #ff8800; }
+        .ttt-btn { flex: 1; background: var(--retro-bg); border: 1px solid var(--retro-dim); color: var(--retro-dim); padding: 8px 0; cursor: pointer; font-size: 8px; transition: 0.2s; letter-spacing: 1px; text-align: center; }
+        .ttt-btn:hover { background: var(--retro-green); color: #000; border-color: var(--retro-green); box-shadow: 0 0 10px var(--retro-glow); }
     </style>
 </head>
 <body>
@@ -482,10 +530,10 @@
 
             <div class="setting-section">
                 <span class="section-label">Interface</span>
-                <div class="option-row" style="color: #0f0; text-shadow: 0 0 5px rgba(0,255,0,0.4);">
+                <div class="option-row" style="color: var(--retro-green); text-shadow: 0 0 5px var(--retro-glow);">
                     <span>Unlock Dashboard</span>
                     <input type="checkbox" id="toggle-edit" class="toggle-input">
-                    <label for="toggle-edit" class="toggle-btn" style="border-color: #0f0;"></label>
+                    <label for="toggle-edit" class="toggle-btn" style="border-color: var(--retro-green);"></label>
                 </div>
                 <div class="option-row">
                     <span>Mute OS Sounds</span>
@@ -526,13 +574,17 @@
                     <input type="checkbox" id="toggle-ttt" class="toggle-input">
                     <label for="toggle-ttt" class="toggle-btn"></label>
                 </div>
+                <div class="cheat-sheet">
+                    <b>TTT Rules</b><br>
+                    Toggle between Classic and Endless modes! In Endless, you only keep 3 active pieces. Your oldest fades and vanishes.
+                </div>
             </div>
 
-            <div class="setting-section" style="border-top: 1px solid #222; padding-top: 24px;">
+            <div class="setting-section" style="border-top: 1px solid var(--retro-dim); padding-top: 24px;">
                 <span class="section-label">System Backup</span>
                 <div style="display: flex; gap: 12px;">
-                    <button id="export-btn" class="btn-add" style="margin:0; font-size: 10px; white-space: nowrap;">EXPORT JSON</button>
-                    <button id="import-btn" class="btn-add" style="margin:0; font-size: 10px; white-space: nowrap;">IMPORT JSON</button>
+                    <button id="export-btn" class="btn-add" style="margin:0; font-size: 8px; white-space: nowrap;">EXPORT JSON</button>
+                    <button id="import-btn" class="btn-add" style="margin:0; font-size: 8px; white-space: nowrap;">IMPORT JSON</button>
                     <input type="file" id="import-file" style="display: none;" accept=".json">
                 </div>
             </div>
@@ -540,7 +592,7 @@
     </div>
 
     <div class="command-center">
-        <div id="clock" class="terminal-clock">00:00:00</div>
+        <div id="clock" class="terminal-clock"></div>
         <div id="greeting">SYSTEM_ONLINE</div>
         
         <div class="search-wrapper" id="search-wrapper">
@@ -622,17 +674,20 @@
             showStatus: true, lowPower: false, newTab: true, militaryTime: false, engine: "duckduckgo", 
             showCalc: false, showTTT: false, muteAudio: false,
             linkGroups: [
-                { groupName: "MAIN", color: "#ffffff", links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}] }
+                { groupName: "MAIN", color: "#55ffcc", links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}] }
             ] 
         };
         
         function sanitizeConfig(cfg) {
             if (cfg.links && !cfg.linkGroups) {
-                cfg.linkGroups = [{ groupName: "GENERAL", color: "#ffffff", links: cfg.links }];
+                cfg.linkGroups = [{ groupName: "GENERAL", color: "#55ffcc", links: cfg.links }];
                 delete cfg.links;
             }
             if (cfg.linkGroups) {
-                cfg.linkGroups.forEach(g => { if(!g.color) g.color = "#ffffff"; });
+                // Force legacy white or classic green groups to the new mint green
+                cfg.linkGroups.forEach(g => { 
+                    if(!g.color || g.color === "#ffffff" || g.color === "#fff" || g.color === "#00ff41") g.color = "#55ffcc"; 
+                });
             }
             return cfg;
         }
@@ -697,13 +752,13 @@
                 const groupDiv = document.createElement('div');
                 groupDiv.className = 'group-container';
                 groupDiv.dataset.gidx = gIdx;
-                groupDiv.style.setProperty('--group-color', group.color || '#ffffff');
+                groupDiv.style.setProperty('--group-color', group.color || '#00ff41');
                 
                 let linksHTML = group.links.map((link, lIdx) => `
                     <div class="link-wrapper" data-lidx="${lIdx}" data-name="${link.name}" data-url="${link.url}">
                         ${editMode ? `<div class="drag-handle-link">::</div>` : ''}
                         <a href="${editMode ? '#' : link.url}" target="${(!editMode && config.newTab) ? "_blank" : "_self"}" class="link-card" onmouseenter="playSound('hover')" onclick="${editMode ? `event.preventDefault(); editLink(${gIdx}, ${lIdx})` : 'playSound(\'click\')'}">
-                            <div class="link-label" style="${editMode ? 'text-decoration: underline dashed #555; text-underline-offset: 4px;' : ''}">${link.name}</div>
+                            <div class="link-label" style="${editMode ? 'text-decoration: underline dashed var(--retro-dim); text-underline-offset: 4px;' : ''}">${link.name}</div>
                         </a>
                         ${editMode ? `<button class="inline-del-btn" onclick="deleteLink(${gIdx}, ${lIdx})">X</button>` : ''}
                     </div>
@@ -712,9 +767,9 @@
                 groupDiv.innerHTML = `
                     <div class="group-header">
                         ${editMode ? `<div class="drag-handle-group">::</div>` : ''}
-                        <div class="group-title" ${editMode ? `onclick="editGroup(${gIdx})"` : ''} style="${editMode ? 'cursor:pointer; text-decoration: underline dashed #555; text-underline-offset: 4px;' : ''}">${group.groupName}</div>
+                        <div class="group-title" ${editMode ? `onclick="editGroup(${gIdx})"` : ''} style="${editMode ? 'cursor:pointer; text-decoration: underline dashed #000; text-underline-offset: 4px;' : ''}">${group.groupName}</div>
                         ${editMode ? `
-                            <input type="color" class="inline-color-picker" value="${group.color || '#ffffff'}" onchange="changeGroupColor(${gIdx}, this.value)">
+                            <input type="color" class="inline-color-picker" value="${group.color || '#00ff41'}" onchange="changeGroupColor(${gIdx}, this.value)">
                             <button class="inline-del-btn" onclick="deleteGroup(${gIdx})">X</button>
                         ` : ''}
                     </div>
@@ -828,7 +883,7 @@
             playSound('click');
             const newName = prompt("Enter New Group Name:", "NEW GROUP");
             if(newName) {
-                config.linkGroups.push({groupName: newName, color: "#ffffff", links: []});
+                config.linkGroups.push({groupName: newName, color: "#00ff41", links: []});
                 saveConfig(); renderMainUI();
             }
         }
@@ -870,13 +925,15 @@
         let currentFocus = -1;
 
         function triggerFlicker() {
+            // Remove the class and instantly re-apply it to trigger the aggressive CSS keyframe animation
             searchInput.classList.remove('flicker');
             void searchInput.offsetWidth; 
             searchInput.classList.add('flicker');
-            setTimeout(() => searchInput.classList.remove('flicker'), 200);
+            setTimeout(() => searchInput.classList.remove('flicker'), 600); // 600ms matches animation duration
         }
 
-        searchInput.addEventListener('focus', triggerFlicker);
+        // Trigger the flicker specifically when clicking the search bar
+        searchInput.addEventListener('mousedown', triggerFlicker);
 
         clearBtn.onmousedown = (e) => {
             e.preventDefault(); 
@@ -1221,7 +1278,7 @@
             tttBoard = Array(9).fill(null);
             tttTurn = 'X'; xMoves = []; oMoves = []; tttActive = true;
             document.getElementById('ttt-stat').innerText = "X'S TURN";
-            document.getElementById('ttt-stat').style.color = "#0f0";
+            document.getElementById('ttt-stat').style.color = "var(--retro-green)";
             updateTTTUI();
         }
 
@@ -1294,11 +1351,11 @@
             
             if (tttTurn === 'O') {
                 document.getElementById('ttt-stat').innerText = "AI THINKING...";
-                document.getElementById('ttt-stat').style.color = "#0ff";
+                document.getElementById('ttt-stat').style.color = "var(--retro-dim)";
                 setTimeout(makeAIMove, 600); 
             } else {
                 document.getElementById('ttt-stat').innerText = "X'S TURN";
-                document.getElementById('ttt-stat').style.color = "#0f0";
+                document.getElementById('ttt-stat').style.color = "var(--retro-green)";
             }
             
             updateTTTUI(); 
