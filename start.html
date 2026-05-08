@@ -9,17 +9,17 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     
     <style>
+        /* --- FONTS --- */
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
         /* --- RETRO COLOR PALETTE --- */
         :root {
             --retro-green: #55ffcc;       /* Minty Phosphor Green */
             --retro-glow: rgba(85, 255, 204, 0.4);
             --retro-dim: #2a8066;         /* Muted Mint */
-            --retro-dark: #00221a;        /* Deep background mint */
-            --retro-bg: #000504;          /* Almost black with mint tint */
+            --retro-dark: #000605;        /* Deep background mint */
+            --retro-bg: #000000;          /* Pure black */
         }
-
-        /* --- FONTS --- */
-        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
         @font-face {
             font-family: 'DogicaPixelBold';
@@ -85,7 +85,7 @@
             content: '';
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            background: linear-gradient(rgba(0, 0, 0, 0) 50%, rgba(0, 255, 65, 0.05) 50%);
+            background: linear-gradient(rgba(0, 0, 0, 0) 50%, rgba(85, 255, 204, 0.05) 50%);
             background-size: 100% 4px;
             pointer-events: none; 
             z-index: 999;
