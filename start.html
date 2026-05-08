@@ -36,14 +36,15 @@
         }
 
         /* FORCIBLY APPLY BIG TEXT FONT */
-        #boss-screen, .terminal-clock, .search-wrapper::before, .search-box, 
+        #boss-screen, .terminal-clock, .search-wrapper::before, .search-wrapper::after, .search-box, 
         .clear-btn, .go-btn, .drawer-header, .calc-display, .calc-btn, .ttt-cell {
             font-family: 'VT323', monospace !important;
         }
 
         /* --- GLOBAL UI, CURSORS, & PIXEL RENDERING --- */
         * { 
-            cursor: url('images/cursor.png'), auto !important; 
+            /* 8-BIT ARROW CURSOR (Mint Green) */
+            cursor: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath d='M4 4 V21 L9 16 L13 23 L16 21 L12 15 L19 15 Z' fill='%2355ffcc' stroke='%23000' stroke-width='2' stroke-linejoin='miter'/%3E%3C/svg%3E") 4 4, auto !important; 
             -webkit-font-smoothing: none; 
             -moz-osx-font-smoothing: grayscale; 
             text-rendering: optimizeSpeed;
@@ -54,7 +55,10 @@
             image-rendering: pixelated;
             image-rendering: crisp-edges;
         }
-        *:active { cursor: url('images/cursor-click.png'), auto !important; }
+        *:active { 
+            /* CLICK ANIMATION (Black Fill, Mint Green Outline) */
+            cursor: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath d='M4 4 V21 L9 16 L13 23 L16 21 L12 15 L19 15 Z' fill='%23000000' stroke='%2355ffcc' stroke-width='2' stroke-linejoin='miter'/%3E%3C/svg%3E") 4 4, auto !important; 
+        }
 
         /* --- TEXT HIGHLIGHTING OVERRIDE --- */
         ::selection {
@@ -67,10 +71,12 @@
         }
 
         a, button, .suggestion-item, #drawer-tab, select, .handle, .toggle-btn, .link-card, .link-card *, .clear-btn, .go-btn {
-            cursor: url('images/link-select.png'), pointer !important;
+            /* 8-BIT POINTER HAND (Mint Green) */
+            cursor: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath d='M10 1h4v7h3v2h3v2h3v9h-2v2H7v-2H5v-3H3v-5h2V9h2V6h2V1z' fill='%2355ffcc' stroke='%23000' stroke-width='2' stroke-linejoin='miter'/%3E%3C/svg%3E") 12 1, pointer !important;
         }
         a:active, button:active, .suggestion-item:active, #drawer-tab:active, select:active, .link-card:active, .link-card:active *, .clear-btn:active, .go-btn:active {
-            cursor: url('images/link-select-click.png'), pointer !important;
+            /* CLICK ANIMATION (Black Fill, Mint Green Outline) */
+            cursor: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath d='M10 1h4v7h3v2h3v2h3v9h-2v2H7v-2H5v-3H3v-5h2V9h2V6h2V1z' fill='%23000000' stroke='%2355ffcc' stroke-width='2' stroke-linejoin='miter'/%3E%3C/svg%3E") 12 1, pointer !important;
         }
 
         /* --- CUSTOM SCROLLBARS --- */
@@ -731,6 +737,7 @@
                 delete cfg.links;
             }
             if (cfg.linkGroups) {
+                // Force legacy white or classic green groups to the new mint green
                 cfg.linkGroups.forEach(g => { 
                     if(!g.color || g.color === "#ffffff" || g.color === "#fff" || g.color === "#00ff41") g.color = "#55ffcc"; 
                 });
@@ -767,7 +774,7 @@
             if (sound) { const clone = sound.cloneNode(); clone.volume = vol; clone.play().catch(()=>{}); }
         };
 
-        const ignoreSelectors = 'button, a, input, select, [onclick], .suggestion-item, .ttt-cell, .calc-btn, .clear-btn, .go-btn, .toggle-btn, #drawer-tab, .widget-close, .inline-color-picker';
+        const ignoreSelectors = 'button, a, input, select, [onclick], .suggestion-item, .ttt-cell, .calc-btn, .clear-btn, .go-btn, .toggle-btn, #drawer-tab, .widget-close, .drag-handle-group, .drag-handle-link, .inline-color-picker';
         
         window.addEventListener('mousedown', (e) => {
             if (e.target.closest(ignoreSelectors)) return;
@@ -780,10 +787,19 @@
 
         // --- DASHBOARD & INLINE EDITING ---
         let editMode = false;
+        let sortableGroups = null;
+        let sortableLinks = [];
 
         function renderMainUI() {
             const dashboard = document.getElementById('dashboard');
             dashboard.innerHTML = '';
+            
+            if (editMode) dashboard.classList.add('is-editing');
+            else dashboard.classList.remove('is-editing');
+
+            if(sortableGroups) sortableGroups.destroy();
+            sortableLinks.forEach(s => s.destroy());
+            sortableLinks = [];
 
             config.linkGroups.forEach((group, gIdx) => {
                 // Hide empty groups when not editing to keep dashboard clean
@@ -795,9 +811,10 @@
                 groupDiv.style.setProperty('--group-color', group.color || '#00ff41');
                 
                 let linksHTML = group.links.map((link, lIdx) => `
-                    <div class="link-wrapper">
+                    <div class="link-wrapper" data-lidx="${lIdx}" data-name="${link.name}" data-url="${link.url}">
+                        ${editMode ? `<div class="drag-handle-link">::</div>` : ''}
                         <a href="${editMode ? '#' : link.url}" target="${(!editMode && config.newTab) ? "_blank" : "_self"}" class="link-card" onmouseenter="playSound('hover')" onclick="${editMode ? `event.preventDefault(); editLink(${gIdx}, ${lIdx})` : 'playSound(\'click\')'}">
-                            <div class="link-label">${link.name}</div>
+                            <div class="link-label ${editMode ? 'editing-label' : ''}">${link.name}</div>
                         </a>
                         ${editMode ? `<button class="inline-del-btn" onclick="deleteLink(${gIdx}, ${lIdx})">X</button>` : ''}
                     </div>
@@ -805,29 +822,67 @@
 
                 groupDiv.innerHTML = `
                     <div class="group-header">
-                        <div class="group-title" ${editMode ? `onclick="editGroup(${gIdx})" style="cursor:pointer;"` : ''}>${group.groupName}</div>
+                        ${editMode ? `<div class="drag-handle-group">::</div>` : ''}
+                        <div class="group-title ${editMode ? 'editing-title' : ''}" ${editMode ? `onclick="editGroup(${gIdx})"` : ''}>${group.groupName}</div>
                         ${editMode ? `
                             <input type="color" class="inline-color-picker" value="${group.color || '#00ff41'}" onchange="changeGroupColor(${gIdx}, this.value)">
                             <button class="inline-del-btn" onclick="deleteGroup(${gIdx})">X</button>
                         ` : ''}
                     </div>
-                    <div class="quick-links">${linksHTML}</div>
+                    <div class="quick-links" data-gidx="${gIdx}">${linksHTML}</div>
                     ${editMode ? `<button class="inline-add-btn" onclick="addLink(${gIdx})">+ ADD LINK</button>` : ''}
                 `;
                 dashboard.appendChild(groupDiv);
             });
 
-            // Add Group button if in Edit Mode
+            // If Edit Mode is ON, initialize drag and drop sorting + the Add Group button
             if (editMode) {
                 const addGroupBtn = document.createElement('button');
                 addGroupBtn.className = 'inline-add-group-btn';
                 addGroupBtn.innerText = '+ ADD NEW GROUP';
                 addGroupBtn.onclick = addGroup;
                 dashboard.appendChild(addGroupBtn);
+
+                if (typeof Sortable !== 'undefined') {
+                    sortableGroups = Sortable.create(dashboard, {
+                        handle: '.drag-handle-group',
+                        animation: 150,
+                        filter: '.inline-add-group-btn',
+                        onEnd: saveLayoutFromDOM
+                    });
+
+                    document.querySelectorAll('.quick-links').forEach(ql => {
+                        sortableLinks.push(Sortable.create(ql, {
+                            group: 'shared-links',
+                            handle: '.drag-handle-link',
+                            animation: 150,
+                            onEnd: saveLayoutFromDOM
+                        }));
+                    });
+                }
             }
         }
 
         // --- INLINE EDIT ACTIONS ---
+        function saveLayoutFromDOM() {
+            const newGroups = [];
+            document.querySelectorAll('.group-container').forEach(gDiv => {
+                const gIdx = gDiv.dataset.gidx;
+                const oldGroup = config.linkGroups[gIdx];
+                const groupName = oldGroup.groupName;
+                const color = oldGroup.color;
+                
+                const links = [];
+                gDiv.querySelectorAll('.link-wrapper').forEach(lDiv => {
+                    links.push({ name: lDiv.dataset.name, url: lDiv.dataset.url });
+                });
+                newGroups.push({ groupName, color, links });
+            });
+            config.linkGroups = newGroups;
+            saveConfig();
+            renderMainUI(); // Force re-render to update the index numbers
+        }
+
         function editLink(gIdx, lIdx) {
             playSound('click');
             const link = config.linkGroups[gIdx].links[lIdx];
