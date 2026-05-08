@@ -28,7 +28,7 @@
             cursor: url('images/link-select-click.png'), pointer !important;
         }
 
-        /* --- CUSTOM SCROLLBARS (For Drawer) --- */
+        /* --- CUSTOM SCROLLBARS --- */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #000; border-left: 1px solid #111; }
         ::-webkit-scrollbar-thumb { background: #333; }
@@ -106,7 +106,6 @@
             margin: 0 auto;
         }
         
-        /* Expand enough for BOTH the 60px GO button and 60px X button + margins */
         .search-wrapper.has-text { max-width: 786px; }
 
         .search-wrapper::before {
@@ -191,7 +190,6 @@
         .clear-btn::before, .clear-btn::after, 
         .go-btn::before, .go-btn::after,
         .btn-del::before, .btn-del::after, 
-        #save-weather-btn::before, #save-weather-btn::after,
         #export-btn::before, #export-btn::after,
         #import-btn::before, #import-btn::after { 
             content: none !important; display: none !important; 
@@ -233,7 +231,7 @@
             background: #1a1a1a; color: #fff; padding-left: 32px; border-left: 2px solid #fff;
         }
 
-        /* --- DASHBOARD & NESTED GROUPS --- */
+        /* --- DASHBOARD & INLINE EDITING --- */
         .dashboard { 
             flex-grow: 1;
             display: grid; 
@@ -244,13 +242,10 @@
             width: 100%; max-width: 1000px; margin-top: 40px; z-index: 2;
             overflow-y: auto; padding-bottom: 80px;
 
-            /* Hide the scrollbar visually but keep scrolling functional */
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE/Edge */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
-        .dashboard::-webkit-scrollbar {
-            display: none; /* Chrome/Safari */
-        }
+        .dashboard::-webkit-scrollbar { display: none; }
 
         .group-container { 
             border: 2px solid #222;
@@ -262,31 +257,27 @@
             display: flex;
             flex-direction: column;
         }
-        .group-container:hover {
-            border-color: var(--group-color, #fff);
-        }
+        .group-container:hover { border-color: var(--group-color, #fff); }
+
+        .group-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
         .group-title { 
             background: var(--group-color, #fff); color: #000; font-family: 'PixeloidSansBold', sans-serif; font-size: 12px; 
-            padding: 4px 8px; margin-bottom: 12px; letter-spacing: 2px; text-transform: uppercase; 
-            display: inline-block; width: fit-content; text-align: left;
+            padding: 4px 8px; letter-spacing: 2px; text-transform: uppercase; 
+            display: inline-block; width: fit-content; text-align: left; margin: 0;
+            transition: 0.2s;
         }
-        .quick-links { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; width: 100%; }
+        .quick-links { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; width: 100%; min-height: 20px; }
         
+        .link-wrapper { display: flex; align-items: center; width: 100%; gap: 6px; }
         .link-card { 
             background: transparent; border: none; padding: 0; 
             text-decoration: none; text-align: left;
             transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
             display: flex; align-items: flex-start; justify-content: flex-start;
-            width: 100%;
+            flex-grow: 1;
         }
         .link-card::before {
-            content: '>';
-            color: #555;
-            font-family: 'PixeloidSansBold', sans-serif;
-            margin-right: 8px;
-            font-size: 12px;
-            transition: color 0.2s;
-            margin-top: 1px;
+            content: '>'; color: #555; font-family: 'PixeloidSansBold', sans-serif; margin-right: 8px; font-size: 12px; transition: color 0.2s; margin-top: 1px;
         }
         .link-card:hover { border: none; background: transparent; transform: translateX(6px); box-shadow: none; }
         .link-card:hover::before { color: var(--group-color, #fff); }
@@ -296,6 +287,21 @@
             white-space: normal; word-break: break-word; 
         }
         .link-card:hover .link-label { color: var(--group-color, #fff); text-shadow: 0 0 8px var(--group-color, rgba(255,255,255,0.4)); }
+
+        /* INLINE EDIT CONTROLS */
+        .drag-handle-group, .drag-handle-link { cursor: grab; color: #444; font-family: 'PixeloidSansBold', sans-serif; font-size: 14px; user-select: none; }
+        .drag-handle-group:active, .drag-handle-link:active { cursor: grabbing; color: #fff; }
+        .inline-del-btn { background: transparent; color: #f00; border: none; font-family: 'PixeloidSansBold', sans-serif; cursor: pointer; padding: 0 4px; font-size: 14px;}
+        .inline-del-btn:hover { text-shadow: 0 0 5px #f00; color: #fff; }
+        .inline-color-picker { width: 22px; height: 22px; padding: 0; border: 1px solid #333; background: #000; cursor: pointer; }
+        .inline-color-picker::-webkit-color-swatch-wrapper { padding: 0; }
+        .inline-color-picker::-webkit-color-swatch { border: none; }
+        .inline-add-btn, .inline-add-group-btn {
+            background: transparent; border: 1px dashed #444; color: #888; width: 100%; font-family: 'PixeloidSansBold', sans-serif;
+            padding: 6px; cursor: pointer; margin-top: 8px; font-size: 10px; letter-spacing: 1px; transition: 0.2s;
+        }
+        .inline-add-btn:hover, .inline-add-group-btn:hover { border-color: #fff; color: #fff; }
+        .inline-add-group-btn { margin-top: 0; height: 100%; min-height: 60px; border: 2px dashed #333; }
 
         /* --- SHORTCUT BADGE --- */
         #shortcut-badge {
@@ -334,22 +340,6 @@
         
         .cheat-sheet { font-size: 10px; color: #444; line-height: 16px; background: #050505; padding: 12px; border: 1px solid #111; margin-top: 12px; }
         .cheat-sheet b { color: #888; }
-
-        /* NESTED MANAGER CSS */
-        .manager-group-box { background: #080808; border: 1px solid #222; margin-bottom: 16px; padding: 12px; box-sizing: border-box;}
-        .manager-group-header { display: flex; align-items: center; margin-bottom: 12px; gap: 8px;}
-        .manager-link-list { display: flex; flex-direction: column; gap: 8px; min-height: 20px; border-left: 2px dashed #222; padding-left: 12px; margin-left: 8px;}
-        
-        .link-manager-item { display: flex; align-items: center; background: #000; border: 1px solid #222; padding: 6px; gap: 8px; box-sizing: border-box; }
-        .handle { padding: 0 4px; color: #333; font-size: 16px; line-height: 1; }
-        .manager-input { background: black; border: 1px solid #333; color: #ccc; padding: 0 8px; margin: 0; height: 26px; line-height: 24px; box-sizing: border-box; font-family: 'PixeloidSans', sans-serif; font-size: 12px; outline: none; flex-grow: 1; }
-        .manager-input.edit-name { flex-grow: 0; width: 64px; }
-        .manager-input.edit-color { flex-grow: 0; width: 36px; padding: 0; cursor: pointer; border: 1px solid #333; }
-        .manager-input.edit-color::-webkit-color-swatch-wrapper { padding: 0; }
-        .manager-input.edit-color::-webkit-color-swatch { border: none; }
-        
-        .btn-del { background: #111; color: #f00; border: 1px solid #300; width: 26px; height: 26px; padding: 0; margin: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-family: 'PixeloidSansBold', sans-serif; font-size: 12px;}
-        .btn-del:hover { background: #f00; color: #000; box-shadow: 0 0 10px #f00; border-color: #f00; }
         
         .btn-add { 
             width: 100%; background: #000; color: #fff; border: 1px solid #333; height: 36px; box-sizing: border-box; 
@@ -404,9 +394,6 @@
 
         /* --- MINIMAL STATUS BAR --- */
         .status-bar { position: fixed; bottom: 24px; left: 32px; font-family: 'PixeloidSansBold', sans-serif; font-size: 14px; line-height: 14px; color: #444; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; gap: 16px; z-index: 5; }
-        .weather-module { display: flex; align-items: center; gap: 10px; color: #666; }
-        .weather-icon { width: 24px; height: 24px; image-rendering: pixelated; }
-        #temp-val { color: #888; }
 
         /* --- OS WIDGETS --- */
         .os-widget {
@@ -495,6 +482,11 @@
 
             <div class="setting-section">
                 <span class="section-label">Interface</span>
+                <div class="option-row" style="color: #0f0; text-shadow: 0 0 5px rgba(0,255,0,0.4);">
+                    <span>Unlock Dashboard</span>
+                    <input type="checkbox" id="toggle-edit" class="toggle-input">
+                    <label for="toggle-edit" class="toggle-btn" style="border-color: #0f0;"></label>
+                </div>
                 <div class="option-row">
                     <span>Mute OS Sounds</span>
                     <input type="checkbox" id="toggle-mute" class="toggle-input">
@@ -534,24 +526,6 @@
                     <input type="checkbox" id="toggle-ttt" class="toggle-input">
                     <label for="toggle-ttt" class="toggle-btn"></label>
                 </div>
-                <div class="cheat-sheet">
-                    <b>TTT Rules</b><br>
-                    Toggle between Classic and Endless modes! In Endless, you only keep 3 active pieces. Your oldest fades and vanishes.
-                </div>
-            </div>
-
-            <div class="setting-section">
-                <span class="section-label">Weather Override</span>
-                <div style="display: flex; gap: 6px; align-items: center;">
-                    <input type="text" id="weather-loc-input" class="manager-input" placeholder="City or ZIP (Blank for IP)" style="flex-grow: 1;">
-                    <button id="save-weather-btn" class="btn-add" style="margin: 0; width: 64px; height: 26px; font-size: 12px;">SET</button>
-                </div>
-            </div>
-
-            <div class="setting-section">
-                <span class="section-label">Link Manager</span>
-                <div id="manager-list"></div>
-                <button class="btn-add" id="addNewGroupBtn" style="margin-bottom: 24px;">+ ADD GROUP</button>
             </div>
 
             <div class="setting-section" style="border-top: 1px solid #222; padding-top: 24px;">
@@ -640,17 +614,12 @@
 
     <div class="status-bar" id="status-bar">
         <span>MIKEVOID_OS</span>
-        <span>//</span>
-        <div class="weather-module" id="weather-display">
-            <img src="images/sunny.png" class="weather-icon" id="weather-img">
-            <span id="temp-val">LOADING...</span>
-        </div>
     </div>
 
     <script>
         // --- CORE CONFIGURATION & MIGRATION ---
         const DEFAULT_CONFIG = { 
-            showStatus: true, lowPower: false, newTab: true, militaryTime: false, weatherLoc: "", engine: "duckduckgo", 
+            showStatus: true, lowPower: false, newTab: true, militaryTime: false, engine: "duckduckgo", 
             showCalc: false, showTTT: false, muteAudio: false,
             linkGroups: [
                 { groupName: "MAIN", color: "#ffffff", links: [{name: "HUB", url: "/blog/"}, {name: "YOUTUBE", url: "https://youtube.com"}] }
@@ -697,8 +666,7 @@
             if (sound) { const clone = sound.cloneNode(); clone.volume = vol; clone.play().catch(()=>{}); }
         };
 
-        // Prevent global mouse sounds from double-playing when clicking interactive elements
-        const ignoreSelectors = 'button, a, input, select, [onclick], .suggestion-item, .ttt-cell, .calc-btn, .clear-btn, .go-btn, .toggle-btn, #drawer-tab, .widget-close';
+        const ignoreSelectors = 'button, a, input, select, [onclick], .suggestion-item, .ttt-cell, .calc-btn, .clear-btn, .go-btn, .toggle-btn, #drawer-tab, .widget-close, .drag-handle-group, .drag-handle-link, .inline-color-picker';
         
         window.addEventListener('mousedown', (e) => {
             if (e.target.closest(ignoreSelectors)) return;
@@ -709,153 +677,163 @@
             playSound('mouseUp');
         });
 
-        // --- WEATHER MODULE (Upgraded to OpenStreetMap + God Mode) ---
-        async function fetchWeather(force = false) {
-            const cacheKey = 'weatherCache';
-            const cachedData = JSON.parse(localStorage.getItem(cacheKey));
-            const now = new Date().getTime();
-            
-            // God Mode: Check if you manually typed an icon name
-            const loc = config.weatherLoc ? config.weatherLoc.trim().toLowerCase() : "";
-            const validIcons = ["sunny", "partly cloudy", "cloudy", "foggy", "rainy", "cold", "thunderstorm", "night", "windy"];
-            
-            if (validIcons.includes(loc)) {
-                document.getElementById('temp-val').innerText = "OVRIDE";
-                document.getElementById('weather-img').src = `images/${loc}.png`;
-                return; // Bypass API entirely
-            }
+        // --- DASHBOARD & INLINE EDITING ---
+        let editMode = false;
+        let sortableGroups = null;
+        let sortableLinks = [];
 
-            if (!force && cachedData && (now - cachedData.timestamp < 900000)) {
-                applyWeatherUI(cachedData.temp, cachedData.code, cachedData.wind);
-                return;
-            }
-            try {
-                let lat, lon;
-                if (config.weatherLoc && config.weatherLoc.trim() !== "") {
-                    // OpenStreetMap Handles states and ZIP codes properly without crashing
-                    const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(config.weatherLoc)}&format=json&limit=1`);
-                    const geoData = await geoRes.json();
-                    if (geoData && geoData.length > 0) {
-                        lat = geoData[0].lat;
-                        lon = geoData[0].lon;
-                    } else throw new Error("Location not found");
-                } else {
-                    const ipRes = await fetch("https://ipapi.co/json/");
-                    const location = await ipRes.json();
-                    lat = location.latitude;
-                    lon = location.longitude;
-                }
-
-                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph`);
-                const data = await res.json();
-                const weatherInfo = { 
-                    temp: Math.round(data.current.temperature_2m), 
-                    code: data.current.weather_code, 
-                    wind: data.current.wind_speed_10m,
-                    timestamp: now 
-                };
-                localStorage.setItem(cacheKey, JSON.stringify(weatherInfo));
-                applyWeatherUI(weatherInfo.temp, weatherInfo.code, weatherInfo.wind);
-            } catch (e) { document.getElementById('temp-val').innerText = "ERROR"; }
-        }
-
-        function applyWeatherUI(temp, code, wind) {
-            document.getElementById('temp-val').innerText = `${temp}°F`;
-            let icon = "sunny.png";
-            
-            if (code === 1 || code === 2) icon = "partly cloudy.png";
-            else if (code === 3) icon = "cloudy.png";
-            else if (code === 45 || code === 48) icon = "foggy.png";
-            else if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) icon = "rainy.png";
-            else if ((code >= 71 && code <= 77) || code === 85 || code === 86) icon = "cold.png";
-            else if (code >= 95 && code <= 99) icon = "thunderstorm.png";
-            
-            const hour = new Date().getHours();
-            if ((hour >= 20 || hour <= 5) && (code === 0 || code === 1 || code === 2)) icon = "night.png";
-            
-            // Show windy icon if it's blowing hard and not already raining/storming
-            if (wind >= 20 && code <= 3) icon = "windy.png";
-            
-            document.getElementById('weather-img').src = `images/${icon}`;
-        }
-
-        // --- DASHBOARD & NESTED MANAGER UI ---
         function renderMainUI() {
             const dashboard = document.getElementById('dashboard');
             dashboard.innerHTML = '';
+            
+            if(sortableGroups) sortableGroups.destroy();
+            sortableLinks.forEach(s => s.destroy());
+            sortableLinks = [];
 
-            config.linkGroups.forEach((group) => {
-                if(group.links.length === 0 && group.groupName.trim() === "") return; // Skip blank ghost groups
+            config.linkGroups.forEach((group, gIdx) => {
+                // Hide empty groups when not editing to keep dashboard clean
+                if(!editMode && group.links.length === 0 && group.groupName.trim() === "") return;
                 
                 const groupDiv = document.createElement('div');
                 groupDiv.className = 'group-container';
+                groupDiv.dataset.gidx = gIdx;
                 groupDiv.style.setProperty('--group-color', group.color || '#ffffff');
                 
-                let linksHTML = group.links.map((link) => `
-                    <a href="${link.url}" target="${config.newTab ? "_blank" : "_self"}" class="link-card" onmouseenter="playSound('hover')" onclick="playSound('click')">
-                        <div class="link-label">${link.name}</div>
-                    </a>
+                let linksHTML = group.links.map((link, lIdx) => `
+                    <div class="link-wrapper" data-lidx="${lIdx}" data-name="${link.name}" data-url="${link.url}">
+                        ${editMode ? `<div class="drag-handle-link">::</div>` : ''}
+                        <a href="${editMode ? '#' : link.url}" target="${(!editMode && config.newTab) ? "_blank" : "_self"}" class="link-card" onmouseenter="playSound('hover')" onclick="${editMode ? `event.preventDefault(); editLink(${gIdx}, ${lIdx})` : 'playSound(\'click\')'}">
+                            <div class="link-label" style="${editMode ? 'text-decoration: underline dashed #555; text-underline-offset: 4px;' : ''}">${link.name}</div>
+                        </a>
+                        ${editMode ? `<button class="inline-del-btn" onclick="deleteLink(${gIdx}, ${lIdx})">X</button>` : ''}
+                    </div>
                 `).join('');
 
                 groupDiv.innerHTML = `
-                    <div class="group-title">${group.groupName}</div>
-                    <div class="quick-links">${linksHTML}</div>
+                    <div class="group-header">
+                        ${editMode ? `<div class="drag-handle-group">::</div>` : ''}
+                        <div class="group-title" ${editMode ? `onclick="editGroup(${gIdx})"` : ''} style="${editMode ? 'cursor:pointer; text-decoration: underline dashed #555; text-underline-offset: 4px;' : ''}">${group.groupName}</div>
+                        ${editMode ? `
+                            <input type="color" class="inline-color-picker" value="${group.color || '#ffffff'}" onchange="changeGroupColor(${gIdx}, this.value)">
+                            <button class="inline-del-btn" onclick="deleteGroup(${gIdx})">X</button>
+                        ` : ''}
+                    </div>
+                    <div class="quick-links" data-gidx="${gIdx}">${linksHTML}</div>
+                    ${editMode ? `<button class="inline-add-btn" onclick="addLink(${gIdx})">+ ADD LINK</button>` : ''}
                 `;
                 dashboard.appendChild(groupDiv);
             });
-        }
 
-        function renderManager() {
-            const manager = document.getElementById('manager-list');
-            manager.innerHTML = '';
-            
-            config.linkGroups.forEach((group, gIdx) => {
-                const groupEl = document.createElement('div');
-                groupEl.className = 'manager-group-box';
-                
-                let linksHTML = group.links.map((link, lIdx) => `
-                    <div class="link-manager-item">
-                        <span class="handle link-handle">::</span>
-                        <input type="text" value="${link.name}" class="manager-input edit-name">
-                        <input type="text" value="${link.url}" class="manager-input edit-url">
-                        <button class="btn-del del-link" data-gidx="${gIdx}" data-lidx="${lIdx}">X</button>
-                    </div>
-                `).join('');
+            // If Edit Mode is ON, initialize drag and drop sorting + the Add Group button
+            if (editMode) {
+                const addGroupBtn = document.createElement('button');
+                addGroupBtn.className = 'inline-add-group-btn';
+                addGroupBtn.innerText = '+ ADD NEW GROUP';
+                addGroupBtn.onclick = addGroup;
+                dashboard.appendChild(addGroupBtn);
 
-                groupEl.innerHTML = `
-                    <div class="manager-group-header">
-                        <span class="handle group-handle" style="color:#555;">[G]</span>
-                        <input type="color" value="${group.color || '#ffffff'}" class="manager-input edit-color" title="Group Color">
-                        <input type="text" value="${group.groupName}" class="manager-input edit-group-name" style="font-family:'PixeloidSansBold', sans-serif; color: #fff;">
-                        <button class="btn-del del-group" data-gidx="${gIdx}">X</button>
-                    </div>
-                    <div class="manager-link-list">${linksHTML}</div>
-                    <button class="btn-add add-link-btn" data-gidx="${gIdx}" style="height: 24px; font-size: 10px; margin-top: 8px;">+ ADD LINK TO GROUP</button>
-                `;
-                manager.appendChild(groupEl);
-            });
-
-            attachManagerEvents();
-        }
-
-        function syncDataFromManager() {
-            const newGroups = [];
-            document.querySelectorAll('.manager-group-box').forEach(groupBox => {
-                const groupName = groupBox.querySelector('.edit-group-name').value;
-                const groupColor = groupBox.querySelector('.edit-color').value;
-                const links = [];
-                groupBox.querySelectorAll('.link-manager-item').forEach(linkItem => {
-                    links.push({
-                        name: linkItem.querySelector('.edit-name').value,
-                        url: linkItem.querySelector('.edit-url').value
+                if (typeof Sortable !== 'undefined') {
+                    sortableGroups = Sortable.create(dashboard, {
+                        handle: '.drag-handle-group',
+                        animation: 150,
+                        filter: '.inline-add-group-btn',
+                        onEnd: saveLayoutFromDOM
                     });
+
+                    document.querySelectorAll('.quick-links').forEach(ql => {
+                        sortableLinks.push(Sortable.create(ql, {
+                            group: 'shared-links',
+                            handle: '.drag-handle-link',
+                            animation: 150,
+                            onEnd: saveLayoutFromDOM
+                        }));
+                    });
+                }
+            }
+        }
+
+        // --- INLINE EDIT ACTIONS ---
+        function saveLayoutFromDOM() {
+            const newGroups = [];
+            document.querySelectorAll('.group-container').forEach(gDiv => {
+                const gIdx = gDiv.dataset.gidx;
+                const oldGroup = config.linkGroups[gIdx];
+                const groupName = oldGroup.groupName;
+                const color = oldGroup.color;
+                
+                const links = [];
+                gDiv.querySelectorAll('.link-wrapper').forEach(lDiv => {
+                    links.push({ name: lDiv.dataset.name, url: lDiv.dataset.url });
                 });
-                newGroups.push({ groupName, color: groupColor, links });
+                newGroups.push({ groupName, color, links });
             });
             config.linkGroups = newGroups;
             saveConfig();
+            renderMainUI(); // Force re-render to update the index numbers
         }
 
+        function editLink(gIdx, lIdx) {
+            playSound('click');
+            const link = config.linkGroups[gIdx].links[lIdx];
+            const newName = prompt("Edit Link Name:", link.name);
+            if(newName === null) return;
+            const newUrl = prompt("Edit Link URL:", link.url);
+            if(newUrl === null) return;
+            link.name = newName;
+            link.url = newUrl;
+            saveConfig(); renderMainUI();
+        }
+
+        function addLink(gIdx) {
+            playSound('click');
+            const newName = prompt("Enter New Link Name:", "NEW LINK");
+            if(!newName) return;
+            const newUrl = prompt("Enter New Link URL:", "https://");
+            if(!newUrl) return;
+            config.linkGroups[gIdx].links.push({name: newName, url: newUrl});
+            saveConfig(); renderMainUI();
+        }
+
+        function deleteLink(gIdx, lIdx) {
+            playSound('click');
+            if(confirm("Delete this link?")) {
+                config.linkGroups[gIdx].links.splice(lIdx, 1);
+                saveConfig(); renderMainUI();
+            }
+        }
+
+        function editGroup(gIdx) {
+            playSound('click');
+            const newName = prompt("Edit Group Name:", config.linkGroups[gIdx].groupName);
+            if(newName !== null && newName.trim() !== "") {
+                config.linkGroups[gIdx].groupName = newName;
+                saveConfig(); renderMainUI();
+            }
+        }
+
+        function changeGroupColor(gIdx, color) {
+            config.linkGroups[gIdx].color = color;
+            saveConfig(); renderMainUI();
+        }
+
+        function deleteGroup(gIdx) {
+            playSound('click');
+            if(confirm("Delete this entire group and all links inside it?")) {
+                config.linkGroups.splice(gIdx, 1);
+                saveConfig(); renderMainUI();
+            }
+        }
+
+        function addGroup() {
+            playSound('click');
+            const newName = prompt("Enter New Group Name:", "NEW GROUP");
+            if(newName) {
+                config.linkGroups.push({groupName: newName, color: "#ffffff", links: []});
+                saveConfig(); renderMainUI();
+            }
+        }
+
+        // --- CORE SETTINGS ---
         function applySettings() {
             document.getElementById('status-bar').style.display = config.showStatus ? 'flex' : 'none';
             document.getElementById('toggle-status').checked = config.showStatus;
@@ -864,10 +842,11 @@
             document.getElementById('toggle-military').checked = config.militaryTime; 
             document.getElementById('toggle-mute').checked = config.muteAudio; 
             document.getElementById('engine-select').value = config.engine;
-            document.getElementById('weather-loc-input').value = config.weatherLoc;
+            
+            document.getElementById('toggle-edit').checked = editMode;
+            
             config.lowPower ? document.body.classList.add('low-power') : document.body.classList.remove('low-power');
             
-            // Apply Widget States
             document.getElementById('toggle-calc').checked = config.showCalc;
             document.getElementById('toggle-ttt').checked = config.showTTT;
             config.showCalc ? document.getElementById('widget-calc').classList.add('active') : document.getElementById('widget-calc').classList.remove('active');
@@ -879,56 +858,6 @@
             if(w === 'calc') config.showCalc = !config.showCalc;
             if(w === 'ttt') config.showTTT = !config.showTTT;
             saveConfig(); applySettings();
-        }
-
-        function attachManagerEvents() {
-            if (typeof Sortable !== 'undefined') {
-                Sortable.create(document.getElementById('manager-list'), {
-                    handle: '.group-handle', animation: 150,
-                    onEnd: () => { syncDataFromManager(); renderMainUI(); renderManager(); }
-                });
-                
-                document.querySelectorAll('.manager-link-list').forEach(list => {
-                    Sortable.create(list, {
-                        group: 'shared-links', handle: '.link-handle', animation: 150,
-                        onEnd: () => { syncDataFromManager(); renderMainUI(); renderManager(); }
-                    });
-                });
-            }
-
-            document.querySelectorAll('.manager-input').forEach(input => {
-                input.addEventListener('input', () => {
-                    syncDataFromManager(); 
-                    renderMainUI();
-                });
-            });
-
-            document.querySelectorAll('.del-link').forEach(btn => {
-                btn.onclick = (e) => {
-                    e.stopPropagation(); playSound('click');
-                    syncDataFromManager(); 
-                    config.linkGroups[e.target.dataset.gidx].links.splice(e.target.dataset.lidx, 1);
-                    saveConfig(); renderManager(); renderMainUI();
-                };
-            });
-
-            document.querySelectorAll('.del-group').forEach(btn => {
-                btn.onclick = (e) => {
-                    e.stopPropagation(); playSound('click');
-                    syncDataFromManager();
-                    config.linkGroups.splice(e.target.dataset.gidx, 1);
-                    saveConfig(); renderManager(); renderMainUI();
-                };
-            });
-
-            document.querySelectorAll('.add-link-btn').forEach(btn => {
-                btn.onclick = (e) => {
-                    e.stopPropagation(); playSound('click');
-                    syncDataFromManager();
-                    config.linkGroups[e.target.dataset.gidx].links.push({name: "NEW", url: "https://"});
-                    saveConfig(); renderManager(); renderMainUI();
-                };
-            });
         }
 
         // --- SEARCH BAR & LOGIC ---
@@ -1136,6 +1065,12 @@
         };
         
         // --- SETTINGS DRAWER EVENTS ---
+        document.getElementById('toggle-edit').onchange = (e) => {
+            playSound('click');
+            editMode = e.target.checked;
+            renderMainUI(); // Switch dashboard layout
+        };
+        
         document.getElementById('toggle-status').onchange = (e) => { config.showStatus = e.target.checked; saveConfig(); applySettings(); };
         document.getElementById('toggle-power').onchange = (e) => { config.lowPower = e.target.checked; saveConfig(); applySettings(); };
         document.getElementById('toggle-newtab').onchange = (e) => { config.newTab = e.target.checked; saveConfig(); renderMainUI(); };
@@ -1146,21 +1081,6 @@
         document.getElementById('toggle-calc').onchange = (e) => { playSound('click'); config.showCalc = e.target.checked; saveConfig(); applySettings(); };
         document.getElementById('toggle-ttt').onchange = (e) => { playSound('click'); config.showTTT = e.target.checked; saveConfig(); applySettings(); };
         
-        document.getElementById('addNewGroupBtn').onclick = (e) => { 
-            e.stopPropagation(); playSound('click'); 
-            syncDataFromManager();
-            config.linkGroups.push({groupName: "NEW_GROUP", color: "#ffffff", links: []}); 
-            saveConfig(); renderManager(); renderMainUI(); 
-        };
-        
-        document.getElementById('save-weather-btn').onclick = () => {
-            playSound('click');
-            config.weatherLoc = document.getElementById('weather-loc-input').value;
-            saveConfig();
-            document.getElementById('temp-val').innerText = "UPDATING...";
-            fetchWeather(true); 
-        };
-
         document.getElementById('export-btn').onclick = () => {
             playSound('click');
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(config));
@@ -1228,10 +1148,9 @@
         makeDraggable(document.getElementById('widget-calc'));
         makeDraggable(document.getElementById('widget-ttt'));
 
-        // Calculator Backend (Upgraded for Typeable Input)
+        // Calculator Backend
         const calcDisp = document.getElementById('calc-disp');
 
-        // Keyboard support for Enter, Escape, and tying into the audio engine
         calcDisp.addEventListener('keydown', (e) => {
             e.stopPropagation(); // Kill the global keyboard echo
             if (e.key === 'Enter') {
@@ -1256,12 +1175,10 @@
             calcDisp.value = calcDisp.value.replace(/[^0-9\.\+\-\*\/\(\)xX]/g, '');
         });
 
-        // Smart clear when focusing
         calcDisp.addEventListener('focus', () => {
             if (calcDisp.value === '0' || calcDisp.value === 'ERR') calcDisp.value = '';
         });
 
-        // Smart reset when blurring empty
         calcDisp.addEventListener('blur', () => {
             if (calcDisp.value.trim() === '') calcDisp.value = '0';
         });
@@ -1273,7 +1190,6 @@
             if (key === 'C') { calcDisp.value = "0"; calcDisp.blur(); return; }
             if (key === '=') {
                 try { 
-                    // Let users use 'x' for multiply if typing manually
                     let safeVal = val.replace(/x/gi, '*').replace(/÷/g, '/');
                     let res = String(eval(safeVal)); 
                     if(res === "NaN" || res === "Infinity" || res === "undefined") throw Error;
@@ -1284,7 +1200,7 @@
             
             if ((val === "0" || val === "ERR") && key !== ".") val = "";
             calcDisp.value = val + key;
-            calcDisp.focus(); // Snap cursor back to input after clicking a button
+            calcDisp.focus(); 
         }
 
         // Tic-Tac-Toe Backend
@@ -1302,7 +1218,6 @@
         }
 
         function initTTT() {
-            // Sound removed from here so it doesn't ghost-click on page load
             tttBoard = Array(9).fill(null);
             tttTurn = 'X'; xMoves = []; oMoves = []; tttActive = true;
             document.getElementById('ttt-stat').innerText = "X'S TURN";
@@ -1320,7 +1235,6 @@
             let move = -1;
             const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
 
-            // 1. Can AI win right now? (Simulate placing piece and removing oldest)
             for (let i of empty) {
                 let b = [...tttBoard], m = [...oMoves];
                 b[i] = 'O'; m.push(i);
@@ -1328,7 +1242,6 @@
                 if (wins.some(c => c.every(idx => b[idx] === 'O'))) { move = i; break; }
             }
 
-            // 2. Can X win on their next turn? Block them.
             if (move === -1) {
                 for (let i of empty) {
                     let b = [...tttBoard], m = [...xMoves];
@@ -1338,14 +1251,12 @@
                 }
             }
 
-            // 3. Fallback to a random cell
             if (move === -1) move = empty[Math.floor(Math.random() * empty.length)];
 
             tttMove(move, true);
         }
 
         function tttMove(idx, isAI = false) {
-            // Prevent playing on filled spots, inactive games, or clicking during AI's turn
             if (!tttActive || tttBoard[idx]) { if(!tttBoard[idx] && tttTurn === 'X') playSound('click'); return; }
             if (tttTurn === 'O' && !isAI) return; 
             
@@ -1355,7 +1266,6 @@
             const currentMoves = tttTurn === 'X' ? xMoves : oMoves;
             currentMoves.push(idx);
 
-            // Endless Rule: Remove 1st piece if placing 4th
             if (tttEndless && currentMoves.length > 3) {
                 const removedIdx = currentMoves.shift();
                 tttBoard[removedIdx] = null;
@@ -1363,7 +1273,6 @@
 
             updateTTTUI();
             
-            // Check for Win
             const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
             if (wins.some(combo => combo.every(i => tttBoard[i] === tttTurn))) {
                 document.getElementById('ttt-stat').innerText = tttTurn === 'X' ? "YOU WIN!" : "AI WINS!";
@@ -1373,7 +1282,6 @@
                 return;
             }
 
-            // Check for Draw (Classic Mode)
             if (!tttEndless && !tttBoard.includes(null)) {
                 document.getElementById('ttt-stat').innerText = "DRAW!";
                 document.getElementById('ttt-stat').style.color = "#ff8800";
@@ -1382,7 +1290,6 @@
                 return;
             }
 
-            // Swap Turn
             tttTurn = tttTurn === 'X' ? 'O' : 'X';
             
             if (tttTurn === 'O') {
@@ -1403,7 +1310,6 @@
                 cell.innerText = tttBoard[i] || "";
                 cell.className = 'ttt-cell ' + (tttBoard[i] ? tttBoard[i].toLowerCase() : '');
                 if (tttEndless && tttBoard[i]) {
-                    // Removed the turn restriction so it ALWAYS pulses your oldest piece
                     if (tttBoard[i] === 'X' && xMoves.length === 3 && xMoves[0] === i) cell.classList.add('fading');
                     if (tttBoard[i] === 'O' && oMoves.length === 3 && oMoves[0] === i) cell.classList.add('fading');
                 }
@@ -1441,12 +1347,9 @@
 
         function init() { 
             renderMainUI(); 
-            renderManager();
             applySettings(); 
             updateClock(); 
             setInterval(updateClock, 1000); 
-            fetchWeather(); 
-            setInterval(fetchWeather, 300000); 
         }
         init();
     </script>
