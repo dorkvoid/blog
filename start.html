@@ -17,7 +17,7 @@
             --retro-green: #55ffcc;       /* Minty Phosphor Green */
             --retro-glow: rgba(85, 255, 204, 0.4);
             --retro-dim: #2a8066;         /* Muted Mint */
-            --retro-dark: #000806;        /* Deep background mint */
+            --retro-dark: #00221a;        /* Deep background mint */
             --retro-bg: #000000;          /* Pure black */
         }
 
@@ -88,7 +88,7 @@
             content: '';
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            background: linear-gradient(rgba(0, 0, 0, 0) 50%, rgba(85, 255, 204, 0.05) 50%);
+            background: linear-gradient(rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.08) 50%);
             background-size: 100% 4px;
             pointer-events: none; 
             z-index: 999;
@@ -153,19 +153,12 @@
         }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-        /* AGGRESSIVE FLICKER AWAKE ANIMATION */
+        /* SHORT NEON SIGN FLICKER */
         @keyframes flickerAwake {
-            0%   { opacity: 0; background-color: var(--retro-green); box-shadow: 0 0 50px var(--retro-glow); }
-            10%  { opacity: 1; background-color: transparent; color: var(--retro-green); box-shadow: none; }
-            15%  { opacity: 0; }
-            25%  { opacity: 1; background-color: var(--retro-green); color: #000; box-shadow: inset 0 0 20px #000; }
-            35%  { opacity: 0; background-color: transparent; color: var(--retro-green); }
-            45%  { opacity: 1; box-shadow: inset 0 0 10px var(--retro-green); text-shadow: 0 0 10px var(--retro-green); }
-            50%  { opacity: 0.2; }
-            60%  { opacity: 1; }
-            70%  { opacity: 0.5; }
-            80%  { opacity: 1; box-shadow: none; text-shadow: none; }
-            100% { opacity: 1; }
+            0%   { opacity: 0.6; box-shadow: none; }
+            30%  { opacity: 1; box-shadow: 0 0 15px var(--retro-glow), inset 0 0 10px var(--retro-glow); }
+            60%  { opacity: 0.6; box-shadow: none; }
+            100% { opacity: 1; box-shadow: 0 0 20px var(--retro-glow), inset 0 0 15px var(--retro-glow); }
         }
 
         .search-box-container {
@@ -183,15 +176,14 @@
             outline: none; text-align: left; box-sizing: border-box; 
             transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s; 
             box-shadow: inset 0 0 10px var(--retro-glow);
-            background-image: linear-gradient(90deg, rgba(0, 255, 65, 0.05), rgba(0, 255, 65, 0.01), transparent);
+            background-image: linear-gradient(90deg, rgba(85, 255, 204, 0.05), rgba(85, 255, 204, 0.01), transparent);
             background-size: 3px 100%;
             cursor: text !important;
             z-index: 2;
         }
         
         .search-box.flicker {
-            animation: flickerAwake 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
-            box-shadow: 0 0 30px var(--retro-glow), inset 0 0 20px var(--retro-glow) !important;
+            animation: flickerAwake 0.25s linear forwards !important;
             border-color: var(--retro-green) !important;
         }
 
@@ -293,11 +285,17 @@
             gap: 20px; 
             width: 100%; max-width: 1000px; margin-top: 40px; z-index: 2;
             overflow-y: auto; padding-bottom: 80px;
+            transition: grid-template-columns 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 
             scrollbar-width: none;
             -ms-overflow-style: none;
         }
         .dashboard::-webkit-scrollbar { display: none; }
+
+        /* Widen the columns dynamically when Edit Mode is toggled to prevent crushing */
+        .dashboard.is-editing {
+            grid-template-columns: repeat(auto-fit, 260px);
+        }
 
         .group-container { 
             border: 2px solid var(--retro-dark);
@@ -311,13 +309,17 @@
         }
         .group-container:hover { border-color: var(--retro-dim); }
 
-        .group-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .group-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: nowrap; }
         .group-title { 
             background: var(--group-color, var(--retro-green)); color: #000; font-size: 10px; 
             padding: 4px 8px; letter-spacing: 2px; text-transform: uppercase; 
             display: inline-block; width: fit-content; text-align: left; margin: 0;
             transition: 0.2s;
         }
+        .group-title.editing-title {
+            cursor: pointer; outline: 1px dotted #000; outline-offset: -1px;
+        }
+
         .quick-links { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; width: 100%; min-height: 20px; }
         
         .link-wrapper { display: flex; align-items: center; width: 100%; gap: 6px; }
@@ -326,31 +328,48 @@
             text-decoration: none; text-align: left;
             transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
             display: flex; align-items: flex-start; justify-content: flex-start;
-            flex-grow: 1;
+            flex: 1 1 0; min-width: 0; /* Prevents flexbox from forcing breaks on large words */
         }
         .link-card::before {
             content: '>'; color: var(--retro-dim); margin-right: 8px; font-size: 10px; transition: color 0.2s; margin-top: 1px;
         }
         .link-card:hover { border: none; background: transparent; transform: translateX(6px); box-shadow: none; }
         .link-card:hover::before { color: var(--group-color, var(--retro-green)); }
+        
         .link-label { 
             color: var(--retro-dim); font-size: 10px; 
             text-transform: uppercase; letter-spacing: 2px; transition: color 0.2s; text-align: left;
-            white-space: normal; word-break: break-word; 
+            white-space: normal; word-break: normal; overflow-wrap: break-word; 
+        }
+        .link-label.editing-label {
+            border-bottom: 1px dotted var(--retro-dim); padding-bottom: 1px;
         }
         .link-card:hover .link-label { color: var(--group-color, var(--retro-green)); text-shadow: 0 0 8px var(--retro-glow); }
 
         /* INLINE EDIT CONTROLS */
-        .drag-handle-group, .drag-handle-link { cursor: grab; color: var(--retro-dim); font-size: 12px; user-select: none; }
-        .drag-handle-group:active, .drag-handle-link:active { cursor: grabbing; color: var(--retro-green); }
-        .inline-del-btn { background: transparent; color: #ff0033; border: none; cursor: pointer; padding: 0 4px; font-size: 12px;}
-        .inline-del-btn:hover { text-shadow: 0 0 5px #ff0033; color: #ff0033; }
-        .inline-color-picker { width: 22px; height: 22px; padding: 0; border: 1px solid var(--retro-dim); background: #000; cursor: pointer; }
+        .drag-handle-group, .drag-handle-link { 
+            cursor: grab; color: var(--retro-dim); font-size: 12px; user-select: none; 
+            flex-shrink: 0; opacity: 0.5; transition: 0.2s;
+        }
+        .drag-handle-group:hover, .drag-handle-link:hover { opacity: 1; }
+        .drag-handle-group:active, .drag-handle-link:active { cursor: grabbing; color: var(--retro-green); opacity: 1; }
+        
+        .inline-del-btn { 
+            background: transparent; color: #ff0033; border: none; cursor: pointer; padding: 0 4px; font-size: 12px;
+            margin-left: auto; flex-shrink: 0; opacity: 0.8; transition: 0.2s;
+        }
+        .inline-del-btn:hover { text-shadow: 0 0 5px #ff0033; color: #ff0033; opacity: 1;}
+        
+        .inline-color-picker { 
+            width: 18px; height: 18px; padding: 0; border: 1px solid var(--retro-dim); background: #000; cursor: pointer; 
+            margin-left: auto; flex-shrink: 0;
+        }
         .inline-color-picker::-webkit-color-swatch-wrapper { padding: 0; }
         .inline-color-picker::-webkit-color-swatch { border: none; }
+        
         .inline-add-btn, .inline-add-group-btn {
             background: transparent; border: 1px dashed var(--retro-dim); color: var(--retro-dim); width: 100%;
-            padding: 6px; cursor: pointer; margin-top: 8px; font-size: 8px; letter-spacing: 1px; transition: 0.2s;
+            padding: 6px; cursor: pointer; margin-top: 8px; font-size: 10px; letter-spacing: 1px; transition: 0.2s;
         }
         .inline-add-btn:hover, .inline-add-group-btn:hover { border-color: var(--retro-green); color: var(--retro-green); }
         .inline-add-group-btn { margin-top: 0; height: 100%; min-height: 60px; border: 2px dashed var(--retro-dark); }
@@ -744,6 +763,9 @@
             const dashboard = document.getElementById('dashboard');
             dashboard.innerHTML = '';
             
+            if (editMode) dashboard.classList.add('is-editing');
+            else dashboard.classList.remove('is-editing');
+
             if(sortableGroups) sortableGroups.destroy();
             sortableLinks.forEach(s => s.destroy());
             sortableLinks = [];
@@ -761,7 +783,7 @@
                     <div class="link-wrapper" data-lidx="${lIdx}" data-name="${link.name}" data-url="${link.url}">
                         ${editMode ? `<div class="drag-handle-link">::</div>` : ''}
                         <a href="${editMode ? '#' : link.url}" target="${(!editMode && config.newTab) ? "_blank" : "_self"}" class="link-card" onmouseenter="playSound('hover')" onclick="${editMode ? `event.preventDefault(); editLink(${gIdx}, ${lIdx})` : 'playSound(\'click\')'}">
-                            <div class="link-label" style="${editMode ? 'text-decoration: underline dashed var(--retro-dim); text-underline-offset: 4px;' : ''}">${link.name}</div>
+                            <div class="link-label ${editMode ? 'editing-label' : ''}">${link.name}</div>
                         </a>
                         ${editMode ? `<button class="inline-del-btn" onclick="deleteLink(${gIdx}, ${lIdx})">X</button>` : ''}
                     </div>
@@ -770,7 +792,7 @@
                 groupDiv.innerHTML = `
                     <div class="group-header">
                         ${editMode ? `<div class="drag-handle-group">::</div>` : ''}
-                        <div class="group-title" ${editMode ? `onclick="editGroup(${gIdx})"` : ''} style="${editMode ? 'cursor:pointer; text-decoration: underline dashed #000; text-underline-offset: 4px;' : ''}">${group.groupName}</div>
+                        <div class="group-title ${editMode ? 'editing-title' : ''}" ${editMode ? `onclick="editGroup(${gIdx})"` : ''}>${group.groupName}</div>
                         ${editMode ? `
                             <input type="color" class="inline-color-picker" value="${group.color || '#00ff41'}" onchange="changeGroupColor(${gIdx}, this.value)">
                             <button class="inline-del-btn" onclick="deleteGroup(${gIdx})">X</button>
@@ -928,11 +950,11 @@
         let currentFocus = -1;
 
         function triggerFlicker() {
-            // Remove the class and instantly re-apply it to trigger the aggressive CSS keyframe animation
+            // Remove the class and instantly re-apply it to trigger the CSS keyframe animation
             searchInput.classList.remove('flicker');
             void searchInput.offsetWidth; 
             searchInput.classList.add('flicker');
-            setTimeout(() => searchInput.classList.remove('flicker'), 600); // 600ms matches animation duration
+            setTimeout(() => searchInput.classList.remove('flicker'), 250); // Match animation length
         }
 
         // Trigger the flicker specifically when clicking the search bar
