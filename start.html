@@ -6,6 +6,7 @@
     <title>TERMINAL // START</title>
     <link rel="icon" type="image/png" href="images/plxeyestiny.png">
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     
     <style>
         /* --- FONTS --- */
@@ -336,11 +337,84 @@
             gap: 20px; 
             width: 100%; max-width: 1000px; margin-top: 40px; z-index: 2;
             overflow-y: auto; padding-bottom: 80px;
-
-            scrollbar-width: none;
-            -ms-overflow-style: none;
+            transition: grid-template-columns 0.3s ease;
+            
+            /* Firefox Scrollbar */
+            scrollbar-width: thin;
+            scrollbar-color: var(--retro-dark) #000;
         }
-        .dashboard::-webkit-scrollbar { display: none; }
+
+        .dashboard:hover {
+            scrollbar-color: var(--retro-green) #000;
+        }
+
+        /* --- SYSTEM 1 DASHBOARD SCROLLBAR --- */
+        .dashboard::-webkit-scrollbar { 
+            width: 20px; 
+            background-color: #000; 
+        }
+
+        /* Checkered Track (Dimmed normally) */
+        .dashboard::-webkit-scrollbar-track { 
+            background-color: #000; 
+            border-left: 2px solid var(--retro-dark);
+            background-image: 
+                linear-gradient(45deg, var(--retro-dark) 25%, transparent 25%),
+                linear-gradient(-45deg, var(--retro-dark) 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, var(--retro-dark) 75%),
+                linear-gradient(-45deg, transparent 75%, var(--retro-dark) 75%);
+            background-size: 4px 4px;
+            background-position: 0 0, 0 2px, 2px 2px, 2px 0;
+            transition: 0.2s;
+        }
+
+        /* Solid Thumb (Dimmed normally) */
+        .dashboard::-webkit-scrollbar-thumb { 
+            background-color: var(--retro-dark); 
+            border: 2px solid #000; 
+        }
+
+        /* Arrow Buttons (Dimmed normally) */
+        .dashboard::-webkit-scrollbar-button:single-button {
+            background-color: var(--retro-dark);
+            border: 2px solid #000;
+            height: 20px;
+            width: 20px;
+            display: block;
+            background-size: 10px;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        /* UP Arrow */
+        .dashboard::-webkit-scrollbar-button:single-button:vertical:decrement {
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' fill='black'%3E%3Cpath d='M5 2 L9 8 H1 Z'/%3E%3C/svg%3E");
+        }
+
+        /* DOWN Arrow */
+        .dashboard::-webkit-scrollbar-button:single-button:vertical:increment {
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' fill='black'%3E%3Cpath d='M1 2 H9 L5 8 Z'/%3E%3C/svg%3E");
+        }
+
+        /* --- HOVER STATE (WAKES UP TO BRIGHT MINT) --- */
+        .dashboard:hover::-webkit-scrollbar-track {
+            border-left: 2px solid var(--retro-green);
+            background-image: 
+                linear-gradient(45deg, var(--retro-dim) 25%, transparent 25%),
+                linear-gradient(-45deg, var(--retro-dim) 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, var(--retro-dim) 75%),
+                linear-gradient(-45deg, transparent 75%, var(--retro-dim) 75%);
+        }
+        
+        .dashboard:hover::-webkit-scrollbar-thumb,
+        .dashboard:hover::-webkit-scrollbar-button:single-button {
+            background-color: var(--retro-green);
+        }
+
+        /* Widen the columns dynamically when Edit Mode is toggled to prevent crushing */
+        .dashboard.is-editing {
+            grid-template-columns: repeat(auto-fit, 280px);
+        }
 
         .group-container { 
             border: 2px solid var(--retro-dark);
@@ -355,24 +429,28 @@
         }
         .group-container:hover { border-color: var(--retro-dim); }
 
-        .group-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; width: 100%; }
+        .group-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; width: 100%; overflow: hidden; }
         .group-title { 
             background: var(--group-color, var(--retro-green)); color: #000; font-size: 10px; 
             padding: 4px 8px; letter-spacing: 2px; text-transform: uppercase; 
-            display: inline-block; width: fit-content; text-align: left; margin: 0;
+            display: inline-block; width: fit-content; text-align: left; 
+            margin: 0 auto 0 0; /* Pushes color picker and X to the right */
             transition: 0.2s;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
         }
 
         .quick-links { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; width: 100%; min-height: 20px; }
         
-        .link-wrapper { display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 6px; }
+        .link-wrapper { display: flex; align-items: center; width: 100%; gap: 8px; overflow: hidden; }
         .link-card { 
             background: transparent; border: none; padding: 0; 
             text-decoration: none; text-align: left;
-            display: flex; align-items: flex-start; justify-content: flex-start;
+            display: flex; align-items: center; justify-content: flex-start;
+            flex: 1 1 0; min-width: 0; /* Prevents flexbox from forcing breaks on large words */
+            overflow: hidden;
         }
         .link-card::before {
-            content: '>'; color: var(--retro-dim); margin-right: 8px; font-size: 10px; transition: color 0.2s; margin-top: 1px;
+            content: '>'; color: var(--retro-dim); margin-right: 8px; font-size: 10px; transition: color 0.2s; flex-shrink: 0;
         }
         .link-card:hover { border: none; background: transparent; box-shadow: none; }
         .link-card:hover::before { color: var(--group-color, var(--retro-green)); }
@@ -380,27 +458,37 @@
         .link-label { 
             color: var(--retro-dim); font-size: 10px; 
             text-transform: uppercase; letter-spacing: 2px; transition: color 0.2s; text-align: left;
-            white-space: normal; word-break: break-word; 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; /* STOPS VERTICAL WRAP DESTRUCTION */
         }
         .link-card:hover .link-label { color: var(--group-color, var(--retro-green)); }
 
         /* INLINE EDIT CONTROLS */
+        .drag-handle-group, .drag-handle-link { 
+            cursor: grab; color: var(--retro-dim); font-size: 12px; user-select: none; 
+            flex-shrink: 0; opacity: 0.5; transition: 0.2s; padding-right: 4px;
+        }
+        .drag-handle-group:hover, .drag-handle-link:hover { opacity: 1; }
+        .drag-handle-group:active, .drag-handle-link:active { cursor: grabbing; color: var(--retro-green); opacity: 1; }
+        
         .inline-del-btn { 
             background: transparent; color: #ff0033; border: none; cursor: pointer; padding: 0 4px; font-size: 12px;
-            margin-left: auto; flex-shrink: 0; opacity: 0.8; transition: 0.2s;
+            flex-shrink: 0; opacity: 0.8; transition: 0.2s;
         }
+        .link-wrapper .inline-del-btn { margin-left: auto; }
         .inline-del-btn:hover { text-shadow: 0 0 5px #ff0033; color: #ff0033; opacity: 1;}
         
         .inline-color-picker { 
-            width: 18px; height: 18px; padding: 0; border: 1px solid var(--retro-dim); background: #000; cursor: pointer; 
-            margin-left: auto; flex-shrink: 0;
+            width: 16px; height: 16px; padding: 0; border: 1px solid var(--retro-dim); background: #000; cursor: pointer; 
+            flex-shrink: 0; margin-left: 8px;
+            -webkit-appearance: none;
         }
         .inline-color-picker::-webkit-color-swatch-wrapper { padding: 0; }
         .inline-color-picker::-webkit-color-swatch { border: none; }
+        .inline-color-picker::-moz-color-swatch { border: none; }
         
         .inline-add-btn, .inline-add-group-btn {
             background: transparent; border: 1px dashed var(--retro-dim); color: var(--retro-dim); width: 100%;
-            padding: 6px; cursor: pointer; margin-top: 8px; font-size: 10px; letter-spacing: 1px; transition: 0.2s;
+            padding: 6px; cursor: pointer; margin-top: 8px; font-size: 8px; letter-spacing: 1px; transition: 0.2s;
         }
         .inline-add-btn:hover, .inline-add-group-btn:hover { border-color: var(--retro-green); color: var(--retro-green); }
         .inline-add-group-btn { margin-top: 0; height: 100%; min-height: 60px; border: 2px dashed var(--retro-dark); }
@@ -814,7 +902,7 @@
                     <div class="link-wrapper" data-lidx="${lIdx}" data-name="${link.name}" data-url="${link.url}">
                         ${editMode ? `<div class="drag-handle-link">::</div>` : ''}
                         <a href="${editMode ? '#' : link.url}" target="${(!editMode && config.newTab) ? "_blank" : "_self"}" class="link-card" onmouseenter="playSound('hover')" onclick="${editMode ? `event.preventDefault(); editLink(${gIdx}, ${lIdx})` : 'playSound(\'click\')'}">
-                            <div class="link-label ${editMode ? 'editing-label' : ''}">${link.name}</div>
+                            <div class="link-label">${link.name}</div>
                         </a>
                         ${editMode ? `<button class="inline-del-btn" onclick="deleteLink(${gIdx}, ${lIdx})">X</button>` : ''}
                     </div>
@@ -823,7 +911,7 @@
                 groupDiv.innerHTML = `
                     <div class="group-header">
                         ${editMode ? `<div class="drag-handle-group">::</div>` : ''}
-                        <div class="group-title ${editMode ? 'editing-title' : ''}" ${editMode ? `onclick="editGroup(${gIdx})"` : ''}>${group.groupName}</div>
+                        <div class="group-title" ${editMode ? `onclick="editGroup(${gIdx})" style="cursor:pointer;"` : ''}>${group.groupName}</div>
                         ${editMode ? `
                             <input type="color" class="inline-color-picker" value="${group.color || '#00ff41'}" onchange="changeGroupColor(${gIdx}, this.value)">
                             <button class="inline-del-btn" onclick="deleteGroup(${gIdx})">X</button>
