@@ -32,7 +32,7 @@
         body, input, button, select, textarea, .suggestion-item, .group-title, 
         .link-label, .link-card::before, .inline-del-btn, .inline-add-btn, .inline-add-group-btn, #shortcut-badge, 
         #settings-drawer, .section-label, .cheat-sheet, .btn-add, .option-row, 
-        .status-bar, .os-widget, .widget-header, .ttt-status, .ttt-btn, #greeting {
+        .status-bar, .os-widget, .widget-header, .ttt-status, .ttt-btn, #greeting, .handle, .manager-input {
             font-family: 'DogicaPixelBold', sans-serif;
         }
 
@@ -80,11 +80,42 @@
             cursor: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath d='M10 1h4v7h3v2h3v2h3v9h-2v2H7v-2H5v-3H3v-5h2V9h2V6h2V1z' fill='%23000000' stroke='%2355ffcc' stroke-width='2' stroke-linejoin='miter'/%3E%3C/svg%3E") 12 1, pointer !important;
         }
 
-        /* --- CUSTOM SCROLLBARS --- */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: var(--retro-bg); border-left: 1px solid var(--retro-dark); }
-        ::-webkit-scrollbar-thumb { background: var(--retro-dim); }
-        ::-webkit-scrollbar-thumb:hover { background: var(--retro-green); }
+        /* --- MAC SYSTEM 1 SCROLLBARS (MAIN PAGE & DRAWER) --- */
+        ::-webkit-scrollbar { 
+            width: 20px; 
+            background-color: #000; 
+        }
+        ::-webkit-scrollbar-track { 
+            background-color: #000; 
+            border-left: 2px solid var(--retro-dim);
+            background-image: 
+                linear-gradient(45deg, var(--retro-dim) 25%, transparent 25%),
+                linear-gradient(-45deg, var(--retro-dim) 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, var(--retro-dim) 75%),
+                linear-gradient(-45deg, transparent 75%, var(--retro-dim) 75%);
+            background-size: 4px 4px;
+            background-position: 0 0, 0 2px, 2px 2px, 2px 0;
+        }
+        ::-webkit-scrollbar-thumb { 
+            background-color: var(--retro-green); 
+            border: 2px solid #000; 
+        }
+        ::-webkit-scrollbar-button:single-button {
+            background-color: var(--retro-green);
+            border: 2px solid #000;
+            height: 20px;
+            width: 20px;
+            display: block;
+            background-size: 10px;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        ::-webkit-scrollbar-button:single-button:vertical:decrement {
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' fill='black'%3E%3Cpath d='M5 2 L9 8 H1 Z'/%3E%3C/svg%3E");
+        }
+        ::-webkit-scrollbar-button:single-button:vertical:increment {
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' fill='black'%3E%3Cpath d='M1 2 H9 L5 8 Z'/%3E%3C/svg%3E");
+        }
 
         /* --- GLOBAL SCANLINES (Subtle Texture) --- */
         body {
@@ -327,94 +358,21 @@
             background: var(--retro-dark); color: var(--retro-green); padding-left: 32px; border-left: 2px solid var(--retro-green);
         }
 
-        /* --- DASHBOARD & INLINE EDITING --- */
+        /* --- DASHBOARD --- */
         .dashboard { 
             flex-grow: 1;
             display: grid; 
-            grid-template-columns: repeat(auto-fit, 220px); 
+            grid-template-columns: repeat(auto-fit, 180px); 
             justify-content: center;
             align-content: start;
             gap: 20px; 
             width: 100%; max-width: 1000px; margin-top: 40px; z-index: 2;
             overflow-y: auto; padding-bottom: 80px;
-            transition: grid-template-columns 0.3s ease;
             
-            /* Firefox Scrollbar */
-            scrollbar-width: thin;
-            scrollbar-color: var(--retro-dark) #000;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
-
-        .dashboard:hover {
-            scrollbar-color: var(--retro-green) #000;
-        }
-
-        /* --- SYSTEM 1 DASHBOARD SCROLLBAR --- */
-        .dashboard::-webkit-scrollbar { 
-            width: 20px; 
-            background-color: #000; 
-        }
-
-        /* Checkered Track (Dimmed normally) */
-        .dashboard::-webkit-scrollbar-track { 
-            background-color: #000; 
-            border-left: 2px solid var(--retro-dark);
-            background-image: 
-                linear-gradient(45deg, var(--retro-dark) 25%, transparent 25%),
-                linear-gradient(-45deg, var(--retro-dark) 25%, transparent 25%),
-                linear-gradient(45deg, transparent 75%, var(--retro-dark) 75%),
-                linear-gradient(-45deg, transparent 75%, var(--retro-dark) 75%);
-            background-size: 4px 4px;
-            background-position: 0 0, 0 2px, 2px 2px, 2px 0;
-            transition: 0.2s;
-        }
-
-        /* Solid Thumb (Dimmed normally) */
-        .dashboard::-webkit-scrollbar-thumb { 
-            background-color: var(--retro-dark); 
-            border: 2px solid #000; 
-        }
-
-        /* Arrow Buttons (Dimmed normally) */
-        .dashboard::-webkit-scrollbar-button:single-button {
-            background-color: var(--retro-dark);
-            border: 2px solid #000;
-            height: 20px;
-            width: 20px;
-            display: block;
-            background-size: 10px;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
-
-        /* UP Arrow */
-        .dashboard::-webkit-scrollbar-button:single-button:vertical:decrement {
-            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' fill='black'%3E%3Cpath d='M5 2 L9 8 H1 Z'/%3E%3C/svg%3E");
-        }
-
-        /* DOWN Arrow */
-        .dashboard::-webkit-scrollbar-button:single-button:vertical:increment {
-            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' fill='black'%3E%3Cpath d='M1 2 H9 L5 8 Z'/%3E%3C/svg%3E");
-        }
-
-        /* --- HOVER STATE (WAKES UP TO BRIGHT MINT) --- */
-        .dashboard:hover::-webkit-scrollbar-track {
-            border-left: 2px solid var(--retro-green);
-            background-image: 
-                linear-gradient(45deg, var(--retro-dim) 25%, transparent 25%),
-                linear-gradient(-45deg, var(--retro-dim) 25%, transparent 25%),
-                linear-gradient(45deg, transparent 75%, var(--retro-dim) 75%),
-                linear-gradient(-45deg, transparent 75%, var(--retro-dim) 75%);
-        }
-        
-        .dashboard:hover::-webkit-scrollbar-thumb,
-        .dashboard:hover::-webkit-scrollbar-button:single-button {
-            background-color: var(--retro-green);
-        }
-
-        /* Widen the columns dynamically when Edit Mode is toggled to prevent crushing */
-        .dashboard.is-editing {
-            grid-template-columns: repeat(auto-fit, 280px);
-        }
+        .dashboard::-webkit-scrollbar { display: none; }
 
         .group-container { 
             border: 2px solid var(--retro-dark);
@@ -425,73 +383,34 @@
             transition: border-color 0.3s;
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
         }
         .group-container:hover { border-color: var(--retro-dim); }
 
-        .group-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; width: 100%; overflow: hidden; }
         .group-title { 
             background: var(--group-color, var(--retro-green)); color: #000; font-size: 10px; 
-            padding: 4px 8px; letter-spacing: 2px; text-transform: uppercase; 
-            display: inline-block; width: fit-content; text-align: left; 
-            margin: 0 auto 0 0; /* Pushes color picker and X to the right */
-            transition: 0.2s;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+            padding: 4px 8px; margin-bottom: 12px; letter-spacing: 2px; text-transform: uppercase; 
+            display: inline-block; width: fit-content; text-align: left;
         }
-
-        .quick-links { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; width: 100%; min-height: 20px; }
+        .quick-links { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; width: 100%; }
         
-        .link-wrapper { display: flex; align-items: center; width: 100%; gap: 8px; overflow: hidden; }
         .link-card { 
             background: transparent; border: none; padding: 0; 
             text-decoration: none; text-align: left;
-            display: flex; align-items: center; justify-content: flex-start;
-            flex: 1 1 0; min-width: 0; /* Prevents flexbox from forcing breaks on large words */
-            overflow: hidden;
+            transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+            display: flex; align-items: flex-start; justify-content: flex-start;
+            width: 100%;
         }
         .link-card::before {
-            content: '>'; color: var(--retro-dim); margin-right: 8px; font-size: 10px; transition: color 0.2s; flex-shrink: 0;
+            content: '>'; color: var(--retro-dim); margin-right: 8px; font-size: 10px; transition: color 0.2s; margin-top: 1px;
         }
-        .link-card:hover { border: none; background: transparent; box-shadow: none; }
+        .link-card:hover { border: none; background: transparent; transform: translateX(6px); box-shadow: none; }
         .link-card:hover::before { color: var(--group-color, var(--retro-green)); }
-        
         .link-label { 
             color: var(--retro-dim); font-size: 10px; 
             text-transform: uppercase; letter-spacing: 2px; transition: color 0.2s; text-align: left;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; /* STOPS VERTICAL WRAP DESTRUCTION */
+            white-space: normal; word-break: break-word; 
         }
-        .link-card:hover .link-label { color: var(--group-color, var(--retro-green)); }
-
-        /* INLINE EDIT CONTROLS */
-        .drag-handle-group, .drag-handle-link { 
-            cursor: grab; color: var(--retro-dim); font-size: 12px; user-select: none; 
-            flex-shrink: 0; opacity: 0.5; transition: 0.2s; padding-right: 4px;
-        }
-        .drag-handle-group:hover, .drag-handle-link:hover { opacity: 1; }
-        .drag-handle-group:active, .drag-handle-link:active { cursor: grabbing; color: var(--retro-green); opacity: 1; }
-        
-        .inline-del-btn { 
-            background: transparent; color: #ff0033; border: none; cursor: pointer; padding: 0 4px; font-size: 12px;
-            flex-shrink: 0; opacity: 0.8; transition: 0.2s;
-        }
-        .link-wrapper .inline-del-btn { margin-left: auto; }
-        .inline-del-btn:hover { text-shadow: 0 0 5px #ff0033; color: #ff0033; opacity: 1;}
-        
-        .inline-color-picker { 
-            width: 16px; height: 16px; padding: 0; border: 1px solid var(--retro-dim); background: #000; cursor: pointer; 
-            flex-shrink: 0; margin-left: 8px;
-            -webkit-appearance: none;
-        }
-        .inline-color-picker::-webkit-color-swatch-wrapper { padding: 0; }
-        .inline-color-picker::-webkit-color-swatch { border: none; }
-        .inline-color-picker::-moz-color-swatch { border: none; }
-        
-        .inline-add-btn, .inline-add-group-btn {
-            background: transparent; border: 1px dashed var(--retro-dim); color: var(--retro-dim); width: 100%;
-            padding: 6px; cursor: pointer; margin-top: 8px; font-size: 8px; letter-spacing: 1px; transition: 0.2s;
-        }
-        .inline-add-btn:hover, .inline-add-group-btn:hover { border-color: var(--retro-green); color: var(--retro-green); }
-        .inline-add-group-btn { margin-top: 0; height: 100%; min-height: 60px; border: 2px dashed var(--retro-dark); }
+        .link-card:hover .link-label { color: var(--group-color, var(--retro-green)); text-shadow: 0 0 8px var(--retro-glow); }
 
         /* --- SHORTCUT BADGE --- */
         #shortcut-badge {
@@ -505,7 +424,7 @@
         #shortcut-badge.google { border-color: var(--retro-green); color: var(--retro-green); box-shadow: 0 0 10px var(--retro-glow); }
         #shortcut-badge.reddit { border-color: #ff8800; color: #ff8800; box-shadow: 0 0 10px rgba(255,136,0,0.2); }
 
-        /* --- SETTINGS DRAWER --- */
+        /* --- SETTINGS DRAWER & LINK MANAGER --- */
         #settings-drawer {
             position: fixed; top: 0; right: -350px; width: 350px; height: 100vh;
             background: #000; border-left: 2px solid var(--retro-dim); z-index: 9999;
@@ -530,6 +449,23 @@
         
         .cheat-sheet { font-size: 8px; color: var(--retro-green); line-height: 16px; background: var(--retro-bg); padding: 12px; border: 1px solid var(--retro-dark); margin-top: 12px; }
         .cheat-sheet b { color: #fff; }
+
+        /* NESTED MANAGER CSS */
+        .manager-group-box { background: var(--retro-dark); border: 1px solid var(--retro-dim); margin-bottom: 16px; padding: 12px; box-sizing: border-box;}
+        .manager-group-header { display: flex; align-items: center; margin-bottom: 12px; gap: 8px;}
+        .manager-link-list { display: flex; flex-direction: column; gap: 8px; min-height: 20px; border-left: 2px dashed var(--retro-dim); padding-left: 12px; margin-left: 8px;}
+        
+        .link-manager-item { display: flex; align-items: center; background: #000; border: 1px solid var(--retro-dim); padding: 6px; gap: 8px; box-sizing: border-box; transition: 0.3s; }
+        .handle { padding: 0 4px; color: var(--retro-dim); font-size: 12px; line-height: 1; cursor: grab;}
+        .handle:active { cursor: grabbing; color: var(--retro-green); }
+        .manager-input { background: black; border: 1px solid var(--retro-dim); color: var(--retro-green); padding: 0 8px; margin: 0; height: 26px; line-height: 24px; box-sizing: border-box; font-size: 8px; outline: none; flex-grow: 1; }
+        .manager-input.edit-name { flex-grow: 0; width: 64px; }
+        .manager-input.edit-color { flex-grow: 0; width: 36px; padding: 0; cursor: pointer; border: 1px solid var(--retro-dim); -webkit-appearance: none; }
+        .manager-input.edit-color::-webkit-color-swatch-wrapper { padding: 0; }
+        .manager-input.edit-color::-webkit-color-swatch { border: none; }
+        
+        .btn-del { background: #111; color: #ff0033; border: 1px solid #ff0033; width: 26px; height: 26px; padding: 0; margin: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-size: 10px; cursor: pointer;}
+        .btn-del:hover { background: #ff0033; color: #000; box-shadow: 0 0 10px #ff0033; }
         
         .btn-add { 
             width: 100%; background: #000; color: var(--retro-green); border: 1px solid var(--retro-dim); height: 36px; box-sizing: border-box; 
@@ -537,6 +473,17 @@
             display: flex; align-items: center; justify-content: center;
         }
         .btn-add:hover { background: var(--retro-green); color: #000; border-color: var(--retro-green); }
+
+        .imploding {
+            animation: crtImplode 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
+            pointer-events: none;
+        }
+        @keyframes crtImplode {
+            0% { transform: scale(1, 1); filter: brightness(1); }
+            40% { transform: scale(1, 0.05); filter: brightness(3); background: #fff; border-color: #fff; color: transparent; }
+            70% { transform: scale(0.01, 0.05); filter: brightness(5); background: #fff; }
+            100% { transform: scale(0, 0); opacity: 0; }
+        }
 
         /* --- FIXED UI COMPONENTS --- */
         .option-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; min-height: 24px; font-size: 10px;}
@@ -671,11 +618,6 @@
 
             <div class="setting-section">
                 <span class="section-label">Interface</span>
-                <div class="option-row" style="color: var(--retro-green); text-shadow: 0 0 5px var(--retro-glow);">
-                    <span>Unlock Dashboard</span>
-                    <input type="checkbox" id="toggle-edit" class="toggle-input">
-                    <label for="toggle-edit" class="toggle-btn" style="border-color: var(--retro-green);"></label>
-                </div>
                 <div class="option-row">
                     <span>Mute OS Sounds</span>
                     <input type="checkbox" id="toggle-mute" class="toggle-input">
@@ -719,6 +661,12 @@
                     <b>TTT Rules</b><br>
                     Toggle between Classic and Endless modes! In Endless, you only keep 3 active pieces. Your oldest fades and vanishes.
                 </div>
+            </div>
+
+            <div class="setting-section">
+                <span class="section-label">Link Manager</span>
+                <div id="manager-list"></div>
+                <button class="btn-add" id="addNewGroupBtn" style="margin-bottom: 24px;">+ ADD GROUP</button>
             </div>
 
             <div class="setting-section" style="border-top: 1px solid var(--retro-dim); padding-top: 24px;">
@@ -873,164 +821,149 @@
             playSound('mouseUp');
         });
 
-        // --- DASHBOARD & INLINE EDITING ---
-        let editMode = false;
-        let sortableGroups = null;
-        let sortableLinks = [];
-
+        // --- DASHBOARD & NESTED MANAGER UI ---
         function renderMainUI() {
             const dashboard = document.getElementById('dashboard');
             dashboard.innerHTML = '';
-            
-            if (editMode) dashboard.classList.add('is-editing');
-            else dashboard.classList.remove('is-editing');
 
-            if(sortableGroups) sortableGroups.destroy();
-            sortableLinks.forEach(s => s.destroy());
-            sortableLinks = [];
-
-            config.linkGroups.forEach((group, gIdx) => {
-                // Hide empty groups when not editing to keep dashboard clean
-                if(!editMode && group.links.length === 0 && group.groupName.trim() === "") return;
+            config.linkGroups.forEach((group) => {
+                if(group.links.length === 0 && group.groupName.trim() === "") return; // Skip blank ghost groups
                 
                 const groupDiv = document.createElement('div');
                 groupDiv.className = 'group-container';
-                groupDiv.dataset.gidx = gIdx;
-                groupDiv.style.setProperty('--group-color', group.color || '#00ff41');
+                groupDiv.style.setProperty('--group-color', group.color || '#55ffcc');
                 
-                let linksHTML = group.links.map((link, lIdx) => `
-                    <div class="link-wrapper" data-lidx="${lIdx}" data-name="${link.name}" data-url="${link.url}">
-                        ${editMode ? `<div class="drag-handle-link">::</div>` : ''}
-                        <a href="${editMode ? '#' : link.url}" target="${(!editMode && config.newTab) ? "_blank" : "_self"}" class="link-card" onmouseenter="playSound('hover')" onclick="${editMode ? `event.preventDefault(); editLink(${gIdx}, ${lIdx})` : 'playSound(\'click\')'}">
-                            <div class="link-label">${link.name}</div>
-                        </a>
-                        ${editMode ? `<button class="inline-del-btn" onclick="deleteLink(${gIdx}, ${lIdx})">X</button>` : ''}
-                    </div>
+                let linksHTML = group.links.map((link) => `
+                    <a href="${link.url}" target="${config.newTab ? "_blank" : "_self"}" class="link-card" onmouseenter="playSound('hover')" onclick="playSound('click')">
+                        <div class="link-label">${link.name}</div>
+                    </a>
                 `).join('');
 
                 groupDiv.innerHTML = `
-                    <div class="group-header">
-                        ${editMode ? `<div class="drag-handle-group">::</div>` : ''}
-                        <div class="group-title" ${editMode ? `onclick="editGroup(${gIdx})" style="cursor:pointer;"` : ''}>${group.groupName}</div>
-                        ${editMode ? `
-                            <input type="color" class="inline-color-picker" value="${group.color || '#00ff41'}" onchange="changeGroupColor(${gIdx}, this.value)">
-                            <button class="inline-del-btn" onclick="deleteGroup(${gIdx})">X</button>
-                        ` : ''}
-                    </div>
-                    <div class="quick-links" data-gidx="${gIdx}">${linksHTML}</div>
-                    ${editMode ? `<button class="inline-add-btn" onclick="addLink(${gIdx})">+ ADD LINK</button>` : ''}
+                    <div class="group-title">${group.groupName}</div>
+                    <div class="quick-links">${linksHTML}</div>
                 `;
                 dashboard.appendChild(groupDiv);
             });
-
-            // If Edit Mode is ON, initialize drag and drop sorting + the Add Group button
-            if (editMode) {
-                const addGroupBtn = document.createElement('button');
-                addGroupBtn.className = 'inline-add-group-btn';
-                addGroupBtn.innerText = '+ ADD NEW GROUP';
-                addGroupBtn.onclick = addGroup;
-                dashboard.appendChild(addGroupBtn);
-
-                if (typeof Sortable !== 'undefined') {
-                    sortableGroups = Sortable.create(dashboard, {
-                        handle: '.drag-handle-group',
-                        animation: 150,
-                        filter: '.inline-add-group-btn',
-                        onEnd: saveLayoutFromDOM
-                    });
-
-                    document.querySelectorAll('.quick-links').forEach(ql => {
-                        sortableLinks.push(Sortable.create(ql, {
-                            group: 'shared-links',
-                            handle: '.drag-handle-link',
-                            animation: 150,
-                            onEnd: saveLayoutFromDOM
-                        }));
-                    });
-                }
-            }
         }
 
-        // --- INLINE EDIT ACTIONS ---
-        function saveLayoutFromDOM() {
-            const newGroups = [];
-            document.querySelectorAll('.group-container').forEach(gDiv => {
-                const gIdx = gDiv.dataset.gidx;
-                const oldGroup = config.linkGroups[gIdx];
-                const groupName = oldGroup.groupName;
-                const color = oldGroup.color;
+        function renderManager() {
+            const manager = document.getElementById('manager-list');
+            manager.innerHTML = '';
+            
+            config.linkGroups.forEach((group, gIdx) => {
+                const groupEl = document.createElement('div');
+                groupEl.className = 'manager-group-box';
                 
+                let linksHTML = group.links.map((link, lIdx) => `
+                    <div class="link-manager-item">
+                        <span class="handle link-handle">::</span>
+                        <input type="text" value="${link.name}" class="manager-input edit-name">
+                        <input type="text" value="${link.url}" class="manager-input edit-url">
+                        <button class="btn-del del-link" data-gidx="${gIdx}" data-lidx="${lIdx}">X</button>
+                    </div>
+                `).join('');
+
+                groupEl.innerHTML = `
+                    <div class="manager-group-header">
+                        <span class="handle group-handle" style="color:var(--retro-dim);">[G]</span>
+                        <input type="color" value="${group.color || '#55ffcc'}" class="manager-input edit-color" title="Group Color">
+                        <input type="text" value="${group.groupName}" class="manager-input edit-group-name" style="color: var(--retro-green);">
+                        <button class="btn-del del-group" data-gidx="${gIdx}">X</button>
+                    </div>
+                    <div class="manager-link-list">${linksHTML}</div>
+                    <button class="btn-add add-link-btn" data-gidx="${gIdx}" style="height: 24px; font-size: 8px; margin-top: 8px;">+ ADD LINK TO GROUP</button>
+                `;
+                manager.appendChild(groupEl);
+            });
+
+            attachManagerEvents();
+        }
+
+        function syncDataFromManager() {
+            const newGroups = [];
+            document.querySelectorAll('.manager-group-box').forEach(groupBox => {
+                const groupName = groupBox.querySelector('.edit-group-name').value;
+                const groupColor = groupBox.querySelector('.edit-color').value;
                 const links = [];
-                gDiv.querySelectorAll('.link-wrapper').forEach(lDiv => {
-                    links.push({ name: lDiv.dataset.name, url: lDiv.dataset.url });
+                groupBox.querySelectorAll('.link-manager-item').forEach(linkItem => {
+                    links.push({
+                        name: linkItem.querySelector('.edit-name').value,
+                        url: linkItem.querySelector('.edit-url').value
+                    });
                 });
-                newGroups.push({ groupName, color, links });
+                newGroups.push({ groupName, color: groupColor, links });
             });
             config.linkGroups = newGroups;
             saveConfig();
-            renderMainUI(); // Force re-render to update the index numbers
         }
 
-        function editLink(gIdx, lIdx) {
-            playSound('click');
-            const link = config.linkGroups[gIdx].links[lIdx];
-            const newName = prompt("Edit Link Name:", link.name);
-            if(newName === null) return;
-            const newUrl = prompt("Edit Link URL:", link.url);
-            if(newUrl === null) return;
-            link.name = newName;
-            link.url = newUrl;
-            saveConfig(); renderMainUI();
-        }
-
-        function addLink(gIdx) {
-            playSound('click');
-            const newName = prompt("Enter New Link Name:", "NEW LINK");
-            if(!newName) return;
-            const newUrl = prompt("Enter New Link URL:", "https://");
-            if(!newUrl) return;
-            config.linkGroups[gIdx].links.push({name: newName, url: newUrl});
-            saveConfig(); renderMainUI();
-        }
-
-        function deleteLink(gIdx, lIdx) {
-            playSound('click');
-            if(confirm("Delete this link?")) {
-                config.linkGroups[gIdx].links.splice(lIdx, 1);
-                saveConfig(); renderMainUI();
+        function attachManagerEvents() {
+            if (typeof Sortable !== 'undefined') {
+                Sortable.create(document.getElementById('manager-list'), {
+                    handle: '.group-handle', animation: 150, filter: 'input, button', preventOnFilter: false,
+                    onEnd: () => { syncDataFromManager(); renderMainUI(); renderManager(); }
+                });
+                
+                document.querySelectorAll('.manager-link-list').forEach(list => {
+                    Sortable.create(list, {
+                        group: 'shared-links', handle: '.link-handle', animation: 150, filter: 'input, button', preventOnFilter: false,
+                        onEnd: () => { syncDataFromManager(); renderMainUI(); renderManager(); }
+                    });
+                });
             }
+
+            document.querySelectorAll('.manager-input').forEach(input => {
+                input.addEventListener('input', () => {
+                    syncDataFromManager(); 
+                    renderMainUI();
+                });
+            });
+
+            document.querySelectorAll('.del-link').forEach(btn => {
+                btn.onclick = (e) => {
+                    e.stopPropagation(); playSound('click');
+                    const linkItem = e.target.closest('.link-manager-item');
+                    linkItem.classList.add('imploding');
+                    
+                    setTimeout(() => {
+                        syncDataFromManager(); 
+                        config.linkGroups[e.target.dataset.gidx].links.splice(e.target.dataset.lidx, 1);
+                        saveConfig(); renderManager(); renderMainUI();
+                    }, 350);
+                };
+            });
+
+            document.querySelectorAll('.del-group').forEach(btn => {
+                btn.onclick = (e) => {
+                    e.stopPropagation(); playSound('click');
+                    const groupItem = e.target.closest('.manager-group-box');
+                    groupItem.classList.add('imploding');
+
+                    setTimeout(() => {
+                        syncDataFromManager();
+                        config.linkGroups.splice(e.target.dataset.gidx, 1);
+                        saveConfig(); renderManager(); renderMainUI();
+                    }, 350);
+                };
+            });
+
+            document.querySelectorAll('.add-link-btn').forEach(btn => {
+                btn.onclick = (e) => {
+                    e.stopPropagation(); playSound('click');
+                    syncDataFromManager();
+                    config.linkGroups[e.target.dataset.gidx].links.push({name: "NEW", url: "https://"});
+                    saveConfig(); renderManager(); renderMainUI();
+                };
+            });
         }
 
-        function editGroup(gIdx) {
-            playSound('click');
-            const newName = prompt("Edit Group Name:", config.linkGroups[gIdx].groupName);
-            if(newName !== null && newName.trim() !== "") {
-                config.linkGroups[gIdx].groupName = newName;
-                saveConfig(); renderMainUI();
-            }
-        }
-
-        function changeGroupColor(gIdx, color) {
-            config.linkGroups[gIdx].color = color;
-            saveConfig(); renderMainUI();
-        }
-
-        function deleteGroup(gIdx) {
-            playSound('click');
-            if(confirm("Delete this entire group and all links inside it?")) {
-                config.linkGroups.splice(gIdx, 1);
-                saveConfig(); renderMainUI();
-            }
-        }
-
-        function addGroup() {
-            playSound('click');
-            const newName = prompt("Enter New Group Name:", "NEW GROUP");
-            if(newName) {
-                config.linkGroups.push({groupName: newName, color: "#00ff41", links: []});
-                saveConfig(); renderMainUI();
-            }
-        }
+        document.getElementById('addNewGroupBtn').onclick = (e) => { 
+            e.stopPropagation(); playSound('click'); 
+            syncDataFromManager();
+            config.linkGroups.push({groupName: "NEW_GROUP", color: "#55ffcc", links: []}); 
+            saveConfig(); renderManager(); renderMainUI(); 
+        };
 
         // --- CORE SETTINGS ---
         function applySettings() {
@@ -1041,8 +974,6 @@
             document.getElementById('toggle-military').checked = config.militaryTime; 
             document.getElementById('toggle-mute').checked = config.muteAudio; 
             document.getElementById('engine-select').value = config.engine;
-            
-            document.getElementById('toggle-edit').checked = editMode;
             
             config.lowPower ? document.body.classList.add('low-power') : document.body.classList.remove('low-power');
             
@@ -1266,12 +1197,6 @@
         };
         
         // --- SETTINGS DRAWER EVENTS ---
-        document.getElementById('toggle-edit').onchange = (e) => {
-            playSound('click');
-            editMode = e.target.checked;
-            renderMainUI(); // Switch dashboard layout
-        };
-        
         document.getElementById('toggle-status').onchange = (e) => { config.showStatus = e.target.checked; saveConfig(); applySettings(); };
         document.getElementById('toggle-power').onchange = (e) => { config.lowPower = e.target.checked; saveConfig(); applySettings(); };
         document.getElementById('toggle-newtab').onchange = (e) => { config.newTab = e.target.checked; saveConfig(); renderMainUI(); };
@@ -1553,6 +1478,7 @@
 
         function init() { 
             renderMainUI(); 
+            renderManager();
             applySettings(); 
             updateClock(); 
             setInterval(updateClock, 1000); 
